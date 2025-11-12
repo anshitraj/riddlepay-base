@@ -11,6 +11,23 @@ const nextConfig = {
     // your project has type errors.
     ignoreBuildErrors: false,
   },
+  async headers() {
+    return [
+      {
+        source: '/.well-known/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Content-Type',
+            value: 'application/json',
+          },
+        ],
+      },
+    ];
+  },
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
