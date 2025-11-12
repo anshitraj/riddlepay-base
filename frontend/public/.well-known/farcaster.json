@@ -1,0 +1,20 @@
+{
+  "accountAssociation": {},
+  "baseBuilder": {
+    "ownerAddress": "0x0CF70E448ac98689e326bd79075a96CcBcec1665"
+  },
+  "miniapp": {
+    "version": "1",
+    "name": "RiddlePay",
+    "homeUrl": "https://riddlepay.vercel.app",
+    "iconUrl": "https://riddlepay.vercel.app/icon.png",
+    "splashImageUrl": "https://riddlepay.vercel.app/icon.png",
+    "splashBackgroundColor": "#000000",
+    "subtitle": "Crypto airdrops with riddles",
+    "description": "Send and claim crypto airdrops with riddles or giveaways, powered by Base.",
+    "primaryCategory": "finance",
+    "tags": ["finance", "crypto", "airdrops", "gifts"],
+    "tagline": "Unlock crypto with riddles"
+  }
+}
+
