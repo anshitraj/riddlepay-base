@@ -38,18 +38,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             setAddress(accounts[0]);
             
             // Get current chain ID - ensure it's properly parsed
-            ethereum.request({ method: 'eth_chainId' }).then((id: string) => {
-              const parsedChainId = typeof id === 'string' ? parseInt(id, 16) : Number(id);
-              console.log('Initial chainId from eth_chainId:', id, 'parsed:', parsedChainId);
-              setChainId(parsedChainId);
-            }).catch(err => {
-              console.error('Error getting chainId:', err);
-              // Fallback: get from provider
-              provider.getNetwork().then(network => {
-                console.log('ChainId from provider:', Number(network.chainId));
-                setChainId(Number(network.chainId));
+            // Add a small delay to ensure wallet is ready
+            setTimeout(() => {
+              ethereum.request({ method: 'eth_chainId' }).then((id: string) => {
+                const parsedChainId = typeof id === 'string' ? parseInt(id, 16) : Number(id);
+                console.log('Initial chainId from eth_chainId:', id, 'parsed:', parsedChainId);
+                setChainId(parsedChainId);
+                
+                // Double-check after a delay
+                setTimeout(async () => {
+                  try {
+                    const recheckId = await ethereum.request({ method: 'eth_chainId' });
+                    const recheckParsed = typeof recheckId === 'string' ? parseInt(recheckId, 16) : Number(recheckId);
+                    if (recheckParsed !== parsedChainId) {
+                      console.log('ChainId updated on recheck:', recheckParsed);
+                      setChainId(recheckParsed);
+                    }
+                  } catch (err) {
+                    console.error('Error rechecking chainId:', err);
+                  }
+                }, 1000);
+              }).catch(err => {
+                console.error('Error getting chainId:', err);
+                // Fallback: get from provider
+                provider.getNetwork().then(network => {
+                  const providerChainId = Number(network.chainId);
+                  console.log('ChainId from provider:', providerChainId);
+                  setChainId(providerChainId);
+                });
               });
-            });
+            }, 300);
           }
         });
       }
@@ -154,8 +172,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Clear disconnect state to allow reconnection
       localStorage.removeItem('wallet_disconnected');
       
-      // First, switch to Base Sepolia network
-      await switchToBaseSepolia();
+      // First, switch to Base Mainnet network (production)
+      await switchToBaseMainnet();
       
       // Wait a moment for network switch to complete
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -180,6 +198,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       });
 
       // Get current chain ID - check both methods to ensure accuracy
+      // Wait a bit for the network to stabilize after connection
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
       const network = await provider.getNetwork();
       const networkChainId = Number(network.chainId);
       
@@ -189,8 +210,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       console.log('Connected - chainId from network:', networkChainId, 'from eth_chainId:', parsedEthChainId);
       
-      // Use the chainId from eth_chainId as it's more reliable
-      setChainId(parsedEthChainId);
+      // Use the chainId from eth_chainId as it's more reliable, but verify both match
+      const finalChainId = parsedEthChainId || networkChainId;
+      console.log('Setting chainId to:', finalChainId);
+      setChainId(finalChainId);
+      
+      // Double-check after a short delay to ensure it's correct
+      setTimeout(async () => {
+        try {
+          if (typeof window !== 'undefined' && window.ethereum) {
+            const recheckChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const recheckParsed = typeof recheckChainId === 'string' ? parseInt(recheckChainId, 16) : Number(recheckChainId);
+            console.log('Recheck chainId:', recheckParsed);
+            if (recheckParsed !== finalChainId) {
+              console.log('ChainId changed, updating to:', recheckParsed);
+              setChainId(recheckParsed);
+            }
+          }
+        } catch (err) {
+          console.error('Error rechecking chainId:', err);
+        }
+      }, 1000);
 
       // Listen for chain changes
       window.ethereum.on('chainChanged', (chainId: string) => {
@@ -256,9 +296,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setProvider(provider);
         setAddress(newAddress);
 
-        // Get current chain ID
+        // Get current chain ID - use multiple methods for accuracy
         const network = await provider.getNetwork();
-        setChainId(Number(network.chainId));
+        const providerChainId = Number(network.chainId);
+        
+        // Also check via eth_chainId (more reliable)
+        if (typeof window !== 'undefined' && window.ethereum) {
+          try {
+            const ethChainId = await window.ethereum.request({ method: 'eth_chainId' });
+            const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
+            console.log('Switch wallet - chainId from provider:', providerChainId, 'from eth_chainId:', parsedEthChainId);
+            setChainId(parsedEthChainId || providerChainId);
+          } catch (err) {
+            console.error('Error getting chainId via eth_chainId:', err);
+            setChainId(providerChainId);
+          }
+        } else {
+          setChainId(providerChainId);
+        }
       }
     } catch (error: any) {
       // User rejected the request or no accounts available
