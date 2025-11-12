@@ -534,13 +534,31 @@ export function useContract() {
     try {
       console.log('📊 Fetching leaderboard data from contract:', contractToUse.target);
       
+      // Check cache first (leaderboard data changes infrequently)
+      const cacheKey = 'leaderboard';
+      const cached = getCached<{ topSenders: Array<{ address: string; count: number }>; topSolvers: Array<{ address: string; count: number }> }>(cacheKey);
+      if (cached !== null) {
+        console.log('✅ Using cached leaderboard data');
+        return cached;
+      }
+      
+      // Throttle to prevent rate limiting
+      await throttle(300);
+      
       // Get current block number to query from a reasonable range
       let fromBlock = 0;
       try {
-        const currentBlock = await contractToUse.provider.getBlockNumber();
-        // Query from last 50000 blocks (should cover all recent activity)
-        fromBlock = Math.max(0, currentBlock - 50000);
-        console.log(`📦 Querying events from block ${fromBlock} to latest (current: ${currentBlock})`);
+        // Access provider correctly - contract.provider might be a BaseContractMethod, so we need to get the actual provider
+        const provider = (contractToUse as any).provider as ethers.Provider;
+        if (provider && typeof provider.getBlockNumber === 'function') {
+          const currentBlock = await provider.getBlockNumber();
+          // Query from last 50000 blocks (should cover all recent activity)
+          fromBlock = Math.max(0, currentBlock - 50000);
+          console.log(`📦 Querying events from block ${fromBlock} to latest (current: ${currentBlock})`);
+        } else {
+          console.warn('⚠️ Provider not available, querying from block 0');
+          fromBlock = 0;
+        }
       } catch (err) {
         console.warn('⚠️ Could not get block number, querying from block 0');
         fromBlock = 0;
