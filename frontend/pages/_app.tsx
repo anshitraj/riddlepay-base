@@ -8,14 +8,15 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <ThemeProvider>
       <Head>
-        <title>RiddlePay 🎁 | Unlock Crypto Gifts with Riddles</title>
+        <title>RiddlePay</title>
         <meta name="description" content="RiddlePay - Send secret crypto gifts unlocked by riddles on Base Network" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
         <meta name="keywords" content="riddlepay, crypto gifts, blockchain, base network, riddles, ethereum" />
-        <meta property="og:title" content="RiddlePay - Unlock Crypto Gifts with Riddles" />
+        <meta property="og:title" content="RiddlePay" />
         <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
         <meta property="og:type" content="website" />
-        <link rel="icon" href="🎁" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="alternate icon" href="/favicon.svg" />
       </Head>
       <Toaster 
         position="top-center" 

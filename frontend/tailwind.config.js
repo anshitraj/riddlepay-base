@@ -10,8 +10,8 @@ module.exports = {
     extend: {
       colors: {
         baseBlue: '#0052FF',
-        baseDark: '#0B0D17',
-        baseLight: '#1C1F2E',
+        baseDark: '#000000',
+        baseLight: '#0A0A0A',
         base: {
           blue: '#0052FF',
           'blue-dark': '#0039B3',
@@ -19,7 +19,7 @@ module.exports = {
         },
       },
       backgroundImage: {
-        'base-gradient': 'linear-gradient(135deg, #0052FF 0%, #7A5FFF 100%)',
+        'base-gradient': 'linear-gradient(135deg, #0052FF 0%, #0066FF 50%, #0052FF 100%)',
       },
       animation: {
         'float': 'float 3s ease-in-out infinite',

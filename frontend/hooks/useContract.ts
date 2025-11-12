@@ -5,14 +5,15 @@ import { retryWithBackoff } from '@/utils/retry';
 import { createHybridRpcProvider, throttle, getCached, setCached } from '@/utils/rpcProvider';
 
 const CONTRACT_ABI = [
-  "function createGift(address receiver, string memory riddle, string memory answer, string memory message, uint256 amount, bool isETH, uint256 unlockTime) external payable",
-  "function createBulkGifts(address[] memory receivers, uint256[] memory amounts, bool isETH, string memory message, uint256 unlockTime) external payable",
+  "function createGift(address receiver, string memory riddle, string memory answer, string memory message, uint256 amount, bool isETH, uint256 unlockTime, uint256 expirationTime) external payable",
+  "function createBulkGifts(address[] memory receivers, uint256[] memory amounts, bool isETH, string memory message, uint256 unlockTime, uint256 expirationTime) external payable",
   "function claimGift(uint256 giftId, string memory guess) external",
   "function refundGift(uint256 giftId) external",
-  "function getGift(uint256 giftId) external view returns (tuple(address sender, address receiver, string riddle, bytes32 answerHash, string message, uint256 amount, address tokenAddress, uint256 createdAt, uint256 unlockTime, bool claimed))",
+  "function getGift(uint256 giftId) external view returns (tuple(address sender, address receiver, string riddle, bytes32 answerHash, string message, uint256 amount, address tokenAddress, uint256 createdAt, uint256 unlockTime, uint256 expirationTime, bool claimed))",
   "function getGiftCount() external view returns (uint256)",
   "function getGiftsForUser(address user) external view returns (uint256[])",
   "function isExpired(uint256 giftId) external view returns (bool)",
+  "function getExpirationTime(uint256 giftId) external view returns (uint256)",
   "function getTotalValueLocked() external view returns (uint256 totalETH, uint256 totalUSDC)",
   "event GiftCreated(uint256 indexed giftId, address indexed sender, address indexed receiver, string riddle, uint256 amount, address tokenAddress, uint256 unlockTime)",
   "event GiftClaimed(uint256 indexed giftId, address indexed receiver, uint256 amount)",
@@ -29,6 +30,7 @@ export interface Gift {
   tokenAddress: string;
   createdAt: string;
   unlockTime: string;
+  expirationTime: string;
   claimed: boolean;
 }
 
@@ -194,7 +196,8 @@ export function useContract() {
     message: string,
     amount: string,
     isETH: boolean,
-    unlockTime: number = 0 // Unix timestamp, 0 = immediately
+    unlockTime: number = 0, // Unix timestamp, 0 = immediately
+    expirationTime: number = 0 // Unix timestamp, 0 = use default 7 days
   ) => {
     // If riddle is empty, answer should also be empty (direct gift)
     if (!riddle.trim() && answer.trim()) {
@@ -243,6 +246,7 @@ export function useContract() {
             amountWei,
             isETH,
             unlockTime,
+            expirationTime,
             { value: amountWei } // Transaction overrides for ETH
           );
         } else {
@@ -254,7 +258,8 @@ export function useContract() {
             message || '', // Default to empty string if no message
             amountWei,
             isETH,
-            unlockTime
+            unlockTime,
+            expirationTime
           );
         }
       });
@@ -298,7 +303,8 @@ export function useContract() {
     amounts: string[],
     isETH: boolean,
     message: string,
-    unlockTime: number = 0
+    unlockTime: number = 0,
+    expirationTime: number = 0 // Unix timestamp, 0 = use default 7 days
   ) => {
     if (!contract) throw new Error('Contract not initialized');
     
@@ -333,6 +339,7 @@ export function useContract() {
             isETH,
             message || '',
             unlockTime,
+            expirationTime,
             { value: totalAmount } // Transaction overrides for ETH
           );
         } else {
@@ -342,7 +349,8 @@ export function useContract() {
             amountsWei,
             isETH,
             message || '',
-            unlockTime
+            unlockTime,
+            expirationTime
           );
         }
       });
@@ -454,6 +462,7 @@ export function useContract() {
         tokenAddress: gift.tokenAddress,
         createdAt: gift.createdAt.toString(),
         unlockTime: gift.unlockTime?.toString() || '0',
+        expirationTime: gift.expirationTime?.toString() || '0',
         claimed: gift.claimed,
       };
     } catch (err: any) {
@@ -463,33 +472,89 @@ export function useContract() {
   }, [contract, readContract]);
 
   const getGiftCount = useCallback(async (): Promise<number> => {
-    const contractToUse = readContract || contract;
-    if (!contractToUse) return 0;
+    // Use readContract first (available without wallet), fallback to contract (requires wallet)
+    let contractToUse = readContract || contract;
+    
+    // If readContract is not ready, wait a bit (it initializes on mount)
+    if (!contractToUse) {
+      console.warn('⚠️ Contract not ready for getGiftCount, waiting for initialization...');
+      // Wait up to 2 seconds for readContract to initialize
+      for (let i = 0; i < 4; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        contractToUse = readContract || contract;
+        if (contractToUse) {
+          console.log('✅ Contract ready after wait for getGiftCount');
+          break;
+        }
+      }
+    }
+    
+    if (!contractToUse) {
+      console.error('❌ Contract not initialized for getGiftCount');
+      return 0;
+    }
     
     try {
+      console.log('🔄 Fetching gift count...');
       // Wrap in retry logic to handle rate limiting
       const count = await retryWithBackoff(async () => {
         return await contractToUse.getGiftCount();
       });
-      return Number(count);
-    } catch (err) {
-      console.warn('Error getting gift count:', err);
+      const countNumber = Number(count);
+      console.log('✅ Gift count:', countNumber);
+      return countNumber;
+    } catch (err: any) {
+      console.error('❌ Error getting gift count:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        reason: err.reason,
+        contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
+      });
       return 0;
     }
   }, [contract, readContract]);
 
   const getGiftsForUser = useCallback(async (userAddress: string): Promise<number[]> => {
-    const contractToUse = readContract || contract;
-    if (!contractToUse) return [];
+    // Use readContract first (available without wallet), fallback to contract (requires wallet)
+    let contractToUse = readContract || contract;
+    
+    // If readContract is not ready, wait a bit (it initializes on mount)
+    if (!contractToUse) {
+      console.warn('⚠️ Contract not ready for getGiftsForUser, waiting for initialization...');
+      // Wait up to 2 seconds for readContract to initialize
+      for (let i = 0; i < 4; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        contractToUse = readContract || contract;
+        if (contractToUse) {
+          console.log('✅ Contract ready after wait for getGiftsForUser');
+          break;
+        }
+      }
+    }
+    
+    if (!contractToUse) {
+      console.error('❌ Contract not initialized for getGiftsForUser');
+      return [];
+    }
     
     try {
+      console.log('🔄 Fetching gifts for user:', userAddress);
       // Wrap in retry logic to handle rate limiting
       const giftIds = await retryWithBackoff(async () => {
         return await contractToUse.getGiftsForUser(userAddress);
       });
-      return giftIds.map((id: bigint) => Number(id));
-    } catch (err) {
-      console.warn('Error getting gifts for user:', err);
+      const ids = giftIds.map((id: bigint) => Number(id));
+      console.log('✅ Found gift IDs:', ids);
+      return ids;
+    } catch (err: any) {
+      console.error('❌ Error getting gifts for user:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        reason: err.reason,
+        contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
+      });
       return [];
     }
   }, [contract, readContract]);
@@ -607,20 +672,31 @@ export function useContract() {
       createdEvents.forEach((event: any, index: number) => {
         try {
           // Handle both ethers v5 and v6 event formats
-          const args = event.args || event;
-          if (args) {
-            // Try named property first (ethers v5), then array index (ethers v6)
-            const sender = args.sender || (Array.isArray(args) ? args[1] : null);
-            if (sender) {
-              const senderLower = typeof sender === 'string' 
-                ? sender.toLowerCase() 
-                : String(sender).toLowerCase();
-              senderCounts[senderLower] = (senderCounts[senderLower] || 0) + 1;
-            } else {
-              console.warn(`⚠️ Event ${index} missing sender. Args:`, args);
+          let sender: string | null = null;
+          
+          // Try different ways to access the sender
+          if (event.args) {
+            // ethers v5 format
+            if (event.args.sender) {
+              sender = event.args.sender;
+            } else if (Array.isArray(event.args) && event.args.length > 1) {
+              sender = event.args[1]; // sender is at index 1
             }
+          } else if (Array.isArray(event)) {
+            // Direct array format
+            sender = event[1];
+          } else if (event.sender) {
+            // Named property
+            sender = event.sender;
+          }
+          
+          if (sender) {
+            const senderLower = typeof sender === 'string' 
+              ? sender.toLowerCase() 
+              : String(sender).toLowerCase();
+            senderCounts[senderLower] = (senderCounts[senderLower] || 0) + 1;
           } else {
-            console.warn(`⚠️ Event ${index} missing args:`, event);
+            console.warn(`⚠️ Event ${index} missing sender. Event structure:`, JSON.stringify(event, null, 2));
           }
         } catch (err) {
           console.warn(`⚠️ Error processing created event ${index}:`, err, event);
@@ -632,20 +708,31 @@ export function useContract() {
       claimedEvents.forEach((event: any, index: number) => {
         try {
           // Handle both ethers v5 and v6 event formats
-          const args = event.args || event;
-          if (args) {
-            // Try named property first (ethers v5), then array index (ethers v6)
-            const receiver = args.receiver || (Array.isArray(args) ? args[1] : null);
-            if (receiver) {
-              const receiverLower = typeof receiver === 'string' 
-                ? receiver.toLowerCase() 
-                : String(receiver).toLowerCase();
-              solverCounts[receiverLower] = (solverCounts[receiverLower] || 0) + 1;
-            } else {
-              console.warn(`⚠️ Event ${index} missing receiver. Args:`, args);
+          let receiver: string | null = null;
+          
+          // Try different ways to access the receiver
+          if (event.args) {
+            // ethers v5 format
+            if (event.args.receiver) {
+              receiver = event.args.receiver;
+            } else if (Array.isArray(event.args) && event.args.length > 1) {
+              receiver = event.args[1]; // receiver is at index 1
             }
+          } else if (Array.isArray(event)) {
+            // Direct array format
+            receiver = event[1];
+          } else if (event.receiver) {
+            // Named property
+            receiver = event.receiver;
+          }
+          
+          if (receiver) {
+            const receiverLower = typeof receiver === 'string' 
+              ? receiver.toLowerCase() 
+              : String(receiver).toLowerCase();
+            solverCounts[receiverLower] = (solverCounts[receiverLower] || 0) + 1;
           } else {
-            console.warn(`⚠️ Event ${index} missing args:`, event);
+            console.warn(`⚠️ Event ${index} missing receiver. Event structure:`, JSON.stringify(event, null, 2));
           }
         } catch (err) {
           console.warn(`⚠️ Error processing claimed event ${index}:`, err, event);
@@ -655,6 +742,71 @@ export function useContract() {
       console.log('📈 Sender counts:', senderCounts);
       console.log('📈 Solver counts:', solverCounts);
       console.log(`📊 Processed ${createdEvents.length} created events and ${claimedEvents.length} claimed events`);
+
+      // If no events found or parsing failed, try fallback method using getGiftCount
+      if ((createdEvents.length === 0 && claimedEvents.length === 0) || 
+          (Object.keys(senderCounts).length === 0 && Object.keys(solverCounts).length === 0)) {
+        console.log('⚠️ No events found or parsing failed, trying fallback method...');
+        
+        try {
+          // Call contract directly for fallback
+          const totalGifts = await retryWithBackoff(async () => {
+            return await contractToUse.getGiftCount();
+          });
+          const totalGiftsNum = Number(totalGifts);
+          console.log(`📦 Found ${totalGiftsNum} total gifts, fetching details...`);
+          
+          // Fetch all gifts and count manually
+          const fallbackSenderCounts: Record<string, number> = {};
+          const fallbackSolverCounts: Record<string, number> = {};
+          
+          // Limit to first 500 gifts to avoid timeout
+          const maxGifts = Math.min(totalGiftsNum, 500);
+          for (let i = 0; i < maxGifts; i++) {
+            try {
+              const gift = await retryWithBackoff(async () => {
+                return await contractToUse.getGift(i);
+              });
+              
+              const senderLower = gift.sender.toLowerCase();
+              const receiverLower = gift.receiver.toLowerCase();
+              
+              // Count senders
+              fallbackSenderCounts[senderLower] = (fallbackSenderCounts[senderLower] || 0) + 1;
+              
+              // Count solvers (only if claimed)
+              if (gift.claimed) {
+                fallbackSolverCounts[receiverLower] = (fallbackSolverCounts[receiverLower] || 0) + 1;
+              }
+            } catch (err) {
+              // Gift might not exist, skip it
+              continue;
+            }
+          }
+          
+          console.log('📈 Fallback sender counts:', fallbackSenderCounts);
+          console.log('📈 Fallback solver counts:', fallbackSolverCounts);
+          
+          // Use fallback data if we got results
+          if (Object.keys(fallbackSenderCounts).length > 0 || Object.keys(fallbackSolverCounts).length > 0) {
+            const fallbackTopSenders = Object.entries(fallbackSenderCounts)
+              .map(([address, count]) => ({ address, count: count as number }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10);
+            
+            const fallbackTopSolvers = Object.entries(fallbackSolverCounts)
+              .map(([address, count]) => ({ address, count: count as number }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10);
+            
+            const result = { topSenders: fallbackTopSenders, topSolvers: fallbackTopSolvers };
+            setCached(cacheKey, result);
+            return result;
+          }
+        } catch (fallbackErr) {
+          console.error('❌ Fallback method also failed:', fallbackErr);
+        }
+      }
 
       // Convert to arrays and sort
       const topSenders = Object.entries(senderCounts)
@@ -673,15 +825,21 @@ export function useContract() {
       if (topSenders.length === 0 && topSolvers.length === 0 && (createdEvents.length > 0 || claimedEvents.length > 0)) {
         console.warn('⚠️ Events found but no addresses counted. Checking event structure...');
         if (createdEvents.length > 0) {
-          console.log('Sample created event:', createdEvents[0]);
+          console.log('Sample created event:', JSON.stringify(createdEvents[0], null, 2));
+          const firstEvent = createdEvents[0] as any;
+          console.log('Created event args:', firstEvent.args);
+          console.log('Created event keys:', Object.keys(firstEvent));
         }
         if (claimedEvents.length > 0) {
-          console.log('Sample claimed event:', claimedEvents[0]);
+          console.log('Sample claimed event:', JSON.stringify(claimedEvents[0], null, 2));
+          const firstClaimedEvent = claimedEvents[0] as any;
+          console.log('Claimed event args:', firstClaimedEvent.args);
+          console.log('Claimed event keys:', Object.keys(firstClaimedEvent));
         }
       }
 
       const result = { topSenders, topSolvers };
-      // Cache the result for 5 seconds
+      // Cache the result (default TTL is 5 seconds)
       setCached(cacheKey, result);
       
       return result;
@@ -691,29 +849,129 @@ export function useContract() {
         message: err.message,
         code: err.code,
         reason: err.reason,
-        contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
+        contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
+        stack: err.stack
       });
-      return { topSenders: [], topSolvers: [] };
+      
+      // Try fallback method even on error
+      try {
+        console.log('🔄 Attempting fallback leaderboard method...');
+        if (!contractToUse) {
+          return { topSenders: [], topSolvers: [] };
+        }
+        
+        const totalGifts = await retryWithBackoff(async () => {
+          return await contractToUse.getGiftCount();
+        });
+        const totalGiftsNum = Number(totalGifts);
+        
+        const fallbackSenderCounts: Record<string, number> = {};
+        const fallbackSolverCounts: Record<string, number> = {};
+        
+        const maxGifts = Math.min(totalGiftsNum, 500); // Limit to 500 for performance
+        for (let i = 0; i < maxGifts; i++) {
+          try {
+            const gift = await retryWithBackoff(async () => {
+              return await contractToUse.getGift(i);
+            });
+            
+            const senderLower = gift.sender.toLowerCase();
+            const receiverLower = gift.receiver.toLowerCase();
+            
+            fallbackSenderCounts[senderLower] = (fallbackSenderCounts[senderLower] || 0) + 1;
+            
+            if (gift.claimed) {
+              fallbackSolverCounts[receiverLower] = (fallbackSolverCounts[receiverLower] || 0) + 1;
+            }
+          } catch {
+            continue;
+          }
+        }
+        
+        const fallbackTopSenders = Object.entries(fallbackSenderCounts)
+          .map(([address, count]) => ({ address, count: count as number }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+        
+        const fallbackTopSolvers = Object.entries(fallbackSolverCounts)
+          .map(([address, count]) => ({ address, count: count as number }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+        
+        return { topSenders: fallbackTopSenders, topSolvers: fallbackTopSolvers };
+      } catch (fallbackErr) {
+        console.error('❌ Fallback method also failed:', fallbackErr);
+        return { topSenders: [], topSolvers: [] };
+      }
     }
   }, [contract, readContract]);
 
   const getTotalValueLocked = useCallback(async (): Promise<{ totalETH: string; totalUSDC: string }> => {
-    const contractToUse = readContract || contract;
+    // Use readContract first (available without wallet), fallback to contract (requires wallet)
+    let contractToUse = readContract || contract;
+    
+    // If readContract is not ready, wait a bit (it initializes on mount)
     if (!contractToUse) {
+      console.warn('⚠️ Contract not ready for getTotalValueLocked, waiting for initialization...');
+      // Wait up to 2 seconds for readContract to initialize
+      for (let i = 0; i < 4; i++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        contractToUse = readContract || contract;
+        if (contractToUse) {
+          console.log('✅ Contract ready after wait for getTotalValueLocked');
+          break;
+        }
+      }
+    }
+    
+    if (!contractToUse) {
+      console.error('❌ Contract not initialized for getTotalValueLocked');
       return { totalETH: '0', totalUSDC: '0' };
     }
     
     try {
+      console.log('🔄 Fetching total value locked...');
       // Wrap in retry logic to handle rate limiting
-      const [totalETH, totalUSDC] = await retryWithBackoff(async () => {
+      const result = await retryWithBackoff(async () => {
         return await contractToUse.getTotalValueLocked();
       });
+      
+      // Handle both tuple and array return formats
+      let totalETH: bigint;
+      let totalUSDC: bigint;
+      
+      if (Array.isArray(result)) {
+        [totalETH, totalUSDC] = result;
+      } else if (result && typeof result === 'object') {
+        // Handle named tuple return
+        totalETH = result.totalETH || result[0];
+        totalUSDC = result.totalUSDC || result[1];
+      } else {
+        throw new Error('Unexpected return format from getTotalValueLocked');
+      }
+      
+      const formattedETH = ethers.formatEther(totalETH);
+      const formattedUSDC = ethers.formatUnits(totalUSDC, 6); // USDC has 6 decimals
+      
+      console.log('✅ Total value locked:', { 
+        ETH: formattedETH, 
+        USDC: formattedUSDC,
+        rawETH: totalETH.toString(),
+        rawUSDC: totalUSDC.toString()
+      });
+      
       return {
-        totalETH: ethers.formatEther(totalETH),
-        totalUSDC: ethers.formatUnits(totalUSDC, 6), // USDC has 6 decimals
+        totalETH: formattedETH,
+        totalUSDC: formattedUSDC,
       };
-    } catch (err) {
-      console.warn('Error getting total value locked:', err);
+    } catch (err: any) {
+      console.error('❌ Error getting total value locked:', err);
+      console.error('Error details:', {
+        message: err.message,
+        code: err.code,
+        reason: err.reason,
+        contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS
+      });
       return { totalETH: '0', totalUSDC: '0' };
     }
   }, [contract, readContract]);

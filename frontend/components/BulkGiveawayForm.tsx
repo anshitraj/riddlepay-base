@@ -5,7 +5,7 @@ import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Plus, X, Users } from 'lucide-react';
+import { Plus, X, Users, AlertCircle } from 'lucide-react';
 
 interface Recipient {
   address: string;
@@ -22,6 +22,8 @@ export default function BulkGiveawayForm() {
   const [message, setMessage] = useState('');
   const [isETH, setIsETH] = useState(false); // Default to USDC for bulk
   const [unlockTime, setUnlockTime] = useState('');
+  const [expirationTime, setExpirationTime] = useState('7days'); // Default: 7 days
+  const [customExpirationHours, setCustomExpirationHours] = useState('');
   const [success, setSuccess] = useState(false);
   const [txHash, setTxHash] = useState('');
 
@@ -81,32 +83,61 @@ export default function BulkGiveawayForm() {
       return;
     }
 
-    const loadingToast = toast.loading(`Creating ${validRecipients.length} gifts...`);
+    const loadingToast = toast.loading(`Creating ${validRecipients.length} airdrops...`);
 
     try {
       await ensureBaseMainnet();
       
       // Convert unlockTime to Unix timestamp (0 = immediately)
+      // Set time to start of day (00:00:00) for date-only inputs
       let unlockTimestamp = 0;
       if (unlockTime) {
         const unlockDate = new Date(unlockTime);
+        unlockDate.setHours(0, 0, 0, 0); // Set to start of day
         unlockTimestamp = Math.floor(unlockDate.getTime() / 1000);
-        if (unlockTimestamp < Math.floor(Date.now() / 1000)) {
-          toast.error('Unlock time must be in the future');
+        const now = Math.floor(Date.now() / 1000);
+        if (unlockTimestamp < now) {
+          toast.error('Unlock day must be in the future');
           toast.dismiss(loadingToast);
           return;
         }
       }
 
+      // Calculate expiration timestamp from UI selection
+      let expirationTimestamp = 0; // 0 = use default 7 days
+      const now = Math.floor(Date.now() / 1000);
+      
+      if (expirationTime === '24hours') {
+        expirationTimestamp = now + (24 * 60 * 60); // 24 hours
+      } else if (expirationTime === '7days') {
+        expirationTimestamp = now + (7 * 24 * 60 * 60); // 7 days
+      } else if (expirationTime === '1month') {
+        expirationTimestamp = now + (30 * 24 * 60 * 60); // 30 days
+      } else if (expirationTime === 'custom' && customExpirationHours) {
+        const hours = Number(customExpirationHours);
+        if (hours < 1) {
+          toast.error('Custom expiration must be at least 1 hour');
+          toast.dismiss(loadingToast);
+          return;
+        }
+        if (hours > 365 * 24) {
+          toast.error('Custom expiration cannot exceed 1 year');
+          toast.dismiss(loadingToast);
+          return;
+        }
+        expirationTimestamp = now + (hours * 60 * 60); // Convert hours to seconds
+      }
+      // If expirationTime is not set or is default, expirationTimestamp remains 0 (contract uses default)
+
       const receivers = validRecipients.map(r => r.address);
       const amounts = validRecipients.map(r => r.amount);
 
-      const hash = await createBulkGifts(receivers, amounts, isETH, message, unlockTimestamp);
+      const hash = await createBulkGifts(receivers, amounts, isETH, message, unlockTimestamp, expirationTimestamp);
       setTxHash(hash);
       setSuccess(true);
       
       toast.dismiss(loadingToast);
-      toast.success(`${validRecipients.length} Gifts Created! 🎁`, {
+      toast.success(`${validRecipients.length} Airdrops Created! 🎁`, {
         duration: 5000,
       });
 
@@ -115,13 +146,15 @@ export default function BulkGiveawayForm() {
         setRecipients([{ address: '', amount: '' }]);
         setMessage('');
         setUnlockTime('');
+        setExpirationTime('7days');
+        setCustomExpirationHours('');
         setSuccess(false);
         setTxHash('');
       }, 5000);
     } catch (err: any) {
       toast.dismiss(loadingToast);
-      toast.error(err.message || 'Failed to create bulk gifts 😅');
-      console.error('Error creating bulk gifts:', err);
+      toast.error(err.message || 'Failed to create bulk airdrops 😅');
+      console.error('Error creating bulk airdrops:', err);
     }
   };
 
@@ -135,7 +168,7 @@ export default function BulkGiveawayForm() {
   if (!address) {
     return (
       <motion.div 
-        className="bg-baseLight/50 rounded-2xl p-12 text-center border border-baseBlue/20 shadow-lg"
+        className="bg-baseLight/50 rounded-2xl p-12 text-center border border-blue-500/20 shadow-lg"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
@@ -148,16 +181,16 @@ export default function BulkGiveawayForm() {
 
   return (
     <motion.div 
-      className="bg-baseLight/50 rounded-2xl p-8 md:p-10 border border-baseBlue/20 shadow-lg backdrop-blur-xl"
+      className="bg-baseLight/50 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-blue-500/20 shadow-lg backdrop-blur-xl"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-purple-500 rounded-xl flex items-center justify-center text-2xl shadow-lg shadow-purple-500/30">
-          <Users className="w-6 h-6 text-white" />
+      <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500 flex items-center justify-center text-xl sm:text-2xl shadow-lg shadow-blue-500/30">
+          <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
         </div>
-        <h2 className="text-3xl font-bold bg-base-gradient bg-clip-text text-transparent">
+        <h2 className="text-2xl sm:text-3xl font-bold bg-base-gradient bg-clip-text text-transparent">
           Bulk Giveaway
         </h2>
       </div>
@@ -167,7 +200,7 @@ export default function BulkGiveawayForm() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">✅</span>
             <div>
-              <p className="text-green-500 dark:text-green-400 font-semibold text-lg">Bulk gifts created successfully!</p>
+              <p className="text-green-500 dark:text-green-400 font-semibold text-lg">Bulk airdrops created successfully!</p>
               {txHash && (
                 <a
                   href={`https://basescan.org/tx/${txHash}`}
@@ -192,20 +225,20 @@ export default function BulkGiveawayForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Token Type */}
         <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
+          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
             <span className="text-blue-500">💰</span>
             Token Type
           </label>
-          <div className="flex gap-4">
+          <div className="flex gap-3 sm:gap-4">
             <button
               type="button"
               onClick={() => setIsETH(false)}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+              className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-semibold transition-all duration-200 active:scale-95 touch-manipulation ${
                 !isETH
-                  ? 'bg-base-gradient text-white shadow-lg shadow-baseBlue/30'
+                  ? 'bg-base-gradient text-white shadow-lg shadow-blue-500/30'
                   : 'glass dark:text-white text-gray-900 border border-border'
               }`}
             >
@@ -214,9 +247,9 @@ export default function BulkGiveawayForm() {
             <button
               type="button"
               onClick={() => setIsETH(true)}
-              className={`flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+              className={`flex-1 py-3 px-4 min-h-[44px] rounded-xl font-semibold transition-all duration-200 active:scale-95 touch-manipulation ${
                 isETH
-                  ? 'bg-base-gradient text-white shadow-lg shadow-baseBlue/30'
+                  ? 'bg-base-gradient text-white shadow-lg shadow-blue-500/30'
                   : 'glass dark:text-white text-gray-900 border border-border'
               }`}
             >
@@ -235,10 +268,11 @@ export default function BulkGiveawayForm() {
             <button
               type="button"
               onClick={addRecipient}
-              className="px-4 py-2 glass rounded-xl border border-baseBlue/20 dark:text-white text-gray-900 text-sm font-medium hover:scale-105 transition-all flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation"
             >
               <Plus className="w-4 h-4" />
-              Add Recipient
+              <span className="hidden sm:inline">Add Recipient</span>
+              <span className="sm:hidden">Add</span>
             </button>
           </div>
           
@@ -256,7 +290,7 @@ export default function BulkGiveawayForm() {
                     value={recipient.address}
                     onChange={(e) => updateRecipient(index, 'address', e.target.value)}
                     placeholder="0x..."
-                    className="w-full px-4 py-2.5 glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
+                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all touch-manipulation"
                     required
                   />
                   <input
@@ -265,7 +299,7 @@ export default function BulkGiveawayForm() {
                     value={recipient.amount}
                     onChange={(e) => updateRecipient(index, 'amount', e.target.value)}
                     placeholder={isETH ? "0.01 ETH" : "10 USDC"}
-                    className="w-full px-4 py-2.5 glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-sm"
+                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all touch-manipulation"
                     required
                   />
                 </div>
@@ -273,7 +307,7 @@ export default function BulkGiveawayForm() {
                   <button
                     type="button"
                     onClick={() => removeRecipient(index)}
-                    className="p-2 glass rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 transition-all"
+                    className="p-2 min-w-[44px] min-h-[44px] glass rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 active:scale-95 transition-all touch-manipulation flex items-center justify-center"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -282,7 +316,7 @@ export default function BulkGiveawayForm() {
             ))}
           </div>
           
-          <div className="mt-4 p-4 glass rounded-xl border border-baseBlue/20">
+          <div className="mt-4 p-4 glass rounded-xl border border-blue-500/20">
             <p className="text-sm dark:text-gray-400 text-gray-600 mb-1">Total Amount:</p>
             <p className="text-2xl font-bold bg-base-gradient bg-clip-text text-transparent">
               {calculateTotal().toFixed(isETH ? 6 : 2)} {isETH ? 'ETH' : 'USDC'}
@@ -301,34 +335,80 @@ export default function BulkGiveawayForm() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Congratulations! You've won our giveaway..."
             rows={3}
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none touch-manipulation"
           />
         </div>
 
-        {/* Unlock Time */}
+        {/* Unlock Day */}
         <div>
           <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
             <span className="text-blue-500">⏰</span>
-            Unlock Time (optional)
+            Unlock Day (optional)
           </label>
           <input
-            type="datetime-local"
+            type="date"
             value={unlockTime}
             onChange={(e) => setUnlockTime(e.target.value)}
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
           />
+        </div>
+
+        {/* Expiration Time */}
+        <div>
+          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-blue-500" />
+            Expiration Time <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Auto-refund if not claimed)</span>
+          </label>
+          <div className="space-y-3">
+            <select
+              value={expirationTime}
+              onChange={(e) => setExpirationTime(e.target.value)}
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 cursor-pointer touch-manipulation"
+            >
+              <option value="24hours">24 Hours</option>
+              <option value="7days">7 Days</option>
+              <option value="1month">1 Month (30 days)</option>
+              <option value="custom">Custom Time</option>
+            </select>
+            {expirationTime === 'custom' && (
+              <div>
+                <input
+                  type="number"
+                  value={customExpirationHours}
+                  onChange={(e) => setCustomExpirationHours(e.target.value)}
+                  placeholder="Enter hours (e.g., 48 for 2 days)"
+                  min="1"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
+                />
+                {customExpirationHours && (
+                  <p className="mt-2 text-xs dark:text-gray-400 text-gray-600">
+                    Airdrops will expire in: {Number(customExpirationHours) >= 24 
+                      ? `${(Number(customExpirationHours) / 24).toFixed(1)} days`
+                      : `${customExpirationHours} hours`}
+                  </p>
+                )}
+              </div>
+            )}
+            {expirationTime !== 'custom' && (
+              <p className="text-xs dark:text-gray-400 text-gray-600">
+                {expirationTime === '24hours' && 'Airdrops will expire in 24 hours if not claimed'}
+                {expirationTime === '7days' && 'Airdrops will expire in 7 days if not claimed'}
+                {expirationTime === '1month' && 'Airdrops will expire in 30 days if not claimed'}
+              </p>
+            )}
+          </div>
         </div>
 
         <motion.button
           type="submit"
           disabled={loading || approving || recipients.length === 0}
-          className="w-full py-4 bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] hover:shadow-lg hover:shadow-baseBlue/50 active:scale-[0.98] text-lg"
+          className="w-full py-4 min-h-[52px] bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-base sm:text-lg touch-manipulation"
           whileHover={{ scale: loading || approving ? 1 : 1.02 }}
           whileTap={{ scale: loading || approving ? 1 : 0.98 }}
         >
           {loading || approving
-            ? '✨ Creating Gifts...'
-            : `🎁 Create ${recipients.filter(r => r.address.trim() && r.amount.trim()).length} Gifts`}
+            ? '✨ Creating Airdrops...'
+            : `🎁 Create ${recipients.filter(r => r.address.trim() && r.amount.trim()).length} Airdrops`}
         </motion.button>
       </form>
     </motion.div>

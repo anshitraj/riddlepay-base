@@ -5,6 +5,9 @@ import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { Gift, MapPin, HelpCircle, Lock, MessageSquare, Clock, Coins, AlertCircle } from 'lucide-react';
+import ConfirmationModal from './ConfirmationModal';
+import RiddlePayLogo from './RiddlePayLogo';
 
 export default function SendGiftForm() {
   const { address, ensureBaseMainnet } = useWallet();
@@ -17,55 +20,73 @@ export default function SendGiftForm() {
   const [amount, setAmount] = useState('');
   const [isETH, setIsETH] = useState(true);
   const [unlockTime, setUnlockTime] = useState('');
+  const [expirationTime, setExpirationTime] = useState('7days'); // Default: 7 days
+  const [customExpirationHours, setCustomExpirationHours] = useState('');
   const [success, setSuccess] = useState(false);
   const [txHash, setTxHash] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const validateForm = () => {
     if (!address) {
       toast.error('Please connect your wallet');
-      return;
+      return false;
     }
 
     if (!receiver || !amount) {
       toast.error('Please fill in receiver address and amount');
-      return;
+      return false;
     }
 
     // If riddle is provided, answer must also be provided
     if (riddle.trim() && !answer.trim()) {
       toast.error('Please provide an answer for the riddle');
-      return;
+      return false;
     }
 
     // Security: Input validation
     // Validate Ethereum address format
     if (!/^0x[a-fA-F0-9]{40}$/.test(receiver)) {
       toast.error('Invalid receiver address format');
-      return;
+      return false;
     }
 
     // Validate string lengths (matching contract limits)
     if (riddle.length > 500) {
       toast.error('Riddle must be 500 characters or less');
-      return;
+      return false;
     }
     if (riddle.trim() && answer.length > 200) {
       toast.error('Answer must be 200 characters or less');
-      return;
+      return false;
     }
     if (message.length > 1000) {
       toast.error('Message must be 1000 characters or less');
-      return;
+      return false;
     }
 
     // Validate amount
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
       toast.error('Amount must be a positive number');
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) {
       return;
     }
+
+    // Show confirmation modal instead of submitting directly
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmSubmit = async () => {
+    setShowConfirmModal(false);
 
     const loadingToast = toast.loading(isETH ? 'Creating your secret gift...' : 'Checking USDC approval...');
 
@@ -74,16 +95,45 @@ export default function SendGiftForm() {
       await ensureBaseMainnet();
       
       // Convert unlockTime to Unix timestamp (0 = immediately)
+      // Set time to start of day (00:00:00) for date-only inputs
       let unlockTimestamp = 0;
       if (unlockTime) {
         const unlockDate = new Date(unlockTime);
+        unlockDate.setHours(0, 0, 0, 0); // Set to start of day
         unlockTimestamp = Math.floor(unlockDate.getTime() / 1000);
-        if (unlockTimestamp < Math.floor(Date.now() / 1000)) {
-          toast.error('Unlock time must be in the future');
+        const now = Math.floor(Date.now() / 1000);
+        if (unlockTimestamp < now) {
+          toast.error('Unlock day must be in the future');
           toast.dismiss(loadingToast);
           return;
         }
       }
+      
+      // Calculate expiration timestamp from UI selection
+      let expirationTimestamp = 0; // 0 = use default 7 days
+      const now = Math.floor(Date.now() / 1000);
+      
+      if (expirationTime === '24hours') {
+        expirationTimestamp = now + (24 * 60 * 60); // 24 hours
+      } else if (expirationTime === '7days') {
+        expirationTimestamp = now + (7 * 24 * 60 * 60); // 7 days
+      } else if (expirationTime === '1month') {
+        expirationTimestamp = now + (30 * 24 * 60 * 60); // 30 days
+      } else if (expirationTime === 'custom' && customExpirationHours) {
+        const hours = Number(customExpirationHours);
+        if (hours < 1) {
+          toast.error('Custom expiration must be at least 1 hour');
+          toast.dismiss(loadingToast);
+          return;
+        }
+        if (hours > 365 * 24) {
+          toast.error('Custom expiration cannot exceed 1 year');
+          toast.dismiss(loadingToast);
+          return;
+        }
+        expirationTimestamp = now + (hours * 60 * 60); // Convert hours to seconds
+      }
+      // If expirationTime is not set or is default, expirationTimestamp remains 0 (contract uses default)
       
       // Update toast message based on token type
       if (!isETH) {
@@ -93,7 +143,7 @@ export default function SendGiftForm() {
       }
       
       // Pass empty answer if no riddle (direct gift)
-      const hash = await createGift(receiver, riddle, riddle.trim() ? answer : '', message, amount, isETH, unlockTimestamp);
+      const hash = await createGift(receiver, riddle, riddle.trim() ? answer : '', message, amount, isETH, unlockTimestamp, expirationTimestamp);
       
       // Update toast to show transaction is being processed
       toast.loading('Transaction confirmed! Creating gift...', { id: loadingToast });
@@ -101,7 +151,7 @@ export default function SendGiftForm() {
       setSuccess(true);
       
       toast.dismiss(loadingToast);
-      toast.success('Gift Sent 🎁', {
+      toast.success('Airdrop Sent 🎁', {
         duration: 5000,
       });
 
@@ -113,6 +163,8 @@ export default function SendGiftForm() {
         setMessage('');
         setAmount('');
         setUnlockTime('');
+        setExpirationTime('7days');
+        setCustomExpirationHours('');
         setSuccess(false);
         setTxHash('');
       }, 5000);
@@ -123,48 +175,57 @@ export default function SendGiftForm() {
     }
   };
 
+  const getTokenAddress = () => {
+    return isETH ? '0x0000000000000000000000000000000000000000' : (process.env.NEXT_PUBLIC_USDC_ADDRESS || '');
+  };
+
   if (!address) {
     return (
       <motion.div 
-        className="bg-baseLight/50 dark:bg-white/80 rounded-2xl p-12 text-center border border-baseBlue/20 dark:border-gray-200 shadow-lg"
+        className="bg-white dark:bg-baseLight/50 rounded-2xl p-12 text-center border border-gray-200 dark:border-blue-500/20 shadow-lg"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <div className="text-5xl mb-4">🔒</div>
-        <p className="dark:text-gray-300 text-gray-700 text-lg">Please connect your wallet to send a gift</p>
+        <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-400" />
+        <p className="text-gray-700 dark:text-gray-300 text-lg">Please connect your wallet to send a gift</p>
       </motion.div>
     );
   }
 
   return (
     <motion.div 
-      className="bg-baseLight/50 dark:bg-white/80 rounded-2xl p-8 md:p-10 border border-baseBlue/20 dark:border-gray-200 shadow-lg backdrop-blur-xl"
+      className="bg-white dark:bg-baseLight/50 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-base-gradient flex items-center justify-center text-2xl shadow-lg shadow-baseBlue/30">
-          🎁
+      <div className="mb-6 sm:mb-8">
+        <div className="flex items-center gap-2 sm:gap-3 mb-2">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+            <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+            Send Secret Airdrop
+          </h2>
         </div>
-        <h2 className="text-3xl font-bold bg-base-gradient bg-clip-text text-transparent">
-          Send Secret Gift
-        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-12">
+          Enter recipient details and customize your airdrop.
+        </p>
       </div>
       
       {success && (
-        <div className="mb-6 p-5 bg-green-500/10 border border-green-500/50 rounded-xl backdrop-blur-sm">
+        <div className="mb-6 p-5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/50 rounded-xl backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <span className="text-2xl">✅</span>
             <div>
-              <p className="text-green-500 dark:text-green-400 font-semibold text-lg">Gift created successfully!</p>
+              <p className="text-green-700 dark:text-green-400 font-semibold text-lg">Airdrop created successfully!</p>
               {txHash && (
                 <a
-                  href={`https://sepolia.basescan.org/tx/${txHash}`}
+                  href={`https://basescan.org/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline mt-1 inline-block transition-colors"
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline mt-1 inline-block transition-colors"
                 >
                   View on BaseScan →
                 </a>
@@ -175,48 +236,48 @@ export default function SendGiftForm() {
       )}
 
       {error && (
-        <div className="mb-6 p-5 bg-red-500/10 border border-red-500/50 rounded-xl backdrop-blur-sm">
+        <div className="mb-6 p-5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-xl backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <span className="text-2xl">⚠️</span>
-            <p className="text-red-500 dark:text-red-400">{error}</p>
+            <p className="text-red-700 dark:text-red-400">{error}</p>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-blue-500">📍</span>
-            Receiver Address
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Recipient Wallet Address
           </label>
           <input
             type="text"
             value={receiver}
             onChange={(e) => setReceiver(e.target.value)}
             placeholder="0x..."
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
             required
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-blue-500">❓</span>
-            Riddle Question <span className="text-xs text-gray-500 font-normal">(Optional - leave empty for direct gift)</span>
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+            <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Riddle Challenge <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <textarea
             value={riddle}
             onChange={(e) => setRiddle(e.target.value)}
-            placeholder="What has keys but no locks? (Leave empty for direct gift)"
+            placeholder="What has keys but no locks? (Leave empty for direct airdrop)"
             rows={4}
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
           />
         </div>
 
         {riddle.trim() && (
-          <div>
-            <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-              <span className="text-blue-500">🔐</span>
+          <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+            <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+              <Lock className="w-4 h-4 text-blue-600 dark:text-blue-500" />
               Answer (hidden from receiver)
             </label>
             <input
@@ -224,63 +285,116 @@ export default function SendGiftForm() {
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="piano"
-              className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required={riddle.trim().length > 0}
             />
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-blue-500">💌</span>
-            Personal Message (revealed after claim)
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Personal Message <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Revealed After Claim)</span>
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Happy holidays! Hope you enjoy this gift..."
             rows={3}
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-blue-500">⏰</span>
-            Unlock Time (optional - leave empty for immediate unlock)
+        {/* Gift Settings Section Divider */}
+        <div className="pt-4 sm:pt-6 border-t border-gray-600 dark:border-gray-700">
+          <div className="mb-4 sm:mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">Airdrop Settings</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-500">Set unlock time and transfer amount</p>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Unlock Day <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <input
-            type="datetime-local"
+            type="date"
             value={unlockTime}
             onChange={(e) => setUnlockTime(e.target.value)}
-            className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
           />
           {unlockTime && (
-            <p className="mt-2 text-xs text-gray-400">
-              Gift will unlock at: {new Date(unlockTime).toLocaleString()}
+            <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+              Airdrop will unlock on: {new Date(unlockTime).toLocaleDateString()}
             </p>
           )}
         </div>
 
-        <div>
-          <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
-            <span className="text-blue-500">💰</span>
-            Amount
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Expiration Time <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Auto-refund if not claimed)</span>
           </label>
-          <div className="flex gap-3">
+          <div className="space-y-3">
+            <select
+              value={expirationTime}
+              onChange={(e) => setExpirationTime(e.target.value)}
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation"
+            >
+              <option value="24hours">24 Hours</option>
+              <option value="7days">7 Days</option>
+              <option value="1month">1 Month (30 days)</option>
+              <option value="custom">Custom Time</option>
+            </select>
+            {expirationTime === 'custom' && (
+              <div>
+                <input
+                  type="number"
+                  value={customExpirationHours}
+                  onChange={(e) => setCustomExpirationHours(e.target.value)}
+                  placeholder="Enter hours (e.g., 48 for 2 days)"
+                  min="1"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+                />
+                {customExpirationHours && (
+                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                    Airdrop will expire in: {Number(customExpirationHours) >= 24 
+                      ? `${(Number(customExpirationHours) / 24).toFixed(1)} days`
+                      : `${customExpirationHours} hours`}
+                  </p>
+                )}
+              </div>
+            )}
+            {expirationTime !== 'custom' && (
+              <p className="text-xs text-gray-600 dark:text-gray-400">
+                {expirationTime === '24hours' && 'Airdrop will expire in 24 hours if not claimed'}
+                {expirationTime === '7days' && 'Airdrop will expire in 7 days if not claimed'}
+                {expirationTime === '1month' && 'Airdrop will expire in 30 days if not claimed'}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+            <Coins className="w-4 h-4 text-blue-600 dark:text-blue-500" />
+            Airdrop Amount
+          </label>
+          <div className="flex gap-2 sm:gap-3">
             <input
               type="number"
               step="0.000001"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={isETH ? "0.001" : "1.0"}
-            className="flex-1 px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-baseBlue/50 focus:border-baseBlue/50 transition-all duration-200"
-            required
-          />
+              className="flex-1 px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              required
+            />
             <select
               value={isETH ? 'ETH' : 'USDC'}
               onChange={(e) => setIsETH(e.target.value === 'ETH')}
-              className="px-6 py-3.5 glass rounded-xl dark:text-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-baseBlue/50 transition-all duration-200 cursor-pointer"
+              className="px-4 sm:px-6 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation"
             >
               <option value="ETH">ETH</option>
               <option value="USDC">USDC</option>
@@ -288,20 +402,57 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <motion.button
-          type="submit"
-          disabled={loading || approving}
-          className="w-full py-4 bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] hover:shadow-lg hover:shadow-baseBlue/50 active:scale-[0.98] text-lg"
-          whileHover={{ scale: loading || approving ? 1 : 1.02 }}
-          whileTap={{ scale: loading || approving ? 1 : 0.98 }}
-        >
-          {approving 
-            ? '⏳ Approving USDC...' 
-            : loading 
-            ? '✨ Creating Gift...' 
-            : '🎁 Create Secret Gift'}
-        </motion.button>
+        <div className="pt-4 sm:pt-6">
+          <motion.button
+            type="submit"
+            disabled={loading || approving}
+            className="w-full py-4 sm:py-5 min-h-[56px] bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-base sm:text-lg touch-manipulation shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+            whileHover={{ scale: loading || approving ? 1 : 1.02 }}
+            whileTap={{ scale: loading || approving ? 1 : 0.98 }}
+          >
+            {approving ? (
+              <>
+                <Clock className="w-5 h-5 animate-spin" />
+                <span>Approving USDC...</span>
+              </>
+            ) : loading ? (
+              <>
+                <Gift className="w-5 h-5 animate-pulse" />
+                <span>Creating Gift...</span>
+              </>
+            ) : (
+              <>
+                <Gift className="w-5 h-5" />
+                <span>Send Airdrop Securely</span>
+              </>
+            )}
+          </motion.button>
+        </div>
       </form>
+
+      {/* Footer Branding */}
+      <div className="mt-8 pt-6 border-t border-gray-600 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+          <div className="flex items-center gap-2">
+            <RiddlePayLogo size={16} showText={false} />
+            <span>Powered by <span className="font-semibold text-gray-600 dark:text-gray-400">Riddle Pay</span></span>
+          </div>
+        </div>
+      </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={handleConfirmSubmit}
+        receiver={receiver}
+        amount={amount}
+        tokenAddress={getTokenAddress()}
+        isETH={isETH}
+        hasRiddle={riddle.trim().length > 0}
+        unlockTime={unlockTime}
+        loading={loading || approving}
+      />
     </motion.div>
   );
 }

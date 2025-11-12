@@ -67,11 +67,11 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     }
 
     if (address.toLowerCase() !== gift.receiver.toLowerCase()) {
-      toast.error('You are not the receiver of this gift');
+      toast.error('You are not the receiver of this airdrop');
       return;
     }
 
-    // Check if it's a direct gift (no riddle)
+    // Check if it's a direct airdrop (no riddle)
     const isDirectGift = !gift.riddle || gift.riddle.trim() === '';
     
     if (!isDirectGift && !guess) {
@@ -79,7 +79,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       return;
     }
 
-    const loadingToast = toast.loading('Claiming your gift...');
+    const loadingToast = toast.loading('Claiming your airdrop...');
 
     try {
       // Ensure we're on Base Mainnet before sending transaction
@@ -92,7 +92,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       setShowConfetti(true);
       
       toast.dismiss(loadingToast);
-      toast.success('Gift Claimed! 🎉', {
+      toast.success('Airdrop Claimed! 🎉', {
         duration: 5000,
       });
 
@@ -114,9 +114,9 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       if (err.message?.includes('Wrong answer')) {
         toast.error('Wrong Answer 😅');
       } else {
-        toast.error(err.message || 'Failed to claim gift');
+        toast.error(err.message || 'Failed to claim airdrop');
       }
-      console.error('Error claiming gift:', err);
+      console.error('Error claiming airdrop:', err);
     }
   };
 
@@ -148,18 +148,18 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
             🎉
           </motion.div>
           <h3 className="text-3xl font-bold bg-base-gradient bg-clip-text text-transparent mb-3">
-            Gift Claimed!
+            Airdrop Claimed!
           </h3>
-          <p className="dark:text-white text-gray-900 mb-6 text-lg">You successfully unlocked the gift!</p>
+          <p className="dark:text-white text-gray-900 mb-6 text-lg">You successfully unlocked the airdrop!</p>
           
           {gift.message && gift.message.trim() && (
             <motion.div 
-              className="mt-6 p-5 bg-baseBlue/10 border border-baseBlue/30 rounded-xl text-left"
+              className="mt-6 p-5 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <h4 className="text-lg font-semibold text-baseBlue mb-2">
+              <h4 className="text-lg font-semibold text-blue-500 mb-2">
                 💌 Message from {gift.sender.slice(0, 6)}...{gift.sender.slice(-4)}:
               </h4>
               <p className="dark:text-gray-200 text-gray-800 leading-relaxed">{gift.message}</p>
@@ -168,10 +168,10 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
           
           {txHash && (
             <a
-              href={`https://sepolia.basescan.org/tx/${txHash}`}
+              href={`https://basescan.org/tx/${txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 glass rounded-xl text-baseBlue hover:text-baseBlue/80 transition-colors font-semibold border border-baseBlue/20 mt-6"
+              className="inline-flex items-center gap-2 px-6 py-3 glass rounded-xl text-blue-500 hover:text-blue-500/80 transition-colors font-semibold border border-blue-500/20 mt-6"
             >
               <span>View Transaction</span>
               <span>→</span>
@@ -186,7 +186,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="glass-strong rounded-2xl p-8 text-center border border-border">
         <div className="text-5xl mb-4">🔓</div>
-        <p className="dark:text-white text-gray-900 text-lg">This gift has already been claimed</p>
+        <p className="dark:text-white text-gray-900 text-lg">This airdrop has already been claimed</p>
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-yellow-500/50 shadow-lg">
         <div className="text-5xl mb-4">🔒</div>
-        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold mb-2">This gift is time-locked</p>
+        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold mb-2">This airdrop is time-locked</p>
         <p className="dark:text-gray-300 text-gray-700 text-sm">
           Unlocks at: {unlockDate.toLocaleString()}
         </p>
@@ -209,7 +209,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-yellow-500/50 shadow-lg">
         <div className="text-5xl mb-4">⏰</div>
-        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold">This gift has expired (7 days)</p>
+        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold">This airdrop has expired (7 days)</p>
       </div>
     );
   }
@@ -218,38 +218,38 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-border shadow-lg">
         <div className="text-5xl mb-4">🚫</div>
-        <p className="dark:text-white text-gray-900 text-lg">This gift is not for you</p>
+        <p className="dark:text-white text-gray-900 text-lg">This airdrop is not for you</p>
       </div>
     );
   }
 
   return (
     <motion.div 
-      className="bg-baseLight/50 rounded-2xl p-8 md:p-10 border border-baseBlue/20 shadow-lg backdrop-blur-xl"
+      className="bg-baseLight/50 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-blue-500/20 shadow-lg backdrop-blur-xl"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-base-gradient flex items-center justify-center text-2xl shadow-lg shadow-baseBlue/30">
+      <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-base-gradient flex items-center justify-center text-xl sm:text-2xl shadow-lg shadow-blue-500/30">
           🎁
         </div>
-        <h3 className="text-3xl font-bold bg-base-gradient bg-clip-text text-transparent">
-          Claim Your Gift
+        <h3 className="text-2xl sm:text-3xl font-bold bg-base-gradient bg-clip-text text-transparent">
+          Claim Your Airdrop
         </h3>
       </div>
       
-      <div className="mb-6 p-5 glass rounded-xl border border-border">
-        <p className="dark:text-white text-gray-900 mb-3 text-lg">
+      <div className="mb-4 sm:mb-6 p-4 sm:p-5 glass rounded-xl border border-border">
+        <p className="dark:text-white text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg break-words">
           {gift.riddle && gift.riddle.trim() ? (
             <>
               <span className="font-bold text-blue-500">❓ Riddle:</span> {gift.riddle}
             </>
           ) : (
-            <span className="font-bold text-green-500">🎁 Direct Gift (No Riddle Required)</span>
+            <span className="font-bold text-green-500">🎁 Direct Airdrop (No Riddle Required)</span>
           )}
         </p>
-        <p className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+        <p className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent break-words">
           <span className="font-semibold dark:text-gray-400 text-gray-600">💰 Amount:</span> {formatAmount(gift.amount, gift.tokenAddress)}
         </p>
       </div>
@@ -263,10 +263,10 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
         </div>
       )}
 
-      <form onSubmit={handleClaim} className="space-y-6">
+      <form onSubmit={handleClaim} className="space-y-4 sm:space-y-6">
         {gift.riddle && gift.riddle.trim() && (
           <div>
-            <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-3 flex items-center gap-2">
+            <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
               <span className="text-blue-500">💡</span>
               Your Answer
             </label>
@@ -275,7 +275,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
               placeholder="Enter your guess..."
-              className="w-full px-5 py-3.5 glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200"
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
               required
             />
           </div>
@@ -284,11 +284,11 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
         <motion.button
           type="submit"
           disabled={loading}
-          className="w-full py-4 bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] hover:shadow-lg hover:shadow-baseBlue/50 active:scale-[0.98] text-lg"
+          className="w-full py-4 min-h-[52px] bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-base sm:text-lg touch-manipulation"
           whileHover={{ scale: loading ? 1 : 1.02 }}
           whileTap={{ scale: loading ? 1 : 0.98 }}
         >
-          {loading ? '✨ Claiming...' : gift.riddle && gift.riddle.trim() ? '🎁 Claim Gift' : '🎁 Claim Direct Gift'}
+          {loading ? '✨ Claiming...' : gift.riddle && gift.riddle.trim() ? '🎁 Claim Airdrop' : '🎁 Claim Direct Airdrop'}
         </motion.button>
       </form>
     </motion.div>
