@@ -18,6 +18,7 @@
     "description": "Send and claim crypto airdrops with riddles or giveaways, powered by Base.",
     "primaryCategory": "finance",
     "tags": ["finance", "crypto", "airdrops", "gifts"],
-    "tagline": "Unlock crypto with riddles"
+    "tagline": "Unlock crypto with riddles",
+    "contractAddresses": ["0x57acfC996520417828B8693deb87C4D66814E5f9"]
   }
 }
