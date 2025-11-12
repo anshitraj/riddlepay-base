@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function SendGiftForm() {
-  const { address, ensureBaseSepolia } = useWallet();
+  const { address, ensureBaseMainnet } = useWallet();
   const { createGift, loading, error, approving } = useContract();
   
   const [receiver, setReceiver] = useState('');
@@ -70,8 +70,8 @@ export default function SendGiftForm() {
     const loadingToast = toast.loading(isETH ? 'Creating your secret gift...' : 'Checking USDC approval...');
 
     try {
-      // Ensure we're on Base Sepolia before sending transaction
-      await ensureBaseSepolia();
+      // Ensure we're on Base Mainnet before sending transaction
+      await ensureBaseMainnet();
       
       // Convert unlockTime to Unix timestamp (0 = immediately)
       let unlockTimestamp = 0;

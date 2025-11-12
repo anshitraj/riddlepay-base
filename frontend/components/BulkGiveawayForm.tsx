@@ -13,7 +13,7 @@ interface Recipient {
 }
 
 export default function BulkGiveawayForm() {
-  const { address, ensureBaseSepolia } = useWallet();
+  const { address, ensureBaseMainnet } = useWallet();
   const { createBulkGifts, loading, error, approving } = useContract();
   
   const [recipients, setRecipients] = useState<Recipient[]>([
@@ -84,7 +84,7 @@ export default function BulkGiveawayForm() {
     const loadingToast = toast.loading(`Creating ${validRecipients.length} gifts...`);
 
     try {
-      await ensureBaseSepolia();
+      await ensureBaseMainnet();
       
       // Convert unlockTime to Unix timestamp (0 = immediately)
       let unlockTimestamp = 0;

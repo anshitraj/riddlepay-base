@@ -16,7 +16,7 @@ interface ClaimGiftProps {
 }
 
 export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftProps) {
-  const { address, ensureBaseSepolia } = useWallet();
+  const { address, ensureBaseMainnet } = useWallet();
   const { claimGift, loading, error, isExpired } = useContract();
   
   const [guess, setGuess] = useState('');
@@ -82,8 +82,8 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     const loadingToast = toast.loading('Claiming your gift...');
 
     try {
-      // Ensure we're on Base Sepolia before sending transaction
-      await ensureBaseSepolia();
+      // Ensure we're on Base Mainnet before sending transaction
+      await ensureBaseMainnet();
       
       // For direct gifts, pass empty string. For riddle gifts, pass the guess.
       const hash = await claimGift(giftId, isDirectGift ? '' : guess);
