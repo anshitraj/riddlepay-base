@@ -29,15 +29,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Check localStorage for explicit disconnect state
       const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
       
-      if (!wasDisconnected) {
-        window.ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
-          if (accounts.length > 0) {
-            const provider = new ethers.BrowserProvider(window.ethereum);
+      if (!wasDisconnected && typeof window !== 'undefined' && window.ethereum) {
+        const ethereum = window.ethereum;
+        ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
+          if (accounts.length > 0 && ethereum) {
+            const provider = new ethers.BrowserProvider(ethereum);
             setProvider(provider);
             setAddress(accounts[0]);
             
             // Get current chain ID - ensure it's properly parsed
-            window.ethereum.request({ method: 'eth_chainId' }).then((id: string) => {
+            ethereum.request({ method: 'eth_chainId' }).then((id: string) => {
               const parsedChainId = typeof id === 'string' ? parseInt(id, 16) : Number(id);
               console.log('Initial chainId from eth_chainId:', id, 'parsed:', parsedChainId);
               setChainId(parsedChainId);
