@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { ethers } from 'ethers';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
-import { Gift, TrendingUp, Users, DollarSign, Clock } from 'lucide-react';
+import { Gift, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Send, Package, Clock, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { formatAmount } from '@/utils/formatAmount';
 
@@ -20,202 +21,355 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [recentGifts, setRecentGifts] = useState<any[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadStats = useCallback(async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setRefreshing(true);
+    } else {
+      setLoading(true);
+    }
+    try {
+      const [totalGifts, valueLocked, userGiftIds] = await Promise.all([
+        getGiftCount().catch(err => {
+          console.error('Error getting gift count:', err);
+          return 0;
+        }),
+        getTotalValueLocked().catch(err => {
+          console.error('Error getting total value locked:', err);
+          return { totalETH: '0', totalUSDC: '0' };
+        }),
+        address ? getGiftsForUser(address).catch(err => {
+          console.error('Error getting user gifts:', err);
+          return [];
+        }) : Promise.resolve([]),
+      ]);
+
+      // Get user's gifts
+      let userSent = 0;
+      let userReceived = 0;
+      const giftPromises = userGiftIds.slice(0, 5).map(async (id) => {
+        try {
+          const gift = await getGift(id);
+          return { gift, id };
+        } catch {
+          return null;
+        }
+      });
+      const userGifts = await Promise.all(giftPromises);
+      
+      userGifts.forEach((item) => {
+        if (!item) return;
+        const { gift } = item;
+        if (gift.sender.toLowerCase() === address?.toLowerCase()) {
+          userSent++;
+        }
+        if (gift.receiver.toLowerCase() === address?.toLowerCase()) {
+          userReceived++;
+        }
+      });
+
+      setRecentGifts(userGifts.filter(g => g !== null).slice(0, 5) as Array<{ gift: any; id: number }>);
+      
+      // Parse values safely
+      let ethValue = parseFloat(valueLocked.totalETH) || 0;
+      let usdcValue = parseFloat(valueLocked.totalUSDC) || 0;
+      
+      // If contract function returns 0 or very small values, manually calculate TVL
+      const totalGiftsNum = Number(totalGifts) || 0;
+      if ((ethValue === 0 && usdcValue === 0 && totalGiftsNum > 0) || 
+          (ethValue < 0.0001 && usdcValue < 0.01 && totalGiftsNum > 0)) {
+        console.log('📊 Contract TVL seems incorrect, calculating manually from gifts...');
+        
+        // Manually calculate TVL by iterating through all unclaimed gifts
+        let manualETH = BigInt(0);
+        let manualUSDC = BigInt(0);
+        const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS?.toLowerCase() || '';
+        const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+        
+        // Limit to first 500 gifts to avoid timeout
+        const maxGifts = Math.min(totalGiftsNum, 500);
+        for (let i = 0; i < maxGifts; i++) {
+          try {
+            const gift = await getGift(i);
+            // Only count unclaimed gifts (claimed gifts are no longer locked)
+            if (!gift.claimed) {
+              const tokenAddress = gift.tokenAddress?.toLowerCase() || '';
+              const amount = BigInt(gift.amount || '0');
+              
+              if (tokenAddress === ZERO_ADDRESS || tokenAddress === '') {
+                // ETH gift
+                manualETH += amount;
+              } else if (tokenAddress === USDC_ADDRESS) {
+                // USDC gift
+                manualUSDC += amount;
+              }
+            }
+            // Small delay every 10 gifts to avoid rate limiting
+            if (i > 0 && i % 10 === 0) {
+              await new Promise(resolve => setTimeout(resolve, 50));
+            }
+          } catch (err) {
+            // Gift might not exist, skip it
+            continue;
+          }
+        }
+        
+        // Convert from wei/units to readable format
+        ethValue = parseFloat(ethers.formatEther(manualETH));
+        usdcValue = parseFloat(ethers.formatUnits(manualUSDC, 6)); // USDC has 6 decimals
+        
+        console.log('✅ Manually calculated TVL:', { ETH: ethValue, USDC: usdcValue });
+      }
+      
+      setStats({
+        totalGifts: totalGiftsNum,
+        totalValueETH: ethValue.toFixed(4),
+        totalValueUSDC: usdcValue.toFixed(2),
+        userGiftsSent: userSent,
+        userGiftsReceived: userReceived,
+      });
+    } catch (err) {
+      console.error('Error loading stats:', err);
+      // Set default values on error
+      setStats({
+        totalGifts: 0,
+        totalValueETH: '0.0000',
+        totalValueUSDC: '0.00',
+        userGiftsSent: 0,
+        userGiftsReceived: 0,
+      });
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [address, getGiftCount, getTotalValueLocked, getGiftsForUser, getGift]);
 
   useEffect(() => {
-    const loadStats = async () => {
-      setLoading(true);
-      try {
-        const [totalGifts, valueLocked, userGiftIds] = await Promise.all([
-          getGiftCount(),
-          getTotalValueLocked(),
-          address ? getGiftsForUser(address) : Promise.resolve([]),
-        ]);
-
-        // Get user's gifts
-        let userSent = 0;
-        let userReceived = 0;
-        const giftPromises = userGiftIds.slice(0, 5).map(async (id) => {
-          try {
-            const gift = await getGift(id);
-            return { gift, id };
-          } catch {
-            return null;
-          }
-        });
-        const userGifts = await Promise.all(giftPromises);
-        
-        userGifts.forEach((item) => {
-          if (!item) return;
-          const { gift } = item;
-          if (gift.sender.toLowerCase() === address?.toLowerCase()) {
-            userSent++;
-          }
-          if (gift.receiver.toLowerCase() === address?.toLowerCase()) {
-            userReceived++;
-          }
-        });
-
-        setRecentGifts(userGifts.filter(g => g !== null).slice(0, 5) as Array<{ gift: any; id: number }>);
-        setStats({
-          totalGifts,
-          totalValueETH: parseFloat(valueLocked.totalETH).toFixed(4),
-          totalValueUSDC: parseFloat(valueLocked.totalUSDC).toFixed(2),
-          userGiftsSent: userSent,
-          userGiftsReceived: userReceived,
-        });
-      } catch (err) {
-        console.error('Error loading stats:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadStats();
-  }, [address, getGiftCount, getTotalValueLocked, getGiftsForUser, getGift]);
+    
+    // Refresh stats every 30 seconds
+    const interval = setInterval(() => loadStats(false), 30000);
+    
+    return () => clearInterval(interval);
+  }, [loadStats]);
+  
+  const handleRefresh = () => {
+    loadStats(true);
+  };
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-baseLight/50 rounded-2xl p-6 border border-baseBlue/20 animate-pulse">
-            <div className="h-8 dark:bg-gray-700 bg-gray-300 rounded w-1/2 mb-4"></div>
-            <div className="h-12 dark:bg-gray-700 bg-gray-300 rounded"></div>
-          </div>
-        ))}
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="glass rounded-2xl p-6 border border-border animate-pulse">
+              <div className="h-8 bg-gray-700/30 rounded w-1/2 mb-4"></div>
+              <div className="h-12 bg-gray-700/30 rounded"></div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mb-12">
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <motion.div
-          className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-blue-500/20 rounded-xl">
-              <Gift className="w-6 h-6 text-blue-400" />
+    <div className="space-y-6">
+      {/* Total Balance Card */}
+      <motion.div
+        className="relative glass rounded-2xl p-8 border border-border overflow-hidden group"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        {/* Gradient Background Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-blue-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        
+        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2 md:mb-3">
+              <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">TOTAL VALUE LOCKED</p>
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing || loading}
+                className="p-1.5 rounded-lg glass border border-border hover:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                title="Refresh stats"
+              >
+                <RefreshCw className={`w-4 h-4 text-gray-400 dark:text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+              </button>
+            </div>
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
+              ${(parseFloat(stats.totalValueETH) * 3000 + parseFloat(stats.totalValueUSDC)).toFixed(2)}
+            </h2>
+          </div>
+          <div className="flex gap-3 sm:gap-6 flex-wrap">
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">Today</p>
+              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +0.00%
+              </p>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">7 Days</p>
+              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +0.00%
+              </p>
+            </div>
+            <div className="text-left sm:text-right">
+              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">30 Days</p>
+              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
+                +0.00%
+              </p>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-white dark:text-gray-900 mb-1">
-            {stats.totalGifts}
-          </h3>
-          <p className="text-sm text-gray-400 dark:text-gray-600">Total Gifts</p>
-        </motion.div>
-
-        <motion.div
-          className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-green-500/20 rounded-xl">
-              <DollarSign className="w-6 h-6 text-green-400" />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-white dark:text-gray-900 mb-1">
-            {stats.totalValueETH} ETH
-          </h3>
-          <p className="text-sm text-gray-400 dark:text-gray-600">Value Locked (ETH)</p>
-        </motion.div>
-
-        <motion.div
-          className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="p-3 bg-purple-500/20 rounded-xl">
-              <DollarSign className="w-6 h-6 text-purple-400" />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-white dark:text-gray-900 mb-1">
-            {stats.totalValueUSDC} USDC
-          </h3>
-          <p className="text-sm text-gray-400 dark:text-gray-600">Value Locked (USDC)</p>
-        </motion.div>
-
-        {address && (
-          <motion.div
-            className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-yellow-500/20 rounded-xl">
-                <Users className="w-6 h-6 text-yellow-400" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-white dark:text-gray-900 mb-1">
-              {stats.userGiftsSent + stats.userGiftsReceived}
-            </h3>
-            <p className="text-sm text-gray-400 dark:text-gray-600">Your Gifts</p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
-            </p>
-          </motion.div>
-        )}
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Link href="/">
-          <motion.div
-            className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg hover:border-baseBlue/50 dark:hover:border-blue-400/50 transition-all cursor-pointer"
-            whileHover={{ scale: 1.02 }}
+        </div>
+        
+        {/* Token Cards */}
+        <div className="relative grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <motion.div 
+            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 group cursor-pointer touch-manipulation"
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-base-gradient rounded-xl">
-                <Gift className="w-6 h-6 text-white" />
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all">
+                <span className="text-orange-400 font-bold text-base sm:text-lg">B</span>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white dark:text-gray-900">Send Gift</h3>
-                <p className="text-sm text-gray-400 dark:text-gray-600">Create a new gift</p>
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">ETH</p>
+            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueETH}</p>
+            <p className="text-xs text-green-400 font-semibold flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              +0.00%
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation"
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
+                <span className="text-blue-400 font-bold text-base sm:text-lg">U</span>
               </div>
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">USDC</p>
+            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueUSDC}</p>
+            <p className="text-xs text-green-400 font-semibold flex items-center gap-1">
+              <ArrowUpRight className="w-3 h-3" />
+              +0.00%
+            </p>
+          </motion.div>
+
+          <motion.div 
+            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation"
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="flex items-center justify-between mb-2 sm:mb-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
+                <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
+              </div>
+              <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">Total Airdrops</p>
+            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1">{stats.totalGifts}</p>
+            <p className="text-xs text-green-400 font-semibold">Active</p>
+          </motion.div>
+
+          {address && (
+            <motion.div 
+              className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20 group cursor-pointer touch-manipulation"
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all">
+                  <Users className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
+                </div>
+                <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+              </div>
+              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">Your Airdrops</p>
+              <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1">
+                {stats.userGiftsSent + stats.userGiftsReceived}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-600">
+                {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
+              </p>
+            </motion.div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+        <Link href="/">
+          <motion.div
+            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            whileHover={{ scale: 1.02, y: -4 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110">
+                <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-1">
+                  Send Airdrop
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">Create a new airdrop</p>
+              </div>
+              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
             </div>
           </motion.div>
         </Link>
 
         <Link href="/bulk-giveaway">
           <motion.div
-            className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg hover:border-baseBlue/50 dark:hover:border-blue-400/50 transition-all cursor-pointer"
-            whileHover={{ scale: 1.02 }}
+            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-purple-500 rounded-xl">
-                <Users className="w-6 h-6 text-white" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white dark:text-gray-900">Bulk Giveaway</h3>
-                <p className="text-sm text-gray-400 dark:text-gray-600">Send to multiple winners</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-1">
+                  Bulk Airdrop
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">Send to multiple winners</p>
               </div>
+              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
             </div>
           </motion.div>
         </Link>
 
         <Link href="/my-gifts">
           <motion.div
-            className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg hover:border-baseBlue/50 dark:hover:border-blue-400/50 transition-all cursor-pointer"
-            whileHover={{ scale: 1.02 }}
+            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-4 bg-green-500 rounded-xl">
-                <Clock className="w-6 h-6 text-white" />
+            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center gap-3 sm:gap-4">
+              <div className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg shadow-green-500/30 group-hover:shadow-green-500/50 transition-all group-hover:scale-110">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-white dark:text-gray-900">My Gifts</h3>
-                <p className="text-sm text-gray-400 dark:text-gray-600">View all your gifts</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-green-400 transition-colors mb-1">
+                  My Airdrops
+                </h3>
+                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">View all your airdrops</p>
               </div>
+              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
             </div>
           </motion.div>
         </Link>
@@ -224,46 +378,96 @@ export default function Dashboard() {
       {/* Recent Gifts */}
       {address && recentGifts.length > 0 && (
         <motion.div
-          className="bg-baseLight/50 dark:bg-white/90 rounded-2xl p-6 border border-baseBlue/20 dark:border-gray-300/50 shadow-lg"
+          className="glass rounded-2xl p-6 border border-border"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
         >
-          <h3 className="text-xl font-bold text-white dark:text-gray-900 mb-4 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-blue-400" />
-            Recent Gifts
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-white dark:text-gray-900 flex items-center gap-2">
+              <div className="p-2 bg-gradient-to-br from-blue-500/20 to-blue-400/20 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-blue-400" />
+              </div>
+              Recent Airdrops
+            </h3>
+            <Link href="/my-gifts" className="text-sm text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 group">
+              View all
+              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+            </Link>
+          </div>
           <div className="space-y-3">
             {recentGifts.map((item, idx) => {
               const { gift, id } = item;
               return (
-              <Link key={idx} href={`/claim?giftId=${id}`}>
-                <div className="p-4 glass rounded-xl border border-border hover:border-baseBlue/50 transition-all cursor-pointer group">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-semibold dark:text-white text-gray-900 group-hover:dark:text-blue-400 group-hover:text-blue-600 transition-colors">
-                        {gift.riddle && gift.riddle.trim() ? (
-                          <span className="text-blue-400 dark:text-blue-400">🎯 Riddle Gift</span>
-                        ) : (
-                          <span className="text-green-500 dark:text-green-400">🎁 Direct Gift</span>
-                        )}
-                      </p>
-                      <p className="text-sm dark:text-gray-400 text-gray-600">
-                        {formatAmount(gift.amount, gift.tokenAddress)}
-                        {gift.claimed && ' • Claimed'}
-                      </p>
+                <Link key={idx} href={`/claim?giftId=${id}`}>
+                  <motion.div 
+                    className="glass rounded-xl p-4 border border-border hover:border-blue-500/50 transition-all cursor-pointer group"
+                    whileHover={{ scale: 1.01, x: 4 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all group-hover:scale-110 ${
+                          gift.riddle && gift.riddle.trim() 
+                            ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover:from-blue-500/30 group-hover:to-blue-600/30' 
+                            : 'bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover:from-green-500/30 group-hover:to-green-600/30'
+                        }`}>
+                          {gift.riddle && gift.riddle.trim() ? (
+                            <span className="text-2xl">🎯</span>
+                          ) : (
+                            <span className="text-2xl">🎁</span>
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-1">
+                            {gift.riddle && gift.riddle.trim() ? 'Riddle Airdrop' : 'Direct Airdrop'}
+                          </p>
+                          <p className="text-sm text-gray-400 dark:text-gray-600">
+                            {formatAmount(gift.amount, gift.tokenAddress)}
+                            {gift.claimed && ' • Claimed'}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">
+                          {new Date(Number(gift.createdAt) * 1000).toLocaleDateString()}
+                        </span>
+                        <ArrowUpRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
+                      </div>
                     </div>
-                    <span className="text-xs dark:text-gray-500 text-gray-500">
-                      {new Date(Number(gift.createdAt) * 1000).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            )})}
+                  </motion.div>
+                </Link>
+              );
+            })}
           </div>
         </motion.div>
       )}
+
+      {/* Powered by Base Footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }}
+        className="mt-8 pt-6 border-t border-border"
+      >
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-gray-500 dark:text-gray-400 text-sm">Powered by</span>
+            {/* Base Logo - Blue square with rounded corners */}
+            <div className="w-7 h-7 bg-[#0052FF] rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="20" height="20" rx="4" fill="#0052FF"/>
+              </svg>
+            </div>
+            <span className="text-white dark:text-gray-900 font-semibold text-base">Base</span>
+          </div>
+          <span className="hidden sm:inline text-gray-600 dark:text-gray-500">—</span>
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            Secure, low-cost Ethereum L2 blockchain
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }
-

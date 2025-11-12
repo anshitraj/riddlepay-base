@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Mobile optimizations */
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  button, a {
+    touch-action: manipulation;
+  }
+  
+  input, textarea, select {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+  
+  @media (max-width: 640px) {
+    input, textarea, select {
+      font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    /* Ensure all interactive elements are touch-friendly */
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Better text readability on mobile */
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Prevent horizontal scroll */
+    html, body {
+      overflow-x: hidden;
+      width: 100%;
+    }
+  }
+  
+  /* Safe area insets for mobile devices with notches */
+  @supports (padding: max(0px)) {
+    body {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+    
+    .safe-top {
+      padding-top: env(safe-area-inset-top);
+    }
+    
+    .safe-bottom {
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+  }
+}
+
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 0, 0, 0;
@@ -19,12 +74,12 @@
 /* Dark Theme (Default) - Base Blue Theme */
 html[data-theme='dark'] body {
   color: #ffffff !important;
-  background: #0B0D17 !important;
+  background: #000000 !important;
   background-image: 
     radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(122, 95, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.1) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(122, 95, 255, 0.08) 0px, transparent 50%) !important;
+    radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.08) 0px, transparent 50%) !important;
   min-height: 100vh;
   position: relative;
 }
@@ -38,7 +93,7 @@ html[data-theme='dark'] body::before {
   bottom: 0;
   background: 
     radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.03) 0%, transparent 50%);
+    radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.03) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -49,9 +104,9 @@ html[data-theme='light'] body {
   background: #f8f9fa !important;
   background-image: 
     radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.03) 0px, transparent 50%),
     radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(0, 82, 255, 0.05) 0px, transparent 50%) !important;
+    radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.05) 0px, transparent 50%) !important;
   min-height: 100vh;
   position: relative;
 }
@@ -65,7 +120,7 @@ html[data-theme='light'] body {
   bottom: 0;
   background: 
     radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.02) 0%, transparent 50%);
+    radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.02) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -126,12 +181,12 @@ body {
   html[data-theme='dark'] .bg-baseDark,
   html[data-theme='dark'] div.bg-baseDark,
   html[data-theme='dark'] .min-h-screen.bg-baseDark {
-    background: #0B0D17 !important;
+    background: #000000 !important;
     background-image: 
       radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(122, 95, 255, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.1) 0px, transparent 50%),
       radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(122, 95, 255, 0.08) 0px, transparent 50%) !important;
+      radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.08) 0px, transparent 50%) !important;
   }
   
   [data-theme='light'] .bg-baseLight\/50,
@@ -139,13 +194,25 @@ body {
     background: rgba(255, 255, 255, 0.9) !important;
   }
   
-  /* Dark theme - ensure baseLight backgrounds are dark */
+  /* Dark theme - ensure baseLight backgrounds are dark (black with slight transparency) */
   [data-theme='dark'] .bg-baseLight\/50 {
-    background: rgba(28, 31, 46, 0.5) !important;
+    background: rgba(10, 10, 10, 0.5) !important;
   }
   
   [data-theme='dark'] .bg-baseLight\/30 {
-    background: rgba(28, 31, 46, 0.3) !important;
+    background: rgba(10, 10, 10, 0.3) !important;
+  }
+  
+  [data-theme='dark'] .bg-baseLight\/40 {
+    background: rgba(10, 10, 10, 0.4) !important;
+  }
+  
+  [data-theme='dark'] .bg-baseLight\/80 {
+    background: rgba(10, 10, 10, 0.8) !important;
+  }
+  
+  [data-theme='dark'] .bg-baseLight\/95 {
+    background: rgba(10, 10, 10, 0.95) !important;
   }
   
   /* Theme-aware text colors - override Tailwind classes with higher specificity */
@@ -223,7 +290,7 @@ body {
   }
   
   /* Theme-aware border colors */
-  [data-theme='light'] .border-baseBlue\/20 {
+  [data-theme='light'] .border-blue-500\/20 {
     border-color: rgba(0, 82, 255, 0.2) !important;
   }
   
@@ -244,7 +311,7 @@ body {
     inset: 0;
     border-radius: 12px;
     padding: 1px;
-    background: linear-gradient(135deg, rgba(0, 82, 255, 0.5), rgba(138, 43, 226, 0.5));
+    background: linear-gradient(135deg, rgba(0, 82, 255, 0.5), rgba(0, 102, 255, 0.5));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;

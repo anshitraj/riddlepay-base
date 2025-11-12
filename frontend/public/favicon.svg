@@ -1,0 +1,105 @@
+<svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" stop-opacity="1" />
+      <stop offset="30%" stop-color="#FFA500" stop-opacity="1" />
+      <stop offset="70%" stop-color="#FFD700" stop-opacity="1" />
+      <stop offset="100%" stop-color="#FFA500" stop-opacity="1" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  {/* Left vertical stroke of R */}
+  <path
+    d="M 25 20 L 25 80"
+    stroke="url(#goldGradient)"
+    stroke-width="6"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+  
+  {/* Puzzle piece tab at top of left stroke */}
+  <path
+    d="M 25 20 L 25 25 L 20 25 L 20 22 L 25 20 Z"
+    fill="url(#goldGradient)"
+    stroke="url(#goldGradient)"
+    stroke-width="2"
+  />
+  
+  {/* Top horizontal stroke */}
+  <path
+    d="M 25 20 L 50 20"
+    stroke="url(#goldGradient)"
+    stroke-width="6"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+  
+  {/* Diagonal stroke */}
+  <path
+    d="M 50 20 L 65 50"
+    stroke="url(#goldGradient)"
+    stroke-width="6"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+  
+  {/* Puzzle piece slot in middle of left stroke */}
+  <rect
+    x="22"
+    y="48"
+    width="6"
+    height="6"
+    fill="none"
+    stroke="url(#goldGradient)"
+    stroke-width="2.5"
+    rx="1"
+  />
+  
+  {/* Curved part of R (loop) */}
+  <path
+    d="M 50 20 Q 70 20 75 40 Q 75 55 65 60"
+    fill="none"
+    stroke="url(#goldGradient)"
+    stroke-width="6"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow)"
+  />
+  
+  {/* Keyhole in lower loop (where loop connects) */}
+  <circle
+    cx="60"
+    cy="50"
+    r="5"
+    fill="none"
+    stroke="url(#goldGradient)"
+    stroke-width="3"
+  />
+  <rect
+    x="58"
+    y="55"
+    width="4"
+    height="6"
+    fill="none"
+    stroke="url(#goldGradient)"
+    stroke-width="3"
+    rx="2"
+  />
+  
+  {/* Bottom vertical stroke */}
+  <path
+    d="M 65 50 L 65 80"
+    stroke="url(#goldGradient)"
+    stroke-width="6"
+    stroke-linecap="round"
+    filter="url(#glow)"
+  />
+</svg>
+

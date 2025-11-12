@@ -23,14 +23,17 @@ contract SecretGift is ReentrancyGuard {
         address tokenAddress; // address(0) for ETH, otherwise ERC20 token address
         uint256 createdAt;
         uint256 unlockTime; // Timestamp when gift becomes claimable (0 = immediately)
+        uint256 expirationTime; // Timestamp when gift expires (0 = use default 7 days)
         bool claimed;
     }
 
     // State variables
     Gift[] public gifts;
     IERC20 public usdc;
-    uint256 public constant EXPIRY_DAYS = 7;
-    uint256 public constant EXPIRY_SECONDS = EXPIRY_DAYS * 24 * 60 * 60;
+    uint256 public constant DEFAULT_EXPIRY_DAYS = 7;
+    uint256 public constant DEFAULT_EXPIRY_SECONDS = DEFAULT_EXPIRY_DAYS * 24 * 60 * 60;
+    uint256 public constant MIN_EXPIRATION_HOURS = 1; // Minimum 1 hour expiration
+    uint256 public constant MAX_EXPIRATION_DAYS = 365; // Maximum 1 year expiration
     
     // Security: Maximum string lengths to prevent gas griefing
     uint256 public constant MAX_RIDDLE_LENGTH = 500;
@@ -73,6 +76,7 @@ contract SecretGift is ReentrancyGuard {
      * @param amount Amount of tokens/ETH to send
      * @param isETH True if sending ETH, false if sending USDC
      * @param unlockTime Timestamp when gift becomes claimable (0 = immediately)
+     * @param expirationTime Timestamp when gift expires (0 = use default 7 days from creation)
      */
     function createGift(
         address receiver,
@@ -81,7 +85,8 @@ contract SecretGift is ReentrancyGuard {
         string memory message,
         uint256 amount,
         bool isETH,
-        uint256 unlockTime
+        uint256 unlockTime,
+        uint256 expirationTime
     ) external payable nonReentrant {
         require(receiver != address(0), "Invalid receiver address");
         require(receiver != msg.sender, "Cannot send gift to yourself");
@@ -89,6 +94,22 @@ contract SecretGift is ReentrancyGuard {
         require(bytes(message).length <= MAX_MESSAGE_LENGTH, "Message too long");
         require(amount > 0, "Amount must be greater than 0");
         require(unlockTime == 0 || unlockTime >= block.timestamp, "Unlock time must be in the future");
+        
+        // Validate expiration time
+        uint256 finalExpirationTime;
+        if (expirationTime == 0) {
+            // Use default 7 days from creation
+            finalExpirationTime = block.timestamp + DEFAULT_EXPIRY_SECONDS;
+        } else {
+            // Custom expiration time
+            require(expirationTime > block.timestamp, "Expiration time must be in the future");
+            uint256 expirationDuration = expirationTime - block.timestamp;
+            uint256 minExpiration = MIN_EXPIRATION_HOURS * 60 * 60; // 1 hour in seconds
+            uint256 maxExpiration = MAX_EXPIRATION_DAYS * 24 * 60 * 60; // 1 year in seconds
+            require(expirationDuration >= minExpiration, "Expiration must be at least 1 hour");
+            require(expirationDuration <= maxExpiration, "Expiration cannot exceed 1 year");
+            finalExpirationTime = expirationTime;
+        }
         
         // If riddle is provided, answer must also be provided
         bool hasRiddle = bytes(riddle).length > 0;
@@ -132,6 +153,7 @@ contract SecretGift is ReentrancyGuard {
             tokenAddress: tokenAddress,
             createdAt: block.timestamp,
             unlockTime: finalUnlockTime,
+            expirationTime: finalExpirationTime,
             claimed: false
         }));
         
@@ -165,7 +187,7 @@ contract SecretGift is ReentrancyGuard {
             "Gift is time-locked"
         );
         require(
-            block.timestamp < gift.createdAt + EXPIRY_SECONDS,
+            block.timestamp < gift.expirationTime,
             "Gift has expired"
         );
 
@@ -205,7 +227,7 @@ contract SecretGift is ReentrancyGuard {
         
         require(!gift.claimed, "Gift already claimed");
         require(
-            block.timestamp >= gift.createdAt + EXPIRY_SECONDS,
+            block.timestamp >= gift.expirationTime,
             "Gift has not expired yet"
         );
         require(msg.sender == gift.sender, "Only sender can refund");
@@ -233,6 +255,16 @@ contract SecretGift is ReentrancyGuard {
     function getGift(uint256 giftId) external view returns (Gift memory) {
         require(giftId < gifts.length, "Gift does not exist");
         return gifts[giftId];
+    }
+    
+    /**
+     * @dev Get expiration time for a gift
+     * @param giftId The ID of the gift
+     * @return expirationTime Timestamp when gift expires
+     */
+    function getExpirationTime(uint256 giftId) external view returns (uint256) {
+        require(giftId < gifts.length, "Gift does not exist");
+        return gifts[giftId].expirationTime;
     }
 
     /**
@@ -280,7 +312,7 @@ contract SecretGift is ReentrancyGuard {
     function isExpired(uint256 giftId) external view returns (bool) {
         require(giftId < gifts.length, "Gift does not exist");
         Gift memory gift = gifts[giftId];
-        return block.timestamp >= gift.createdAt + EXPIRY_SECONDS;
+        return block.timestamp >= gift.expirationTime;
     }
 
     /**
@@ -290,19 +322,37 @@ contract SecretGift is ReentrancyGuard {
      * @param isETH True if sending ETH, false if sending USDC
      * @param message Personal message for all gifts
      * @param unlockTime Timestamp when gifts become claimable (0 = immediately)
+     * @param expirationTime Timestamp when gifts expire (0 = use default 7 days from creation)
      */
     function createBulkGifts(
         address[] memory receivers,
         uint256[] memory amounts,
         bool isETH,
         string memory message,
-        uint256 unlockTime
+        uint256 unlockTime,
+        uint256 expirationTime
     ) external payable nonReentrant {
         require(receivers.length > 0, "No receivers provided");
         require(receivers.length == amounts.length, "Receivers and amounts length mismatch");
         require(receivers.length <= 100, "Maximum 100 gifts per batch"); // Gas limit protection
         require(bytes(message).length <= MAX_MESSAGE_LENGTH, "Message too long");
         require(unlockTime == 0 || unlockTime >= block.timestamp, "Unlock time must be in the future");
+        
+        // Validate expiration time
+        uint256 finalExpirationTime;
+        if (expirationTime == 0) {
+            // Use default 7 days from creation
+            finalExpirationTime = block.timestamp + DEFAULT_EXPIRY_SECONDS;
+        } else {
+            // Custom expiration time
+            require(expirationTime > block.timestamp, "Expiration time must be in the future");
+            uint256 expirationDuration = expirationTime - block.timestamp;
+            uint256 minExpiration = MIN_EXPIRATION_HOURS * 60 * 60; // 1 hour in seconds
+            uint256 maxExpiration = MAX_EXPIRATION_DAYS * 24 * 60 * 60; // 1 year in seconds
+            require(expirationDuration >= minExpiration, "Expiration must be at least 1 hour");
+            require(expirationDuration <= maxExpiration, "Expiration cannot exceed 1 year");
+            finalExpirationTime = expirationTime;
+        }
 
         uint256 totalAmount = 0;
         address tokenAddress = isETH ? address(0) : address(usdc);
@@ -340,6 +390,7 @@ contract SecretGift is ReentrancyGuard {
                 tokenAddress: tokenAddress,
                 createdAt: block.timestamp,
                 unlockTime: finalUnlockTime,
+                expirationTime: finalExpirationTime,
                 claimed: false
             }));
 

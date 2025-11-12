@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { WalletProvider, useWallet } from '@/contexts/WalletContext';
+import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract } from '@/hooks/useContract';
-import ThemeToggle from '@/components/ThemeToggle';
-import WalletConnect from '@/components/WalletConnect';
-import Link from 'next/link';
+import Layout from '@/components/Layout';
 import { motion } from 'framer-motion';
 import { Trophy, Gift, Sparkles } from 'lucide-react';
 
@@ -54,59 +53,41 @@ function LeaderboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-baseDark dark:text-white text-gray-900 relative z-10">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
-          <div>
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-2 bg-base-gradient bg-clip-text text-transparent">
-              Leaderboard
-            </h1>
-            <p className="dark:text-gray-400 text-gray-600 text-sm">Top gifters and solvers</p>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <ThemeToggle />
-            <Link
-              href="/"
-              className="px-5 py-2.5 glass-strong rounded-xl dark:text-white text-gray-900 font-semibold transition-all duration-300 hover:scale-105 border border-baseBlue/20"
-            >
-              ← Send Gift
-            </Link>
-            <Link
-              href="/my-gifts"
-              className="px-5 py-2.5 glass-strong rounded-xl dark:text-white text-gray-900 font-semibold transition-all duration-300 hover:scale-105 border border-baseBlue/20"
-            >
-              My Gifts
-            </Link>
-            <WalletConnect />
-          </div>
+    <Layout>
+      <div className="space-y-4 sm:space-y-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white dark:text-gray-900 mb-1 sm:mb-2">
+            Leaderboard
+          </h1>
+          <p className="text-gray-400 dark:text-gray-600 text-xs sm:text-sm">Top airdroppers and solvers</p>
         </div>
 
         {loading ? (
           <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-baseBlue border-t-transparent mb-4"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
             <p className="dark:text-gray-400 text-gray-600 text-lg">Loading leaderboard...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
             {/* Top Senders */}
             <motion.div
-              className="bg-baseLight/50 rounded-2xl p-8 border border-baseBlue/20 shadow-lg"
+              className="glass rounded-2xl p-8 border border-border"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-base-gradient flex items-center justify-center shadow-lg shadow-baseBlue/30">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                   <Gift className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold bg-base-gradient bg-clip-text text-transparent">
-                  Top Gifters 🎁
+                <h2 className="text-2xl font-bold text-white dark:text-gray-900">
+                  Top Airdroppers 🎁
                 </h2>
               </div>
 
               {topSenders.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="dark:text-gray-400 text-gray-600">No gifts sent yet. Be the first!</p>
+                  <p className="dark:text-gray-400 text-gray-600">No airdrops sent yet. Be the first!</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -114,7 +95,7 @@ function LeaderboardContent() {
                     <motion.div
                       key={sender.address}
                       className={`p-4 glass rounded-xl border ${
-                        index < 3 ? 'border-yellow-500/50' : 'border-baseBlue/20'
+                        index < 3 ? 'border-yellow-500/50' : 'border-blue-500/20'
                       } flex items-center justify-between`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -129,7 +110,7 @@ function LeaderboardContent() {
                             {sender.address.slice(0, 6)}...{sender.address.slice(-4)}
                           </p>
                           {address?.toLowerCase() === sender.address && (
-                            <span className="text-xs text-baseBlue">You</span>
+                            <span className="text-xs text-blue-500">You</span>
                           )}
                         </div>
                       </div>
@@ -138,7 +119,7 @@ function LeaderboardContent() {
                         <span className="font-bold text-lg dark:text-white text-gray-900">
                           {sender.count}
                         </span>
-                        <span className="text-sm dark:text-gray-400 text-gray-600">gifts</span>
+                        <span className="text-sm dark:text-gray-400 text-gray-600">airdrops</span>
                       </div>
                     </motion.div>
                   ))}
@@ -148,23 +129,23 @@ function LeaderboardContent() {
 
             {/* Top Solvers */}
             <motion.div
-              className="bg-baseLight/50 rounded-2xl p-8 border border-baseBlue/20 shadow-lg"
+              className="glass rounded-2xl p-8 border border-border"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3 }}
             >
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-base-gradient flex items-center justify-center shadow-lg shadow-baseBlue/30">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
                   <Sparkles className="w-6 h-6 text-white" />
                 </div>
-                <h2 className="text-2xl font-bold bg-base-gradient bg-clip-text text-transparent">
+                <h2 className="text-2xl font-bold text-white dark:text-gray-900">
                   Top Solvers 🧩
                 </h2>
               </div>
 
               {topSolvers.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="dark:text-gray-400 text-gray-600">No gifts claimed yet.</p>
+                  <p className="dark:text-gray-400 text-gray-600">No airdrops claimed yet.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -172,7 +153,7 @@ function LeaderboardContent() {
                     <motion.div
                       key={solver.address}
                       className={`p-4 glass rounded-xl border ${
-                        index < 3 ? 'border-green-500/50' : 'border-baseBlue/20'
+                        index < 3 ? 'border-green-500/50' : 'border-blue-500/20'
                       } flex items-center justify-between`}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -187,7 +168,7 @@ function LeaderboardContent() {
                             {solver.address.slice(0, 6)}...{solver.address.slice(-4)}
                           </p>
                           {address?.toLowerCase() === solver.address && (
-                            <span className="text-xs text-baseBlue">You</span>
+                            <span className="text-xs text-blue-500">You</span>
                           )}
                         </div>
                       </div>
@@ -206,14 +187,16 @@ function LeaderboardContent() {
           </div>
         )}
       </div>
-    </div>
+    </Layout>
   );
 }
 
 export default function Leaderboard() {
   return (
     <WalletProvider>
-      <LeaderboardContent />
+      <SearchProviderWrapper>
+        <LeaderboardContent />
+      </SearchProviderWrapper>
     </WalletProvider>
   );
 }

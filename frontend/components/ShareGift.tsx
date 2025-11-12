@@ -53,7 +53,7 @@ export default function ShareGift({ giftId, onClose }: ShareGiftProps) {
     <AnimatePresence>
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <motion.div
-          className="bg-baseLight/95 dark:bg-baseLight/80 rounded-2xl p-8 max-w-md w-full border border-baseBlue/20 shadow-2xl"
+          className="bg-baseLight/95 dark:bg-baseLight/80 rounded-2xl p-8 max-w-md w-full border border-blue-500/20 shadow-2xl"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.9 }}
@@ -64,7 +64,7 @@ export default function ShareGift({ giftId, onClose }: ShareGiftProps) {
             </h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-baseBlue/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-blue-500/10 rounded-lg transition-colors"
             >
               <X className="w-5 h-5 dark:text-white text-gray-900" />
             </button>
