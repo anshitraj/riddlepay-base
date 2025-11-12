@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "Base Secret Gifting",
+  "iconUrl": "https://yourapp.vercel.app/icon.png",
+  "homeUrl": "https://yourapp.vercel.app",
+  "description": "Send secret crypto gifts unlocked by riddles 🎁",
+  "contractAddresses": []
+}
+

@@ -1,0 +1,312 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 0, 0, 0;
+  --background-end-rgb: 0, 0, 0;
+}
+
+[data-theme='dark'] {
+  --foreground-rgb: 255, 255, 255;
+}
+
+[data-theme='light'] {
+  --foreground-rgb: 26, 26, 26;
+}
+
+/* Dark Theme (Default) - Base Blue Theme */
+html[data-theme='dark'] body {
+  color: #ffffff !important;
+  background: #0B0D17 !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(122, 95, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(122, 95, 255, 0.08) 0px, transparent 50%) !important;
+  min-height: 100vh;
+  position: relative;
+}
+
+html[data-theme='dark'] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Light Theme */
+html[data-theme='light'] body {
+  color: #1a1a1a !important;
+  background: #f8f9fa !important;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(0, 82, 255, 0.05) 0px, transparent 50%) !important;
+  min-height: 100vh;
+  position: relative;
+}
+
+[data-theme='light'] body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(0, 82, 255, 0.02) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  [data-theme='light'] .glass {
+    background: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  
+  [data-theme='light'] .glass-strong {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  .border-border {
+    border-color: rgba(255, 255, 255, 0.1);
+    transition: border-color 0.3s ease;
+  }
+  
+  [data-theme='light'] .border-border {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Theme-aware background colors - use higher specificity */
+  html[data-theme='light'] .bg-baseDark,
+  html[data-theme='light'] div.bg-baseDark,
+  html[data-theme='light'] .min-h-screen.bg-baseDark {
+    background: #f8f9fa !important;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(0, 82, 255, 0.05) 0px, transparent 50%) !important;
+  }
+  
+  /* Ensure dark theme background is properly set */
+  html[data-theme='dark'] .bg-baseDark,
+  html[data-theme='dark'] div.bg-baseDark,
+  html[data-theme='dark'] .min-h-screen.bg-baseDark {
+    background: #0B0D17 !important;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(122, 95, 255, 0.1) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, rgba(122, 95, 255, 0.08) 0px, transparent 50%) !important;
+  }
+  
+  [data-theme='light'] .bg-baseLight\/50,
+  [data-theme='light'] .bg-baseLight\/30 {
+    background: rgba(255, 255, 255, 0.9) !important;
+  }
+  
+  /* Dark theme - ensure baseLight backgrounds are dark */
+  [data-theme='dark'] .bg-baseLight\/50 {
+    background: rgba(28, 31, 46, 0.5) !important;
+  }
+  
+  [data-theme='dark'] .bg-baseLight\/30 {
+    background: rgba(28, 31, 46, 0.3) !important;
+  }
+  
+  /* Theme-aware text colors - override Tailwind classes with higher specificity */
+  html[data-theme='light'] .text-white,
+  html[data-theme='light'] h1.text-white,
+  html[data-theme='light'] h2.text-white,
+  html[data-theme='light'] h3.text-white,
+  html[data-theme='light'] h4.text-white,
+  html[data-theme='light'] p.text-white,
+  html[data-theme='light'] span.text-white,
+  html[data-theme='light'] div.text-white,
+  html[data-theme='light'] a.text-white,
+  html[data-theme='light'] button.text-white {
+    color: #1a1a1a !important;
+  }
+  
+  html[data-theme='light'] .text-gray-300,
+  html[data-theme='light'] .text-gray-400,
+  html[data-theme='light'] .text-gray-500 {
+    color: #4b5563 !important;
+  }
+  
+  html[data-theme='light'] .text-gray-600 {
+    color: #374151 !important;
+  }
+  
+  html[data-theme='light'] .text-gray-700 {
+    color: #1f2937 !important;
+  }
+  
+  html[data-theme='light'] .text-gray-900 {
+    color: #111827 !important;
+  }
+  
+  /* Ensure dark theme text stays white */
+  html[data-theme='dark'] .text-white {
+    color: #ffffff !important;
+  }
+  
+  html[data-theme='dark'] .text-gray-300 {
+    color: #d1d5db !important;
+  }
+  
+  html[data-theme='dark'] .text-gray-400 {
+    color: #9ca3af !important;
+  }
+  
+  /* Fix text colors inside glass/card components for light theme */
+  html[data-theme='light'] .glass h1,
+  html[data-theme='light'] .glass h2,
+  html[data-theme='light'] .glass h3,
+  html[data-theme='light'] .glass h4,
+  html[data-theme='light'] .glass p,
+  html[data-theme='light'] .glass span,
+  html[data-theme='light'] .glass div,
+  html[data-theme='light'] .bg-baseLight\/50 h1,
+  html[data-theme='light'] .bg-baseLight\/50 h2,
+  html[data-theme='light'] .bg-baseLight\/50 h3,
+  html[data-theme='light'] .bg-baseLight\/50 h4,
+  html[data-theme='light'] .bg-baseLight\/50 p,
+  html[data-theme='light'] .bg-baseLight\/50 span,
+  html[data-theme='light'] .bg-baseLight\/50 div {
+    color: #1a1a1a !important;
+  }
+  
+  /* Fix icon colors in light theme - icons should stay their color but be visible */
+  html[data-theme='light'] svg.text-white {
+    color: #1a1a1a !important;
+  }
+  
+  /* Ensure links and buttons are visible in light theme */
+  html[data-theme='light'] a.text-white,
+  html[data-theme='light'] button.text-white {
+    color: #1a1a1a !important;
+  }
+  
+  /* Theme-aware border colors */
+  [data-theme='light'] .border-baseBlue\/20 {
+    border-color: rgba(0, 82, 255, 0.2) !important;
+  }
+  
+  /* Ensure icons and other elements are visible in light theme */
+  [data-theme='light'] svg {
+    color: inherit;
+  }
+  
+  .gradient-border {
+    position: relative;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+  }
+  
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(0, 82, 255, 0.5), rgba(138, 43, 226, 0.5));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  
+  .glow {
+    box-shadow: 0 0 20px rgba(0, 82, 255, 0.3);
+  }
+  
+  .glow-hover:hover {
+    box-shadow: 0 0 30px rgba(0, 82, 255, 0.5);
+    transition: box-shadow 0.3s ease;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-theme='dark'] ::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+[data-theme='light'] ::-webkit-scrollbar-track {
+  background: #e5e5e5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #0052FF;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0066FF;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+

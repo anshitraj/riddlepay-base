@@ -1,73 +1,230 @@
-# Welcome to your Lovable project
+# RiddlePay 🎁
 
-## Project info
+**RiddlePay** - An on-chain social app that lets users send secret crypto gifts to their friends, unlocked by riddles. Built on Base Network.
 
-**URL**: https://lovable.dev/projects/d9727680-2e33-4b1d-a473-e25d6f18bf24
+## 🎯 Features
 
-## How can I edit this code?
+- **Secret Gifts**: Send USDC or ETH gifts locked by riddles
+- **Riddle-Based Unlocking**: Receivers must guess the correct answer to claim
+- **Auto-Refund**: Unclaimed gifts automatically refund after 7 days
+- **Base Mini-App**: Wallet connection using ethers.js (compatible with MetaMask and Base wallets)
+- **Beautiful UI**: Dark theme with Base blue accents
 
-There are several ways of editing your application.
+## 📁 Project Structure
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/d9727680-2e33-4b1d-a473-e25d6f18bf24) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+gift-riddle-vault/
+├── contracts/
+│   └── SecretGift.sol          # Main smart contract
+├── scripts/
+│   └── deploy.js               # Deployment script
+├── hardhat.config.js           # Hardhat configuration
+├── frontend/
+│   ├── pages/
+│   │   ├── index.tsx          # Send gifts page
+│   │   ├── my-gifts.tsx       # View all gifts
+│   │   └── claim.tsx          # Claim gift page
+│   ├── components/
+│   │   ├── SendGiftForm.tsx   # Gift creation form
+│   │   ├── ClaimGift.tsx      # Gift claiming component
+│   │   └── GiftCard.tsx       # Gift display card
+│   ├── hooks/
+│   │   └── useContract.ts     # Contract interaction hooks
+│   └── styles/
+│       └── globals.css        # Global styles
+└── README.md
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prerequisites
 
-**Use GitHub Codespaces**
+- Node.js ≥ 18
+- Git
+- A funded Base Sepolia wallet (get testnet ETH/USDC from faucets)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### Installation
 
-## What technologies are used for this project?
+1. **Clone the repository**
+   ```bash
+   git clone <your-repo-url>
+   cd gift-riddle-vault
+   ```
 
-This project is built with:
+2. **Install Hardhat dependencies**
+   ```bash
+   npm install
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+3. **Install frontend dependencies**
+   ```bash
+   cd frontend
+   npm install
+   cd ..
+   ```
 
-## How can I deploy this project?
+4. **Set up environment variables**
 
-Simply open [Lovable](https://lovable.dev/projects/d9727680-2e33-4b1d-a473-e25d6f18bf24) and click on Share -> Publish.
+   Create a `.env` file in the root directory:
+   ```env
+   PRIVATE_KEY=your_wallet_private_key
+   RPC_URL=https://sepolia.base.org
+   BASESCAN_API_KEY=your_basescan_api_key_optional
+   USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+   ```
 
-## Can I connect a custom domain to my Lovable project?
+   Create a `frontend/.env.local` file:
+   ```env
+   NEXT_PUBLIC_CONTRACT_ADDRESS=deployed_contract_address
+   NEXT_PUBLIC_BASE_RPC=https://sepolia.base.org
+   NEXT_PUBLIC_USDC_ADDRESS=0x036CbD53842c5426634e7929541eC2318f3dCF7e
+   ```
 
-Yes, you can!
+## 🔧 Smart Contract Deployment
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Compile the contract**
+   ```bash
+   npm run compile
+   ```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+2. **Deploy to Base Sepolia**
+   ```bash
+   npm run deploy:baseSepolia
+   ```
+
+3. **Copy the deployed contract address** and add it to `frontend/.env.local`:
+   ```env
+   NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+   ```
+
+## 💻 Frontend Development
+
+1. **Start the development server**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+
+2. **Open your browser**
+   Navigate to `http://localhost:3000`
+
+3. **Connect your wallet** using Base MiniKit
+
+## 📱 Base Mini-App Configuration
+
+After deploying your frontend to Vercel, create a `.well-known/miniapp.json` file:
+
+```json
+{
+  "version": "1",
+  "name": "Base Secret Gifting",
+  "iconUrl": "https://yourapp.vercel.app/icon.png",
+  "homeUrl": "https://yourapp.vercel.app",
+  "description": "Send secret crypto gifts unlocked by riddles 🎁",
+  "contractAddresses": ["<your_contract_address>"]
+}
+```
+
+## 🎮 Usage
+
+### Sending a Gift
+
+1. Connect your wallet
+2. Enter the receiver's wallet address
+3. Write a riddle question
+4. Enter the answer (hidden from receiver)
+5. Choose amount and token (ETH or USDC)
+6. Submit the transaction
+
+### Claiming a Gift
+
+1. Navigate to "My Gifts"
+2. Find a gift sent to you
+3. Read the riddle
+4. Enter your guess
+5. If correct, the gift is transferred to your wallet!
+
+### Refunding Expired Gifts
+
+If a gift remains unclaimed for 7 days, the sender can call `refundGift()` to get their funds back.
+
+## 🧪 Testing
+
+Run Hardhat tests:
+```bash
+npm test
+```
+
+## 📝 Smart Contract Functions
+
+- `createGift()` - Create a new secret gift
+- `claimGift()` - Claim a gift with the correct answer
+- `refundGift()` - Refund an expired gift
+- `getGift()` - Get gift details
+- `getGiftsForUser()` - Get all gifts for a user
+- `isExpired()` - Check if a gift has expired
+
+## 🔐 Security
+
+- Answers are hashed using `keccak256` before storage
+- Reentrancy protection using OpenZeppelin's `ReentrancyGuard`
+- Safe token transfers using OpenZeppelin's `SafeERC20`
+- Only the receiver can claim gifts
+- Only the sender can refund expired gifts
+
+## 🚢 Deployment
+
+### Smart Contract
+
+Deploy to Base Sepolia:
+```bash
+npm run deploy:baseSepolia
+```
+
+### Frontend
+
+Deploy to Vercel:
+1. Push your code to GitHub
+2. Import the project in Vercel
+3. Set environment variables
+4. Deploy!
+
+## 📄 License
+
+MIT
+
+## 🙏 Acknowledgments
+
+- Built for Base Network
+- Uses Base MiniKit for wallet integration
+- OpenZeppelin contracts for security
+
+## 🐛 Troubleshooting
+
+**Contract deployment fails:**
+- Ensure your wallet has enough ETH for gas
+- Check your RPC URL is correct
+- Verify your private key is correct
+
+**Frontend can't connect to contract:**
+- Verify `NEXT_PUBLIC_CONTRACT_ADDRESS` is set correctly
+- Ensure you're on Base Sepolia network
+- Check browser console for errors
+
+**Gift claiming fails:**
+- Verify you're the receiver
+- Check the answer is correct (case-sensitive)
+- Ensure the gift hasn't expired
+
+## 🎉 Next Steps
+
+- Add more token support
+- Implement Secret Santa mode
+- Add timed unlock feature
+- Create NFT/POAP rewards
+- Build social sharing features
+- Add leaderboard
+
+---
+
+Made with ❤️ for Base Network
