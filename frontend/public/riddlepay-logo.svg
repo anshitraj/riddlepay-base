@@ -9,9 +9,8 @@
   
   <!-- Golden R Symbol with Puzzle Piece -->
   <g transform="translate(128, 128)">
-    <!-- R Shape - Left vertical stem with puzzle piece -->
-    <path d="M -50 -40 L -50 40 L -30 40 L -30 16 L -16 16 L -16 -16 L -30 -16 L -30 -40 Z" 
-          fill="url(#goldGradient)"/>
+    <!-- R Shape - Left vertical stem -->
+    <rect x="-50" y="-40" width="20" height="80" fill="url(#goldGradient)" rx="2"/>
     
     <!-- Puzzle piece protrusion on left -->
     <path d="M -50 -40 L -40 -40 Q -30 -40 -30 -30 Q -30 -20 -40 -20 L -50 -20 Z" 
@@ -21,19 +20,19 @@
     <path d="M -30 -40 Q -10 -40 0 -30 Q 10 -20 10 0 Q 10 20 0 30 Q -10 40 -30 40" 
           fill="none" 
           stroke="url(#goldGradient)" 
-          stroke-width="8" 
+          stroke-width="10" 
           stroke-linecap="round"
           stroke-linejoin="round"/>
     
     <!-- R Shape - Diagonal leg -->
-    <path d="M -16 0 L 16 40" 
+    <path d="M -20 0 L 20 40" 
           fill="none" 
           stroke="url(#goldGradient)" 
-          stroke-width="8" 
+          stroke-width="10" 
           stroke-linecap="round"/>
     
-    <!-- Keyhole cutout in diagonal leg (transparent) -->
-    <circle cx="0" cy="20" r="8" fill="transparent"/>
-    <rect x="-4" y="20" width="8" height="20" fill="transparent"/>
+    <!-- Keyhole cutout in diagonal leg -->
+    <circle cx="0" cy="20" r="6" fill="transparent"/>
+    <rect x="-3" y="20" width="6" height="20" fill="transparent"/>
   </g>
 </svg>
