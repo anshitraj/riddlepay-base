@@ -92,7 +92,7 @@ export default function Header() {
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg">
+    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg lg:ml-60">
       {/* Mobile Search Bar */}
       <AnimatePresence>
         {showMobileSearch && (
@@ -140,7 +140,7 @@ export default function Header() {
           </button>
 
           {/* Search - Desktop */}
-          <div className="hidden md:block">
+          <div className="hidden md:block w-full max-w-md ml-4">
             <SearchBar />
           </div>
 
