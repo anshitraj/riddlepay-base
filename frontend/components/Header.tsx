@@ -143,7 +143,7 @@ export default function Header() {
         </div>
 
         {/* Center: Search Bar (Desktop) - Properly spaced */}
-        <div className="hidden md:flex flex-1 justify-center items-center max-w-lg mx-4 ml-12">
+        <div className="hidden md:flex flex-1 justify-center items-center max-w-lg mx-4 lg:ml-16">
           <SearchBar />
         </div>
 
