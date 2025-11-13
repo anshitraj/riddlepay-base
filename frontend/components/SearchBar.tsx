@@ -73,14 +73,14 @@ export default function SearchBar() {
   return (
     <div className="relative w-full" ref={searchRef}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600" />
+        <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600 pointer-events-none" />
         <input
           type="text"
           placeholder="Search airdrops, addresses..."
           value={searchQuery}
           onChange={handleInputChange}
           onFocus={() => setIsOpen(true)}
-          className="w-full pl-9 sm:pl-10 pr-8 sm:pr-10 py-2.5 sm:py-2 min-h-[44px] text-base glass rounded-xl border border-border text-white dark:text-gray-900 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:border-blue-500/50 transition-all touch-manipulation"
+          className="w-full pl-10 sm:pl-11 pr-10 sm:pr-11 py-3 sm:py-2.5 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm glass rounded-xl sm:rounded-lg border border-border text-white dark:text-gray-900 placeholder-gray-500 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all touch-manipulation"
         />
         {searchQuery && (
           <button
@@ -88,45 +88,46 @@ export default function SearchBar() {
               clearSearch();
               setIsOpen(false);
             }}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+            className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+            aria-label="Clear search"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 sm:w-4 sm:h-4" />
           </button>
         )}
-        {isSearching && (
-          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-            <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
+        {isSearching && !searchQuery && (
+          <div className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 pointer-events-none">
+            <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 text-blue-400 animate-spin" />
           </div>
         )}
       </div>
 
       {/* Search Results Dropdown */}
       {isOpen && searchQuery.trim() && (
-        <div className="absolute top-full mt-2 w-full glass-strong rounded-xl border border-border shadow-xl z-50 max-h-96 overflow-y-auto">
+        <div className="absolute top-full mt-2 w-full glass-strong rounded-xl sm:rounded-lg border border-border shadow-xl z-50 max-h-[70vh] sm:max-h-96 overflow-y-auto">
           {isSearching ? (
-            <div className="p-4 text-center">
-              <Loader2 className="w-5 h-5 text-blue-400 animate-spin mx-auto mb-2" />
-              <p className="text-sm text-gray-400">Searching...</p>
+            <div className="p-4 sm:p-3 text-center">
+              <Loader2 className="w-5 h-5 sm:w-4 sm:h-4 text-blue-400 animate-spin mx-auto mb-2" />
+              <p className="text-sm sm:text-xs text-gray-400">Searching...</p>
             </div>
           ) : searchResults.length > 0 ? (
-            <div className="p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="p-2 sm:p-1.5">
+              <div className="px-3 sm:px-2.5 py-2 sm:py-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Search Results ({searchResults.length})
               </div>
               {searchResults.map((result, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleResultClick(result)}
-                  className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all border border-transparent hover:border-blue-500/30"
+                  className="w-full text-left px-3 sm:px-2.5 py-3 sm:py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all border border-transparent hover:border-blue-500/30 min-h-[60px] sm:min-h-[52px] touch-manipulation"
                 >
                   {result.type === 'gift' && result.gift && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center flex-shrink-0">
-                        <Gift className="w-5 h-5 text-blue-400" />
+                    <div className="flex items-center gap-3 sm:gap-2.5">
+                      <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center flex-shrink-0">
+                        <Gift className="w-6 h-6 sm:w-5 sm:h-5 text-blue-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold dark:text-white text-gray-900">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-base sm:text-sm font-semibold dark:text-white text-gray-900">
                             Airdrop #{result.id}
                           </span>
                           {result.matchField && (
@@ -135,12 +136,12 @@ export default function SearchBar() {
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                        <p className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 truncate">
                           {result.gift.riddle && result.gift.riddle.trim()
                             ? `Riddle: ${result.gift.riddle.substring(0, 40)}...`
                             : 'Direct Airdrop'}
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        <p className="text-sm sm:text-xs text-gray-400 dark:text-gray-500 mt-1">
                           {formatAmount(result.gift.amount, result.gift.tokenAddress)}
                           {result.gift.claimed && ' • Claimed'}
                         </p>
@@ -148,17 +149,17 @@ export default function SearchBar() {
                     </div>
                   )}
                   {result.type === 'address' && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-purple-400" />
+                    <div className="flex items-center gap-3 sm:gap-2.5">
+                      <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-purple-600/20 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="w-6 h-6 sm:w-5 sm:h-5 text-purple-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-sm font-semibold dark:text-white text-gray-900">
+                          <span className="text-base sm:text-sm font-semibold dark:text-white text-gray-900">
                             Address
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
+                        <p className="text-sm sm:text-xs text-gray-500 dark:text-gray-400 font-mono truncate">
                           {result.address}
                         </p>
                       </div>
@@ -168,8 +169,8 @@ export default function SearchBar() {
               ))}
             </div>
           ) : (
-            <div className="p-4 text-center">
-              <p className="text-sm text-gray-400">No results found</p>
+            <div className="p-4 sm:p-3 text-center">
+              <p className="text-sm sm:text-xs text-gray-400">No results found</p>
               <p className="text-xs text-gray-500 mt-1">Try searching by airdrop ID, address, or riddle text</p>
             </div>
           )}
