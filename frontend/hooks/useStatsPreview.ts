@@ -13,7 +13,8 @@ interface StatsPreview {
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 
 export function useStatsPreview() {
-  const { readContract, getTotalValueLocked, getGiftCount, getGift } = useContract();
+  const contractHook = useContract();
+  const { readContract, getTotalValueLocked, getGiftCount, getGift } = contractHook;
   const [stats, setStats] = useState<StatsPreview>({
     tvlChange: 0,
     claimsToday: 0,
