@@ -102,14 +102,13 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
 
       {/* Header */}
       <header className="relative z-10 border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between">
-            <RiddlePayLogo size={40} showText={true} />
-            <div className="flex items-center gap-4">
-              <div className="px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-sm text-gray-400">
-                — RiddlePay Enterprise
-              </div>
-              <div className="[&_button]:bg-white [&_button]:text-black [&_button]:hover:bg-gray-100">
+            <div className="flex items-center">
+              <RiddlePayLogo size={32} showText={true} />
+            </div>
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="[&_button]:bg-white [&_button]:text-black [&_button]:hover:bg-gray-100 [&_button]:text-sm sm:[&_button]:text-base">
                 <WalletConnect />
               </div>
             </div>
@@ -119,52 +118,52 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
 
       {/* Main Content */}
       <main className="relative z-10">
-        <div className="max-w-7xl mx-auto px-6 py-20">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-16 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left Side - Hero Text */}
             <motion.div
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
-              className="space-y-8"
+              className="space-y-6 sm:space-y-8 text-center lg:text-left"
             >
-              <div className="space-y-4">
-                <h2 className="text-6xl lg:text-7xl font-bold leading-tight">
+              <div className="space-y-3 sm:space-y-4">
+                <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
                   <span className="text-white">Unlock the Future of</span>
                   <br />
                   <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
                     Crypto Gifting
                   </span>
                 </h2>
-                <p className="text-xl text-gray-400 leading-relaxed max-w-lg font-medium">
+                <p className="text-lg sm:text-xl text-gray-400 leading-relaxed max-w-lg mx-auto lg:mx-0 font-medium">
                   With Riddles, Mystery & Rewards.
                 </p>
-                <p className="text-lg text-gray-400 leading-relaxed max-w-lg">
+                <p className="text-base sm:text-lg text-gray-400 leading-relaxed max-w-lg mx-auto lg:mx-0">
                   Transform ordinary airdrops into interactive experiences. Recipients must solve a riddle to unlock their crypto reward — making every claim secure, fun, and unforgettable.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
                 <motion.button
                   onClick={handleLaunchDApp}
-                  className="px-8 py-4 bg-white text-black font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-white/20 flex items-center gap-2 group min-h-[52px] touch-manipulation"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-black font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-white/20 flex items-center justify-center gap-2 group min-h-[52px] touch-manipulation text-sm sm:text-base"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <span>Launch App</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
                 <motion.button
                   onClick={() => {
                     const element = document.getElementById('how-it-works');
                     element?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="px-8 py-4 bg-gray-900 border border-gray-800 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:border-gray-700 flex items-center gap-2 group min-h-[52px] touch-manipulation"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-gray-900 border border-gray-800 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:border-gray-700 flex items-center justify-center gap-2 group min-h-[52px] touch-manipulation text-sm sm:text-base"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
                   <span>How It Works</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </div>
             </motion.div>
@@ -174,13 +173,13 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="flex flex-col items-center justify-center space-y-6 relative"
+              className="flex flex-col items-center justify-center space-y-4 sm:space-y-6 relative mt-8 lg:mt-0"
             >
-              <div className="text-center space-y-4 w-full max-w-sm">
-                <p className="text-sm uppercase tracking-wider text-gray-500">IMAGINE SENDING...</p>
+              <div className="text-center space-y-3 sm:space-y-4 w-full max-w-sm mx-auto">
+                <p className="text-xs sm:text-sm uppercase tracking-wider text-gray-500">IMAGINE SENDING...</p>
                 
                 {/* Slider Container */}
-                <div className="relative h-80 flex items-center justify-center">
+                <div className="relative h-64 sm:h-72 md:h-80 flex items-center justify-center">
                   <AnimatePresence mode="wait">
                     <motion.div
                       key={currentSlide}
@@ -191,28 +190,28 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                       className="absolute inset-0 flex flex-col items-center justify-center space-y-4"
                     >
                       {/* Icon */}
-                      <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-2xl shadow-blue-500/50">
                         {React.createElement(riddleExamples[currentSlide].icon, {
-                          className: 'w-16 h-16 text-white',
+                          className: 'w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-white',
                         })}
                       </div>
                       
                       {/* Title and Subtitle */}
-                      <div className="space-y-2">
-                        <p className="text-xl font-bold text-white">
+                      <div className="space-y-1 sm:space-y-2">
+                        <p className="text-lg sm:text-xl font-bold text-white">
                           {riddleExamples[currentSlide].title}
                         </p>
-                        <p className="text-sm text-gray-400">
+                        <p className="text-xs sm:text-sm text-gray-400">
                           {riddleExamples[currentSlide].subtitle}
                         </p>
                       </div>
                       
                       {/* Riddle Box */}
-                      <div className="mt-6 p-6 bg-gray-900 border border-gray-800 rounded-xl w-full">
-                        <p className="text-gray-300 italic text-sm sm:text-base mb-2">
+                      <div className="mt-4 sm:mt-6 p-4 sm:p-6 bg-gray-900 border border-gray-800 rounded-xl w-full">
+                        <p className="text-gray-300 italic text-xs sm:text-sm md:text-base mb-2">
                           {riddleExamples[currentSlide].riddle}
                         </p>
-                        <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-gray-800">
+                        <p className="text-xs text-gray-500 mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-800">
                           Interactive, on-chain riddles for real crypto.
                         </p>
                       </div>
@@ -222,17 +221,17 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                   {/* Navigation Arrows */}
                   <button
                     onClick={prevSlide}
-                    className="absolute left-0 p-2 rounded-full bg-gray-900/80 border border-gray-800 hover:bg-gray-800 transition-all duration-200 hover:scale-110 z-10"
+                    className="absolute left-0 sm:-left-2 p-2 rounded-full bg-gray-900/80 border border-gray-800 hover:bg-gray-800 transition-all duration-200 hover:scale-110 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                     aria-label="Previous slide"
                   >
-                    <ChevronLeft className="w-5 h-5 text-white" />
+                    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                   <button
                     onClick={nextSlide}
-                    className="absolute right-0 p-2 rounded-full bg-gray-900/80 border border-gray-800 hover:bg-gray-800 transition-all duration-200 hover:scale-110 z-10"
+                    className="absolute right-0 sm:-right-2 p-2 rounded-full bg-gray-900/80 border border-gray-800 hover:bg-gray-800 transition-all duration-200 hover:scale-110 z-10 min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
                     aria-label="Next slide"
                   >
-                    <ChevronRight className="w-5 h-5 text-white" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </button>
                 </div>
 
@@ -260,7 +259,7 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-8"
+            className="mt-16 sm:mt-24 lg:mt-32 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"
           >
             <div className="text-center space-y-4">
               <div className="flex justify-center">
@@ -299,48 +298,48 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="mt-32 max-w-4xl mx-auto space-y-8"
+            className="mt-16 sm:mt-24 lg:mt-32 max-w-4xl mx-auto space-y-6 sm:space-y-8 px-4 sm:px-0"
           >
-            <h3 className="text-4xl font-bold text-white text-center mb-8">How It Works</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl font-bold text-blue-500 flex-shrink-0">1️⃣</div>
+            <h3 className="text-3xl sm:text-4xl font-bold text-white text-center mb-6 sm:mb-8">How It Works</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+              <div className="p-4 sm:p-6 bg-gray-900/50 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-500 flex-shrink-0">1️⃣</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Create a Secret Airdrop</h4>
-                    <p className="text-gray-400">Enter the recipient's wallet and amount.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">Create a Secret Airdrop</h4>
+                    <p className="text-sm sm:text-base text-gray-400">Enter the recipient's wallet and amount.</p>
                   </div>
                 </div>
               </div>
-              <div className="p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl font-bold text-blue-500 flex-shrink-0">2️⃣</div>
+              <div className="p-4 sm:p-6 bg-gray-900/50 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-500 flex-shrink-0">2️⃣</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Add a Riddle or Message</h4>
-                    <p className="text-gray-400">Make it fun or meaningful.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">Add a Riddle or Message</h4>
+                    <p className="text-sm sm:text-base text-gray-400">Make it fun or meaningful.</p>
                   </div>
                 </div>
               </div>
-              <div className="p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl font-bold text-blue-500 flex-shrink-0">3️⃣</div>
+              <div className="p-4 sm:p-6 bg-gray-900/50 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-500 flex-shrink-0">3️⃣</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Send Securely on Base</h4>
-                    <p className="text-gray-400">The gift is encrypted and stored on-chain.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">Send Securely on Base</h4>
+                    <p className="text-sm sm:text-base text-gray-400">The gift is encrypted and stored on-chain.</p>
                   </div>
                 </div>
               </div>
-              <div className="p-6 bg-gray-900/50 border border-gray-800 rounded-xl">
-                <div className="flex items-start gap-4">
-                  <div className="text-3xl font-bold text-blue-500 flex-shrink-0">4️⃣</div>
+              <div className="p-4 sm:p-6 bg-gray-900/50 border border-gray-800 rounded-xl hover:border-gray-700 transition-colors">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-500 flex-shrink-0">4️⃣</div>
                   <div>
-                    <h4 className="text-lg font-bold text-white mb-2">Claim & Reveal</h4>
-                    <p className="text-gray-400">The receiver solves the riddle to unlock their reward.</p>
+                    <h4 className="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">Claim & Reveal</h4>
+                    <p className="text-sm sm:text-base text-gray-400">The receiver solves the riddle to unlock their reward.</p>
                   </div>
                 </div>
               </div>
             </div>
-            <p className="text-center text-gray-400 mt-6">
+            <p className="text-center text-sm sm:text-base text-gray-400 mt-4 sm:mt-6 px-4">
               Simple, secure, and powered by <span className="text-white font-semibold">Riddle Pay</span>.
             </p>
           </motion.div>
@@ -350,47 +349,47 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="mt-20 max-w-2xl mx-auto text-center space-y-6"
+            className="mt-12 sm:mt-16 lg:mt-20 max-w-2xl mx-auto text-center space-y-4 sm:space-y-6 px-4 sm:px-0"
           >
-            <h3 className="text-3xl md:text-4xl font-bold text-white">
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">
               Ready to Send Your First Secret Gift?
             </h3>
-            <p className="text-lg text-gray-400">
+            <p className="text-base sm:text-lg text-gray-400">
               Create, encrypt, and share your crypto gifts in seconds.
             </p>
             <motion.button
               onClick={handleLaunchDApp}
-              className="px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 flex items-center gap-2 group mx-auto min-h-[52px] touch-manipulation"
+              className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 flex items-center justify-center gap-2 group mx-auto min-h-[52px] touch-manipulation text-sm sm:text-base"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <span>Launch App</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
           </motion.div>
         </div>
       </main>
 
       {/* Footer with Base Branding */}
-      <footer className="relative z-10 border-t border-gray-800 mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-8">
+      <footer className="relative z-10 border-t border-gray-800 mt-12 sm:mt-16 lg:mt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="flex flex-col items-center justify-center gap-3"
+            className="flex flex-col items-center justify-center gap-2 sm:gap-3"
           >
-            <div className="flex items-center gap-3">
-              <span className="text-gray-500 text-sm">Powered by</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-gray-500 text-xs sm:text-sm">Powered by</span>
               {/* Base Logo - Blue square with rounded corners */}
-              <div className="w-7 h-7 bg-[#0052FF] rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#0052FF] rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
                   <rect width="20" height="20" rx="4" fill="#0052FF"/>
                 </svg>
               </div>
-              <span className="text-white font-semibold text-base">Base</span>
+              <span className="text-white font-semibold text-sm sm:text-base">Base</span>
             </div>
-            <p className="text-xs text-gray-600 text-center max-w-md">
+            <p className="text-xs text-gray-600 text-center max-w-md px-4">
               Built on Base, the secure, low-cost, developer-friendly Ethereum L2 blockchain
             </p>
           </motion.div>
