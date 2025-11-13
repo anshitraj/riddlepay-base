@@ -118,11 +118,15 @@ export default function Header() {
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
               <div className="relative w-8 h-8 flex-shrink-0">
                 <Image
-                  src="/riddlepay-logo.svg"
+                  src="/riddlepay-logo.png"
                   alt="RiddlePay Logo"
                   width={32}
                   height={32}
                   className="w-full h-full"
+                  onError={(e) => {
+                    // Fallback to SVG if PNG doesn't exist
+                    (e.target as HTMLImageElement).src = '/riddlepay-logo.svg';
+                  }}
                 />
               </div>
               <div className="flex flex-col">
