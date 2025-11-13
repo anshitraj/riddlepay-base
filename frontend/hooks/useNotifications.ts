@@ -3,7 +3,7 @@
  * Integrates with contract events to send timely notifications
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useWallet } from '@/contexts/WalletContext';
 import { useContract } from './useContract';
 import {
@@ -19,6 +19,7 @@ import { ethers } from 'ethers';
 export function useNotifications() {
   const { address, provider } = useWallet();
   const { contract } = useContract();
+  const listenersSetup = useRef(false);
 
   /**
    * Monitor for new airdrops sent to user
@@ -153,24 +154,32 @@ export function useNotifications() {
 
   // Set up event listeners when contract and address are available
   useEffect(() => {
-    if (!contract || !address) return;
+    if (!contract || !address || listenersSetup.current) return;
+
+    // Only set up listeners once
+    listenersSetup.current = true;
 
     monitorReceivedAirdrops();
     monitorClaimedAirdrops();
 
-    // Check for expiring airdrops every hour
+    // Check for expiring airdrops every hour (well-timed, not too frequent)
     const expirationCheckInterval = setInterval(() => {
       checkExpiringAirdrops();
     }, 60 * 60 * 1000); // 1 hour
 
-    // Initial check
-    checkExpiringAirdrops();
+    // Initial check after a delay (avoid sending immediately on load)
+    setTimeout(() => {
+      checkExpiringAirdrops();
+    }, 5000); // 5 second delay
 
     return () => {
       // Clean up event listeners
-      contract.removeAllListeners('GiftCreated');
-      contract.removeAllListeners('GiftClaimed');
+      if (contract) {
+        contract.removeAllListeners('GiftCreated');
+        contract.removeAllListeners('GiftClaimed');
+      }
       clearInterval(expirationCheckInterval);
+      listenersSetup.current = false;
     };
   }, [contract, address, monitorReceivedAirdrops, monitorClaimedAirdrops, checkExpiringAirdrops]);
 }
