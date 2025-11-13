@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, Copy, ExternalLink, Settings, Search, Send } from 'lucide-react';
+import { User, LogOut, Copy, ExternalLink, Settings, Search, Send, RefreshCw } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
@@ -118,7 +118,7 @@ export default function Header() {
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
               <div className="relative w-8 h-8 flex-shrink-0">
                 <Image
-                  src="/icon.svg"
+                  src="/riddlepay-logo.svg"
                   alt="RiddlePay Logo"
                   width={32}
                   height={32}
