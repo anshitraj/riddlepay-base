@@ -1,0 +1,31 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <rect width="1024" height="1024" rx="200" fill="url(#gradient)"/>
+  
+  <!-- Gift box -->
+  <g transform="translate(200, 200)">
+    <!-- Box base -->
+    <rect x="200" y="300" width="224" height="224" rx="20" fill="white" opacity="0.95"/>
+    <!-- Box lid -->
+    <rect x="180" y="280" width="264" height="60" rx="20" fill="white" opacity="0.95"/>
+    <!-- Ribbon vertical -->
+    <rect x="300" y="200" width="24" height="384" fill="#0052FF"/>
+    <!-- Ribbon horizontal -->
+    <rect x="180" y="300" width="264" height="24" fill="#0052FF"/>
+    <!-- Keyhole -->
+    <circle cx="312" cy="412" r="40" fill="#0052FF"/>
+    <rect x="300" y="412" width="24" height="60" rx="12" fill="#0052FF"/>
+  </g>
+  
+  <!-- Base logo text -->
+  <text x="512" y="800" font-family="Arial, sans-serif" font-size="120" font-weight="bold" fill="white" text-anchor="middle" opacity="0.9">BASE</text>
+  
+  <!-- Gradient definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0052FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00C2FF;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
+

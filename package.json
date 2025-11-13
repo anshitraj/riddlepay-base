@@ -25,6 +25,9 @@
     "hardhat": "^2.19.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.0"
+    "@openzeppelin/contracts": "^5.0.0",
+    "html5-qrcode": "^2.3.8",
+    "lottie-react": "^2.4.1",
+    "papaparse": "^5.5.3"
   }
 }

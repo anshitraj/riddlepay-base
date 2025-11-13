@@ -5,7 +5,8 @@ import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Plus, X, Users, AlertCircle } from 'lucide-react';
+import { Plus, X, Users, AlertCircle, Upload, FileText } from 'lucide-react';
+import Papa from 'papaparse';
 
 interface Recipient {
   address: string;
@@ -26,6 +27,7 @@ export default function BulkGiveawayForm() {
   const [customExpirationHours, setCustomExpirationHours] = useState('');
   const [success, setSuccess] = useState(false);
   const [txHash, setTxHash] = useState('');
+  const [csvFile, setCsvFile] = useState<File | null>(null);
 
   const addRecipient = () => {
     if (recipients.length >= 100) {
@@ -260,21 +262,40 @@ export default function BulkGiveawayForm() {
 
         {/* Recipients */}
         <div>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
             <label className="block text-sm font-semibold dark:text-white text-gray-900 flex items-center gap-2">
               <span className="text-blue-500">👥</span>
               Recipients ({recipients.length}/100)
             </label>
-            <button
-              type="button"
-              onClick={addRecipient}
-              className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Recipient</span>
-              <span className="sm:hidden">Add</span>
-            </button>
+            <div className="flex gap-2">
+              <label className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation cursor-pointer hover:bg-blue-500/10">
+                <Upload className="w-4 h-4" />
+                <span className="hidden sm:inline">Upload CSV</span>
+                <span className="sm:hidden">CSV</span>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleCSVUpload}
+                  className="hidden"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={addRecipient}
+                className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="hidden sm:inline">Add Recipient</span>
+                <span className="sm:hidden">Add</span>
+              </button>
+            </div>
           </div>
+          {csvFile && (
+            <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg flex items-center gap-2">
+              <FileText className="w-4 h-4 text-blue-500" />
+              <span className="text-sm text-blue-400">{csvFile.name}</span>
+            </div>
+          )}
           
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {recipients.map((recipient, index) => (

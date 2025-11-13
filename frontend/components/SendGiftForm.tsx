@@ -5,11 +5,12 @@ import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { Gift, MapPin, HelpCircle, Lock, MessageSquare, Clock, Coins, AlertCircle } from 'lucide-react';
+import { Gift, MapPin, HelpCircle, Lock, MessageSquare, Clock, Coins, AlertCircle, Camera } from 'lucide-react';
 import ConfirmationModal from './ConfirmationModal';
 import RiddlePayLogo from './RiddlePayLogo';
 import SuggestedRiddles from './SuggestedRiddles';
 import ConversationalFeedback from './ConversationalFeedback';
+import QRScanner from './QRScanner';
 
 export default function SendGiftForm() {
   const { address, ensureBaseMainnet } = useWallet();
@@ -28,6 +29,8 @@ export default function SendGiftForm() {
   const [txHash, setTxHash] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [feedbackAction, setFeedbackAction] = useState<'sending' | 'sent' | 'suggest' | undefined>();
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
 
   const validateForm = () => {
     if (!address) {
@@ -155,11 +158,24 @@ export default function SendGiftForm() {
       setSuccess(true);
       
       toast.dismiss(loadingToast);
-      toast.success('Airdrop Sent 🎁', {
-        duration: 5000,
-      });
+      
+      // Award XP
+      if (address) {
+        const hasRiddle = riddle.trim().length > 0;
+        const currentXP = getUserXP(address);
+        const newXP = addXP(address, 'send', hasRiddle);
+        const xpEarned = newXP - currentXP;
+        toast.success(`Airdrop Sent 🎁 +${xpEarned} XP earned! ⭐`, {
+          duration: 5000,
+        });
+      } else {
+        toast.success('Airdrop Sent 🎁', {
+          duration: 5000,
+        });
+      }
       
       setFeedbackAction('sent');
+      setShowSuccessAnimation(true);
 
       // Reset form
       setTimeout(() => {
@@ -258,14 +274,24 @@ export default function SendGiftForm() {
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Recipient Wallet Address</span>
           </label>
-          <input
-            type="text"
-            value={receiver}
-            onChange={(e) => setReceiver(e.target.value)}
-            placeholder="0x..."
-            className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
-            required
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={receiver}
+              onChange={(e) => setReceiver(e.target.value)}
+              placeholder="0x..."
+              className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowQRScanner(true)}
+              className="px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] min-w-[44px] bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 dark:hover:bg-blue-500/30 transition-all touch-manipulation flex items-center justify-center"
+              title="Scan QR Code"
+            >
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+            </button>
+          </div>
         </div>
 
         <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
@@ -474,6 +500,22 @@ export default function SendGiftForm() {
       
       {/* Conversational Feedback */}
       <ConversationalFeedback action={feedbackAction} />
+      
+      {/* QR Scanner */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={(address) => {
+          setReceiver(address);
+          setShowQRScanner(false);
+        }}
+      />
+      
+      {/* Success Animation */}
+      <SuccessAnimation
+        isVisible={showSuccessAnimation}
+        onComplete={() => setShowSuccessAnimation(false)}
+      />
     </motion.div>
   );
 }
