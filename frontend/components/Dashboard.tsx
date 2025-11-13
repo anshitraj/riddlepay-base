@@ -360,7 +360,7 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4">
-        <Link href="/" prefetch={true}>
+        <Link href="/#create-airdrop-form" prefetch={true}>
           <motion.div
             className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}

@@ -124,7 +124,8 @@ function HomeContent() {
               <Dashboard />
 
               {/* Send Gift Form */}
-              <motion.div 
+              <motion.div
+                id="create-airdrop-form"
                 className="bg-[#0E152B]/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 lg:p-8 border border-[#0066FF]/10 shadow-xl w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
