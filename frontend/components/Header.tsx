@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Copy, ExternalLink, Settings, Search } from 'lucide-react';
+import { User, LogOut, Copy, ExternalLink, Settings, Search, Send } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
@@ -109,8 +109,19 @@ export default function Header() {
       </AnimatePresence>
       
       <div className="flex items-center justify-between p-3 sm:p-4">
-        {/* Left: Logo/Branding - Empty space for now */}
-        <div className="flex-1"></div>
+        {/* Left: Create Secret Airdrop Button */}
+        <div className="flex-1 min-w-0">
+          <Link href="/" prefetch={true}>
+            <button className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 min-h-[44px] bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group">
+              <Send className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
+              <span className="text-sm font-semibold text-white whitespace-nowrap">Create Secret Airdrop</span>
+            </button>
+            {/* Mobile: Icon only */}
+            <button className="sm:hidden p-2 min-w-[44px] min-h-[44px] bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center justify-center">
+              <Send className="w-5 h-5 text-white" />
+            </button>
+          </Link>
+        </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
