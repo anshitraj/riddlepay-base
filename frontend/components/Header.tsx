@@ -92,7 +92,7 @@ export default function Header() {
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg lg:ml-60">
+    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg">
       {/* Mobile Search Bar */}
       <AnimatePresence>
         {showMobileSearch && (
@@ -109,11 +109,11 @@ export default function Header() {
         )}
       </AnimatePresence>
       
-      <div className="flex items-center justify-between p-3 sm:p-4">
+      <div className="flex items-center justify-between p-3 sm:p-4 lg:pl-4">
         {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
-        <div className="flex-1 min-w-0">
-          {/* Mobile: RiddlePay Branding */}
-          <div className="sm:hidden flex flex-col">
+        <div className="flex-1 min-w-0 lg:ml-60">
+          {/* Mobile: RiddlePay Branding - moved right to avoid hamburger menu */}
+          <div className="sm:hidden flex flex-col ml-12">
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
               <span className="text-lg font-bold text-white">RiddlePay</span>
             </Link>
@@ -140,7 +140,7 @@ export default function Header() {
           </button>
 
           {/* Search - Desktop */}
-          <div className="hidden md:block w-full max-w-md ml-4">
+          <div className="hidden md:block w-full max-w-md ml-6">
             <SearchBar />
           </div>
 
