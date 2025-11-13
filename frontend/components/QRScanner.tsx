@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { X, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import dynamic from 'next/dynamic';
 
 interface QRScannerProps {
   isOpen: boolean;
