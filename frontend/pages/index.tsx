@@ -63,8 +63,9 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          <main className="flex-1 p-2 sm:p-3 md:p-4 lg:p-6 overflow-y-auto w-full">
-            <div className="max-w-7xl mx-auto space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6 w-full">
+          {/* Mobile-optimized layout v2 */}
+          <main className="flex-1 p-1.5 sm:p-2 md:p-3 lg:p-4 xl:p-6 overflow-y-auto w-full">
+            <div className="max-w-7xl mx-auto space-y-1.5 sm:space-y-2 md:space-y-3 lg:space-y-4 xl:space-y-6 w-full">
               {/* Dashboard Stats */}
               <Dashboard />
 
@@ -81,22 +82,22 @@ function HomeContent() {
 
               {/* Send Gift Form */}
               <motion.div 
-                className="glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-6 xl:p-8 border border-border w-full"
+                className="glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className="mb-2 sm:mb-3 md:mb-4 lg:mb-6">
-                  <div className="mb-1.5 sm:mb-2">
-                      <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold text-white dark:text-gray-900 leading-tight">
+                <div className="mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 xl:mb-6">
+                  <div className="mb-1 sm:mb-1.5 md:mb-2">
+                      <h2 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-white dark:text-gray-900 leading-tight">
                         Create New Crypto Airdrop
                       </h2>
-                      <p className="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-400 dark:text-gray-600 mt-1 leading-tight">
+                      <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-gray-400 dark:text-gray-600 mt-0.5 sm:mt-1 leading-tight">
                         Send a secure, on-chain airdrop with an optional riddle and personal message.
                       </p>
                   </div>
                   {/* Light gradient separator */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-2 sm:mt-3 md:mt-4"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-1.5 sm:mt-2 md:mt-3"></div>
                 </div>
                 <SendGiftForm />
               </motion.div>

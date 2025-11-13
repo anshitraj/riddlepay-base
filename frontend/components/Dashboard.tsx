@@ -174,10 +174,11 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4 md:space-y-6">
+    {/* Mobile-optimized Dashboard v2 */}
+    <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 xl:space-y-6">
       {/* Total Balance Card */}
       <motion.div
-        className="relative glass rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 border border-border overflow-hidden group"
+        className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border overflow-hidden group"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
