@@ -106,17 +106,19 @@ function HomeContent() {
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">TVL Change</span>
                     {statsLoading ? (
-                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
                       <span className={`text-sm sm:text-base font-semibold flex items-center gap-1 ${
-                        previewStats.tvlChange >= 0 ? 'text-green-400' : 'text-red-400'
+                        previewStats.tvlChange >= 0 ? 'text-green-400' : previewStats.tvlChange < 0 ? 'text-red-400' : 'text-gray-400'
                       }`}>
-                        {previewStats.tvlChange >= 0 ? (
-                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                        ) : (
-                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+                        {previewStats.tvlChange !== 0 && (
+                          previewStats.tvlChange >= 0 ? (
+                            <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                          ) : (
+                            <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+                          )
                         )}
-                        {previewStats.tvlChange >= 0 ? '+' : ''}{previewStats.tvlChange.toFixed(2)}%
+                        {previewStats.tvlChange >= 0 && previewStats.tvlChange !== 0 ? '+' : ''}{previewStats.tvlChange.toFixed(2)}%
                       </span>
                     )}
                   </div>
@@ -125,9 +127,9 @@ function HomeContent() {
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">Claims Today</span>
                     {statsLoading ? (
-                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
-                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.claimsToday}</span>
+                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.claimsToday ?? 0}</span>
                     )}
                   </div>
                   <div className="h-4 w-px bg-[#0066FF]/20"></div>
@@ -135,9 +137,9 @@ function HomeContent() {
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">Riddle Solves</span>
                     {statsLoading ? (
-                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
-                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.riddleSolves}</span>
+                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.riddleSolves ?? 0}</span>
                     )}
                   </div>
                 </div>
