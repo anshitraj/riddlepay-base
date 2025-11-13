@@ -3,6 +3,7 @@
 import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
+import BottomNav from './BottomNav';
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,7 +11,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-baseDark flex">
+    <div className="min-h-screen bg-baseDark flex pb-16 lg:pb-0">
       {/* Sidebar */}
       <Sidebar />
 
@@ -26,6 +27,9 @@ export default function Layout({ children }: LayoutProps) {
           </div>
         </main>
       </div>
+      
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav />
     </div>
   );
 }

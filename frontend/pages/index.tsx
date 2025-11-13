@@ -8,17 +8,25 @@ import Header from '@/components/Header';
 import Dashboard from '@/components/Dashboard';
 import SendGiftForm from '@/components/SendGiftForm';
 import LandingPage from '@/components/LandingPage';
+import OnboardingModal from '@/components/OnboardingModal';
+import BottomNav from '@/components/BottomNav';
 import { motion } from 'framer-motion';
 
 function HomeContent() {
   const { isConnected } = useWallet();
   const [hasLaunchedBefore, setHasLaunchedBefore] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   // Check on mount if user has launched dashboard before
   useEffect(() => {
     const launched = sessionStorage.getItem('dappLaunched') === 'true';
     setHasLaunchedBefore(launched);
-  }, []);
+    
+    // Show onboarding if not completed and not marked as "don't show"
+    if (isConnected && !localStorage.getItem('onboarding_completed') && !localStorage.getItem('onboarding_dont_show')) {
+      setShowOnboarding(true);
+    }
+  }, [isConnected]);
 
   const handleLaunchDApp = () => {
     setHasLaunchedBefore(true);
@@ -35,46 +43,52 @@ function HomeContent() {
 
   // Show dashboard if wallet is connected or dashboard has been launched
   return (
-    <div className="min-h-screen bg-baseDark flex">
-      {/* Sidebar */}
-      <Sidebar />
+    <>
+      {showOnboarding && <OnboardingModal onClose={() => setShowOnboarding(false)} />}
+      <div className="min-h-screen bg-baseDark flex pb-16 lg:pb-0">
+        {/* Sidebar */}
+        <Sidebar />
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col lg:ml-60">
-        {/* Header */}
-        <Header />
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col lg:ml-60">
+          {/* Header */}
+          <Header />
 
-        {/* Content */}
-        <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto">
-          <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
-            {/* Dashboard Stats */}
-            <Dashboard />
+          {/* Content */}
+          <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+              {/* Dashboard Stats */}
+              <Dashboard />
 
-            {/* Send Gift Form */}
-            <motion.div 
-              className="glass rounded-2xl p-4 sm:p-6 md:p-8 border border-border"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="mb-4 sm:mb-6">
-                <div className="mb-2">
-                    <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-gray-900">
-                      Create New Crypto Airdrop
-                    </h2>
-                    <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600 mt-1">
-                      Send a secure, on-chain airdrop with an optional riddle and personal message.
-                    </p>
+              {/* Send Gift Form */}
+              <motion.div 
+                className="glass rounded-2xl p-4 sm:p-6 md:p-8 border border-border"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <div className="mb-4 sm:mb-6">
+                  <div className="mb-2">
+                      <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-gray-900">
+                        Create New Crypto Airdrop
+                      </h2>
+                      <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600 mt-1">
+                        Send a secure, on-chain airdrop with an optional riddle and personal message.
+                      </p>
+                  </div>
+                  {/* Light gradient separator */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-4"></div>
                 </div>
-                {/* Light gradient separator */}
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-4"></div>
-              </div>
-              <SendGiftForm />
-            </motion.div>
-          </div>
-        </main>
+                <SendGiftForm />
+              </motion.div>
+            </div>
+          </main>
+        </div>
+        
+        {/* Bottom Navigation for Mobile */}
+        <BottomNav />
       </div>
-    </div>
+    </>
   );
 }
 

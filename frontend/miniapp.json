@@ -1,8 +1,8 @@
 {
   "version": "1",
   "name": "RiddlePay",
-  "iconUrl": "https://yourapp.vercel.app/icon.png",
-  "homeUrl": "https://yourapp.vercel.app",
+  "iconUrl": "https://riddlepay.tech/icon.png",
+  "homeUrl": "https://riddlepay.tech",
   "description": "RiddlePay - Unlock crypto gifts with riddles 🎁",
   "contractAddresses": []
 }

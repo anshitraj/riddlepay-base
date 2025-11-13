@@ -183,7 +183,31 @@ npm run deploy:baseSepolia
 
 ### Frontend
 
-Deploy to Vercel:
+#### Deploy to Vercel via GitHub Actions
+
+1. **Set up GitHub Secrets** (in your GitHub repository settings):
+   - Go to Settings → Secrets and variables → Actions
+   - Add the following secrets:
+     - `VERCEL_TOKEN`: Get from [Vercel Account Settings → Tokens](https://vercel.com/account/tokens)
+     - `VERCEL_ORG_ID`: Get from your Vercel project settings (Settings → General)
+     - `VERCEL_PROJECT_ID`: Get from your Vercel project settings (Settings → General)
+   
+   **Note**: If your Vercel project is already linked to this GitHub repository, you may only need `VERCEL_TOKEN`.
+
+2. **Push to GitHub**:
+   ```bash
+   git add .
+   git commit -m "Setup GitHub Actions deployment"
+   git push origin main
+   ```
+
+3. **Automatic Deployment**:
+   - The workflow will automatically deploy on pushes to `main` or `master` branch
+   - Pull requests will trigger a preview deployment
+
+#### Manual Deploy to Vercel
+
+Alternatively, you can deploy manually:
 1. Push your code to GitHub
 2. Import the project in Vercel
 3. Set environment variables

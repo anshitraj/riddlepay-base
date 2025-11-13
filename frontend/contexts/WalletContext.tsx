@@ -23,13 +23,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [chainId, setChainId] = useState<number | null>(null);
 
   useEffect(() => {
+    // Check if running in Base App (Farcaster) - auto-connect if available
+    const isBaseApp = typeof window !== 'undefined' && 
+      (window.location.href.includes('farcaster.xyz') || 
+       window.location.href.includes('warpcast.com') ||
+       (window as any).farcaster);
+    
     // Only check for existing connection if we don't have a stored disconnect state
     // This ensures users must explicitly reconnect after disconnecting
     if (typeof window !== 'undefined' && window.ethereum) {
       // Check localStorage for explicit disconnect state
       const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
       
-      if (!wasDisconnected && typeof window !== 'undefined' && window.ethereum) {
+      // In Base App, auto-connect if wallet is available (no external redirects)
+      if ((!wasDisconnected || isBaseApp) && typeof window !== 'undefined' && window.ethereum) {
         const ethereum = window.ethereum;
         ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
           if (accounts.length > 0 && ethereum) {
