@@ -8,6 +8,8 @@ import toast from 'react-hot-toast';
 import { Gift, MapPin, HelpCircle, Lock, MessageSquare, Clock, Coins, AlertCircle } from 'lucide-react';
 import ConfirmationModal from './ConfirmationModal';
 import RiddlePayLogo from './RiddlePayLogo';
+import SuggestedRiddles from './SuggestedRiddles';
+import ConversationalFeedback from './ConversationalFeedback';
 
 export default function SendGiftForm() {
   const { address, ensureBaseMainnet } = useWallet();
@@ -25,6 +27,7 @@ export default function SendGiftForm() {
   const [success, setSuccess] = useState(false);
   const [txHash, setTxHash] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [feedbackAction, setFeedbackAction] = useState<'sending' | 'sent' | 'suggest' | undefined>();
 
   const validateForm = () => {
     if (!address) {
@@ -87,6 +90,7 @@ export default function SendGiftForm() {
 
   const handleConfirmSubmit = async () => {
     setShowConfirmModal(false);
+    setFeedbackAction('sending');
 
     const loadingToast = toast.loading(isETH ? 'Creating your secret gift...' : 'Checking USDC approval...');
 
@@ -154,6 +158,8 @@ export default function SendGiftForm() {
       toast.success('Airdrop Sent 🎁', {
         duration: 5000,
       });
+      
+      setFeedbackAction('sent');
 
       // Reset form
       setTimeout(() => {
@@ -167,11 +173,13 @@ export default function SendGiftForm() {
         setCustomExpirationHours('');
         setSuccess(false);
         setTxHash('');
+        setFeedbackAction(undefined);
       }, 5000);
     } catch (err: any) {
       toast.dismiss(loadingToast);
       toast.error(err.message || 'Failed to create gift 😅');
       console.error('Error creating gift:', err);
+      setFeedbackAction(undefined);
     }
   };
 
@@ -272,6 +280,12 @@ export default function SendGiftForm() {
             placeholder="What has keys but no locks? (Leave empty for direct airdrop)"
             rows={3}
             className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
+          />
+          <SuggestedRiddles 
+            onSelect={(riddleText, answerText) => {
+              setRiddle(riddleText);
+              setAnswer(answerText);
+            }} 
           />
         </div>
 
@@ -457,6 +471,9 @@ export default function SendGiftForm() {
         unlockTime={unlockTime}
         loading={loading || approving}
       />
+      
+      {/* Conversational Feedback */}
+      <ConversationalFeedback action={feedbackAction} />
     </motion.div>
   );
 }

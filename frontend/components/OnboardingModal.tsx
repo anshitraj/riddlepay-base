@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Gift, Sparkles, ArrowRight } from 'lucide-react';
+import { X, Gift, Sparkles, ArrowRight, Package, Trophy, Info } from 'lucide-react';
+import Link from 'next/link';
 import RiddlePayLogo from './RiddlePayLogo';
 
 interface OnboardingModalProps {
@@ -14,8 +15,8 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
 
   const steps = [
     {
-      title: 'Welcome',
-      description: 'A simple way to send crypto airdrops with interactive riddles.',
+      title: '🎉 Welcome to RiddlePay',
+      description: 'Send fun, secure, secret airdrops on Base. Add an optional riddle that the receiver must solve to unlock the tokens.',
       showLogo: true,
     },
     {
@@ -40,7 +41,8 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
     },
     {
       title: 'Get started',
-      description: 'Click "Create New Crypto Airdrop" to send your first airdrop. Add a riddle, set expiration time, and include a personal message.',
+      description: 'Ready to send your first secret airdrop? Choose an action below to get started.',
+      showActions: true,
     },
   ];
 
@@ -98,10 +100,40 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
             </h2>
 
             {/* Description or Steps */}
-            {currentStepData.description ? (
+            {currentStepData.description && !currentStepData.showActions ? (
               <p className="text-gray-400 dark:text-gray-600 text-center leading-relaxed">
                 {currentStepData.description}
               </p>
+            ) : currentStepData.showActions ? (
+              <div className="space-y-3 mt-4">
+                <Link href="/" onClick={handleSkip}>
+                  <motion.button
+                    className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Gift className="w-5 h-5" />
+                    <span>Create Airdrop</span>
+                  </motion.button>
+                </Link>
+                <Link href="/my-gifts" onClick={handleSkip}>
+                  <motion.button
+                    className="w-full p-4 glass border border-border text-white dark:text-gray-900 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    <Package className="w-5 h-5" />
+                    <span>View My Airdrops</span>
+                  </motion.button>
+                </Link>
+                <button
+                  onClick={() => setCurrentStep(1)}
+                  className="w-full p-4 glass border border-border text-gray-400 dark:text-gray-600 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
+                >
+                  <Info className="w-5 h-5" />
+                  <span>How it works</span>
+                </button>
+              </div>
             ) : currentStepData.items ? (
               <div className="space-y-4 mt-4">
                 {currentStepData.items.map((item) => (

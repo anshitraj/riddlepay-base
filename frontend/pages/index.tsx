@@ -20,6 +20,10 @@ function HomeContent() {
   useNotifications();
   const [hasLaunchedBefore, setHasLaunchedBefore] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  
+  const handleShowOnboarding = () => {
+    setShowOnboarding(true);
+  };
 
   // Check on mount if user has launched dashboard before
   useEffect(() => {
@@ -63,6 +67,17 @@ function HomeContent() {
             <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
               {/* Dashboard Stats */}
               <Dashboard />
+
+              {/* What is RiddlePay Link */}
+              <div className="flex justify-center">
+                <button
+                  onClick={handleShowOnboarding}
+                  className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 dark:text-blue-500 dark:hover:text-blue-400 flex items-center gap-1.5 transition-colors touch-manipulation min-h-[44px] px-3"
+                >
+                  <span>ℹ️</span>
+                  <span>What is RiddlePay?</span>
+                </button>
+              </div>
 
               {/* Send Gift Form */}
               <motion.div 

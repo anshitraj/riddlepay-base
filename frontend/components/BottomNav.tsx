@@ -31,22 +31,22 @@ export default function BottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="activeTab"
-                  className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-blue-600/20 rounded-xl border border-blue-500/30"
+                  className="absolute inset-0 bg-gradient-to-r from-[#0052FF]/20 to-[#00C2FF]/20 rounded-xl border border-[#0052FF]/30 shadow-lg shadow-[#0052FF]/20"
                   initial={false}
                   transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                 />
               )}
               <Icon
-                className={`w-5 h-5 relative z-10 ${
+                className={`w-5 h-5 relative z-10 transition-colors ${
                   isActive
-                    ? 'text-blue-400 dark:text-blue-600'
+                    ? 'text-[#0052FF] dark:text-[#00C2FF]'
                     : 'text-gray-400 dark:text-gray-600'
                 }`}
               />
               <span
-                className={`text-xs font-semibold relative z-10 ${
+                className={`text-xs font-semibold relative z-10 transition-colors ${
                   isActive
-                    ? 'text-blue-400 dark:text-blue-600'
+                    ? 'text-[#0052FF] dark:text-[#00C2FF]'
                     : 'text-gray-400 dark:text-gray-600'
                 }`}
               >

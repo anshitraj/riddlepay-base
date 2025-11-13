@@ -4,10 +4,11 @@
 
 /* Base Design System - Semantic Color Tokens */
 :root {
-  /* Primary Brand Color (Blue) */
+  /* Primary Brand Color (Base Electric Blue) */
   --color-primary: #0052FF;
-  --color-primary-hover: #0066FF;
+  --color-primary-hover: #00C2FF;
   --color-primary-light: rgba(0, 82, 255, 0.1);
+  --color-primary-gradient: linear-gradient(135deg, #0052FF 0%, #00C2FF 100%);
   
   /* Secondary Color (Violet/Purple accent) */
   --color-secondary: #7C3AED;
