@@ -110,16 +110,20 @@ export default function Header() {
       </AnimatePresence>
       
       <div className="flex items-center justify-between p-3 sm:p-4">
-        {/* Left: Create Secret Airdrop Button */}
+        {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
         <div className="flex-1 min-w-0">
-          <Link href="/" prefetch={true}>
-            <button className="hidden sm:flex items-center gap-2 px-3 sm:px-4 py-2 min-h-[44px] bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group">
+          {/* Mobile: RiddlePay Branding */}
+          <div className="sm:hidden flex flex-col">
+            <Link href="/" prefetch={true} className="flex items-center gap-2 group">
+              <span className="text-lg font-bold text-white">RiddlePay</span>
+            </Link>
+            <span className="text-[10px] text-gray-400 mt-0.5">powered by Base</span>
+          </div>
+          {/* Desktop: Create Secret Airdrop Button */}
+          <Link href="/" prefetch={true} className="hidden sm:block">
+            <button className="flex items-center gap-2 px-3 sm:px-4 py-2 min-h-[44px] bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 group">
               <Send className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
               <span className="text-sm font-semibold text-white whitespace-nowrap">Create Secret Airdrop</span>
-            </button>
-            {/* Mobile: Icon only */}
-            <button className="sm:hidden p-2 min-w-[44px] min-h-[44px] bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-xl hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-300 flex items-center justify-center">
-              <Send className="w-5 h-5 text-white" />
             </button>
           </Link>
         </div>
