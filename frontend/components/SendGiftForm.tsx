@@ -225,7 +225,6 @@ export default function SendGiftForm() {
   }
 
   return (
-    {/* Mobile-optimized SendGiftForm v2 */}
     <motion.div 
       className="bg-white dark:bg-baseLight/50 rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl w-full"
       initial={{ opacity: 0, scale: 0.95 }}

@@ -174,7 +174,6 @@ export default function Dashboard() {
   }
 
   return (
-    {/* Mobile-optimized Dashboard v2 */}
     <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 xl:space-y-6">
       {/* Total Balance Card */}
       <motion.div
