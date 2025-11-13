@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ethers } from 'ethers';
 import { useWallet } from '@/contexts/WalletContext';
+import { checkBatchSupport, sendBatchTransactions, getPaymasterAndData } from '@/utils/paymaster';
 import { retryWithBackoff } from '@/utils/retry';
 import { createHybridRpcProvider, throttle, getCached, setCached } from '@/utils/rpcProvider';
 
@@ -213,6 +214,9 @@ export function useContract() {
         ? ethers.parseEther(amount)
         : ethers.parseUnits(amount, 6); // USDC has 6 decimals
       
+      // Check if we can use batch transactions (EIP-5792)
+      const canBatch = provider ? await checkBatchSupport(provider) : false;
+      
       // For USDC, check and request approval first
       if (!isETH) {
         console.log('🔍 Checking USDC allowance for amount:', amount, 'USDC');
@@ -221,21 +225,98 @@ export function useContract() {
         console.log('🔍 Required amount:', ethers.formatUnits(amountWei, 6), 'USDC');
         
         if (currentAllowance < amountWei) {
-          console.log('⚠️ Insufficient allowance, requesting approval...');
-          // Request approval - this will show a MetaMask popup and wait for confirmation
-          const approvalHash = await approveUSDC(amount);
-          if (approvalHash) {
-            console.log('✅ Approval transaction hash:', approvalHash);
-            // Wait a bit more to ensure the approval is fully processed
-            await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('⚠️ Insufficient allowance');
+          
+          // If batch is supported, combine approve + createGift
+          if (canBatch && provider) {
+            console.log('✅ Using batch transaction (approve + createGift)');
+            
+            const signer = await provider.getSigner();
+            const usdcContract = new ethers.Contract(
+              process.env.NEXT_PUBLIC_USDC_ADDRESS!,
+              ['function approve(address spender, uint256 amount) external returns (bool)'],
+              signer
+            );
+            
+            const approvalAmount = amountWei * BigInt(10); // Approve 10x
+            const maxUint256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+            const finalApprovalAmount = approvalAmount > maxUint256 / BigInt(2) ? maxUint256 : approvalAmount;
+            
+            // Prepare approve call
+            const approveData = usdcContract.interface.encodeFunctionData('approve', [
+              process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
+              finalApprovalAmount,
+            ]);
+            
+            // Prepare createGift call
+            const createGiftData = contract.interface.encodeFunctionData('createGift', [
+              receiver,
+              riddle,
+              answer,
+              message || '',
+              amountWei,
+              isETH,
+              unlockTime,
+              expirationTime,
+            ]);
+            
+            // Send batch transaction
+            const txHash = await sendBatchTransactions(provider, [
+              {
+                to: process.env.NEXT_PUBLIC_USDC_ADDRESS!,
+                data: approveData,
+              },
+              {
+                to: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!,
+                data: createGiftData,
+              },
+            ]);
+            
+            // Wait for confirmation
+            const receipt = await provider.waitForTransaction(txHash);
+            if (!receipt) {
+              throw new Error('Transaction receipt not found');
+            }
+            return receipt.hash;
+          } else {
+            // Fallback to sequential transactions
+            console.log('⚠️ Batch not supported, using sequential transactions');
+            const approvalHash = await approveUSDC(amount);
+            if (approvalHash) {
+              console.log('✅ Approval transaction hash:', approvalHash);
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
           }
         } else {
           console.log('✅ Sufficient USDC allowance');
         }
       }
       
+      // If we already did batch, return early
+      if (!isETH && canBatch && provider) {
+        const currentAllowance = await checkUSDCAllowance();
+        if (currentAllowance >= amountWei) {
+          // Batch was already executed, return the hash from above
+          // This shouldn't happen, but handle it gracefully
+        }
+      }
+      
       // Retry with backoff for rate-limited requests
       const tx = await retryWithBackoff(async () => {
+        // Get paymaster data for transaction sponsorship
+        const paymasterData = provider ? await getPaymasterAndData({}) : {};
+        
+        const txOptions: any = {};
+        if (isETH) {
+          txOptions.value = amountWei;
+        }
+        
+        // Add paymaster data if available (Base App handles this automatically)
+        if (paymasterData.paymaster) {
+          txOptions.paymaster = paymasterData.paymaster;
+          txOptions.paymasterData = paymasterData.paymasterData;
+        }
+        
         if (isETH) {
           // For ETH, pass value in transaction overrides
           return await contract.createGift(
@@ -247,7 +328,7 @@ export function useContract() {
             isETH,
             unlockTime,
             expirationTime,
-            { value: amountWei } // Transaction overrides for ETH
+            txOptions
           );
         } else {
           // For USDC, no value needed
@@ -259,7 +340,8 @@ export function useContract() {
             amountWei,
             isETH,
             unlockTime,
-            expirationTime
+            expirationTime,
+            txOptions
           );
         }
       });
