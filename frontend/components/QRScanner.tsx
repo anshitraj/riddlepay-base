@@ -22,10 +22,6 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
       // Use dynamic import with error handling
       import('html5-qrcode')
         .then((module) => {
-          // html5-qrcode v2+ exports Html5Qrcode as default
-          // Check for both default export and named export
-          let Html5Qrcode = null;
-          
           // html5-qrcode v2.3.8 exports structure
           // Try different possible export formats
           let Html5Qrcode = null;
