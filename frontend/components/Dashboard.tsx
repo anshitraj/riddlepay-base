@@ -229,7 +229,7 @@ export default function Dashboard() {
         {/* Row 1: Tokens */}
         <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4">
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
