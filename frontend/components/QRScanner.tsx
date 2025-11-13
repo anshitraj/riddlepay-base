@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
 import { X, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import dynamic from 'next/dynamic';
 
 interface QRScannerProps {
   isOpen: boolean;
@@ -12,19 +12,32 @@ interface QRScannerProps {
 }
 
 export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scannerRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [Html5QrcodeLib, setHtml5QrcodeLib] = useState<any>(null);
+
+  // Dynamically load html5-qrcode only on client side
+  useEffect(() => {
+    if (typeof window !== 'undefined' && isOpen) {
+      import('html5-qrcode').then((module) => {
+        setHtml5QrcodeLib(module.Html5Qrcode);
+      }).catch((err) => {
+        console.error('Failed to load html5-qrcode:', err);
+        setError('QR scanner library failed to load');
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !Html5QrcodeLib) return;
 
     const startScanning = async () => {
       try {
         setError(null);
         setScanning(true);
         
-        const html5QrCode = new Html5Qrcode('qr-reader');
+        const html5QrCode = new Html5QrcodeLib('qr-reader');
         scannerRef.current = html5QrCode;
 
         await html5QrCode.start(
@@ -69,7 +82,7 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
         });
       }
     };
-  }, [isOpen, onScan, onClose]);
+  }, [isOpen, Html5QrcodeLib, onScan, onClose]);
 
   if (!isOpen) return null;
 
