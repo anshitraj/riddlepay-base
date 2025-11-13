@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useContract } from './useContract';
 import { ethers } from 'ethers';
 
@@ -21,6 +21,7 @@ export function useStatsPreview() {
     riddleSolves: 0,
   });
   const [loading, setLoading] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // If readContract is not available, set loading to false and use default values
@@ -40,16 +41,14 @@ export function useStatsPreview() {
       
       return () => clearTimeout(timeout);
     }
-
-    let timeoutId: NodeJS.Timeout | null = null;
     
     const fetchStats = async () => {
       try {
         setLoading(true);
         // Clear any existing timeout
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
         }
 
         // Get current TVL
@@ -170,16 +169,16 @@ export function useStatsPreview() {
         });
       } finally {
         // Clear timeout since fetch completed
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-          timeoutId = null;
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
         }
         setLoading(false);
       }
     };
 
     // Add timeout to prevent infinite loading (only fires if fetchStats doesn't complete)
-    timeoutId = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       console.warn('⚠️ Stats preview loading timeout, setting default values');
       setLoading(false);
       setStats({
@@ -195,7 +194,10 @@ export function useStatsPreview() {
     const interval = setInterval(fetchStats, 30000);
     return () => {
       clearInterval(interval);
-      if (timeoutId) clearTimeout(timeoutId);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
   }, [readContract, getTotalValueLocked, getGiftCount, getGift]);
 
