@@ -491,14 +491,22 @@ export function useContract() {
   }, [contract]);
 
   const getGift = useCallback(async (giftId: number): Promise<Gift> => {
+    // Check cache first (faster than RPC call)
+    const cacheKey = `gift_${giftId}`;
+    const cached = getCached<Gift>(cacheKey);
+    if (cached !== null) {
+      console.log(`✅ Using cached gift ${giftId}`);
+      return cached;
+    }
+
     // Use readContract first (available without wallet), fallback to contract (requires wallet)
     let contractToUse = readContract || contract;
     
     // If readContract is not ready, wait a bit (it initializes on mount)
     if (!contractToUse) {
       console.warn('⚠️ Contract not ready, waiting for initialization...');
-      // Wait up to 2 seconds for readContract to initialize
-      for (let i = 0; i < 4; i++) {
+      // Wait up to 1 second for readContract to initialize (reduced from 2s)
+      for (let i = 0; i < 2; i++) {
         await new Promise(resolve => setTimeout(resolve, 500));
         contractToUse = readContract || contract;
         if (contractToUse) {
@@ -534,7 +542,7 @@ export function useContract() {
         return result;
       });
       
-      return {
+      const giftData: Gift = {
         sender: gift.sender,
         receiver: gift.receiver,
         riddle: gift.riddle,
@@ -547,6 +555,11 @@ export function useContract() {
         expirationTime: gift.expirationTime?.toString() || '0',
         claimed: gift.claimed,
       };
+
+      // Cache the gift data for faster subsequent access
+      setCached(cacheKey, giftData);
+      
+      return giftData;
     } catch (err: any) {
       console.error(`❌ Error fetching gift ${giftId}:`, err);
       throw new Error(err.message || 'Failed to fetch gift');

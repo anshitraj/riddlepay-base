@@ -106,7 +106,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
               </p>
             ) : currentStepData.showActions ? (
               <div className="space-y-3 mt-4">
-                <Link href="/" onClick={handleSkip}>
+                <Link href="/" prefetch={true} onClick={handleSkip}>
                   <motion.button
                     className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
                     whileHover={{ scale: 1.02 }}
@@ -116,7 +116,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
                     <span>Create Airdrop</span>
                   </motion.button>
                 </Link>
-                <Link href="/my-gifts" onClick={handleSkip}>
+                <Link href="/my-gifts" prefetch={true} onClick={handleSkip}>
                   <motion.button
                     className="w-full p-4 glass border border-border text-white dark:text-gray-900 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
                     whileHover={{ scale: 1.02 }}

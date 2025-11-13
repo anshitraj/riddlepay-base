@@ -26,6 +26,7 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              prefetch={true}
               className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[44px] min-h-[60px] rounded-xl transition-all touch-manipulation relative"
             >
               {isActive && (

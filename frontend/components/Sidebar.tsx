@@ -50,7 +50,7 @@ export default function Sidebar() {
       <aside className="hidden lg:flex fixed left-0 top-0 h-full w-60 bg-baseLight/40 dark:bg-white/8 backdrop-blur-xl border-r border-border z-40 flex-col shadow-lg">
         {/* Desktop Sidebar Content */}
         <div className="p-5 border-b border-border">
-          <Link href="/">
+          <Link href="/" prefetch={true}>
             <RiddlePayLogo size={40} showText={true} />
           </Link>
         </div>
@@ -64,7 +64,7 @@ export default function Sidebar() {
             const isActive = pathname === item.href;
             
             return (
-              <Link key={item.href} href={item.href}>
+              <Link key={item.href} href={item.href} prefetch={true}>
                 <motion.div
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive
@@ -106,7 +106,7 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className="p-5 border-b border-border">
-          <Link href="/" onClick={() => setIsMobileOpen(false)}>
+          <Link href="/" prefetch={true} onClick={() => setIsMobileOpen(false)}>
             <RiddlePayLogo size={40} showText={true} />
           </Link>
         </div>
@@ -121,7 +121,7 @@ export default function Sidebar() {
             const isActive = pathname === item.href;
             
             return (
-              <Link key={item.href} href={item.href} onClick={() => setIsMobileOpen(false)}>
+              <Link key={item.href} href={item.href} prefetch={true} onClick={() => setIsMobileOpen(false)}>
                 <motion.div
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive

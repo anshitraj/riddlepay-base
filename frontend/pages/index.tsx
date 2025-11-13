@@ -79,7 +79,7 @@ function HomeContent() {
                 transition={{ duration: 0.4 }}
                 className="flex justify-center"
               >
-                <Link href="/">
+                <Link href="/" prefetch={true}>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}

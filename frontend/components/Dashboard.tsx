@@ -382,7 +382,7 @@ export default function Dashboard() {
           </motion.div>
         </Link>
 
-        <Link href="/bulk-giveaway">
+        <Link href="/bulk-giveaway" prefetch={true}>
           <motion.div
             className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}
@@ -404,7 +404,7 @@ export default function Dashboard() {
           </motion.div>
         </Link>
 
-        <Link href="/my-gifts">
+        <Link href="/my-gifts" prefetch={true}>
           <motion.div
             className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}
@@ -441,7 +441,7 @@ export default function Dashboard() {
               </div>
               Recent Airdrops
             </h3>
-            <Link href="/my-gifts" className="text-sm text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 group">
+            <Link href="/my-gifts" prefetch={true} className="text-sm text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 group">
               View all
               <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
             </Link>
@@ -450,7 +450,7 @@ export default function Dashboard() {
             {recentGifts.map((item, idx) => {
               const { gift, id } = item;
               return (
-                <Link key={idx} href={`/claim?giftId=${id}`}>
+                <Link key={idx} href={`/claim?giftId=${id}`} prefetch={true}>
                   <motion.div 
                     className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-border hover:border-blue-500/50 transition-all cursor-pointer group touch-manipulation"
                     whileHover={{ scale: 1.01, x: 4 }}

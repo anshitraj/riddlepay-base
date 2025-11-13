@@ -35,9 +35,9 @@ function ClaimContent() {
       }
 
       try {
-        // Add timeout to prevent hanging
+        // Add timeout to prevent hanging (reduced from 15s to 5s for faster feedback)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 15000)
+          setTimeout(() => reject(new Error('Request timeout')), 5000)
         );
         
         console.log('🔄 Loading gift with ID:', giftId);
@@ -65,10 +65,10 @@ function ClaimContent() {
     
     // Refresh gift data periodically to catch state changes (only if not loading)
     intervalId = setInterval(() => {
-      if (giftId && typeof giftId === 'string') {
+      if (giftId && typeof giftId === 'string' && !loading) {
         loadGift();
       }
-    }, 10000); // Refresh every 10 seconds (less frequent to avoid hanging)
+    }, 15000); // Refresh every 15 seconds (less frequent to avoid hanging)
     
     return () => {
       cancelled = true;

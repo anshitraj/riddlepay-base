@@ -95,7 +95,7 @@ export async function throttle(ms: number = 200): Promise<void> {
  * Cache for frequently accessed data
  */
 const cache = new Map<string, { data: any; timestamp: number }>();
-const CACHE_TTL = 5000; // 5 seconds
+const CACHE_TTL = 10000; // 10 seconds (increased for better performance)
 
 export function getCached<T>(key: string): T | null {
   const cached = cache.get(key);
