@@ -99,23 +99,35 @@ export default function Header() {
       <div className="flex items-center justify-between p-3 sm:p-4">
         {/* Left: Base-Style Profile Header */}
         {address ? (
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
-            {/* Avatar */}
-            <div className="relative flex-shrink-0">
+          <div className="relative flex items-center gap-2 sm:gap-3 min-w-0 flex-1" ref={menuRef}>
+            {/* Avatar - Clickable */}
+            <button
+              onClick={() => {
+                setShowUserMenu(!showUserMenu);
+                setShowSettingsMenu(false);
+              }}
+              className="relative flex-shrink-0 hover:scale-105 transition-transform"
+            >
               <img
                 src={getAvatarUrl()}
                 alt={displayNameText || 'User'}
-                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border-2 border-blue-500/30 ring-2 ring-blue-500/10"
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border-2 border-blue-500/30 ring-2 ring-blue-500/10 cursor-pointer"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src = getAvatarUrl();
                 }}
               />
               {/* Online indicator */}
               <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0A0F1F]"></div>
-            </div>
+            </button>
 
-            {/* Username & Network */}
-            <div className="flex-1 min-w-0">
+            {/* Username & Network - Clickable */}
+            <button
+              onClick={() => {
+                setShowUserMenu(!showUserMenu);
+                setShowSettingsMenu(false);
+              }}
+              className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
+            >
               <div className="flex items-center gap-2 flex-wrap">
                 {displayNameText ? (
                   <span className="text-sm sm:text-base font-semibold text-white truncate">
@@ -132,7 +144,63 @@ export default function Header() {
                   Base Mainnet
                 </span>
               </div>
-            </div>
+            </button>
+
+            {/* User Menu Dropdown */}
+            <AnimatePresence>
+              {showUserMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute left-0 top-full mt-2 w-64 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                >
+                  <div className="p-3 border-b border-blue-500/10">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={getAvatarUrl()}
+                        alt={displayNameText || 'User'}
+                        className="w-12 h-12 rounded-full border-2 border-blue-500/30"
+                      />
+                      <div className="flex-1 min-w-0">
+                        {displayNameText ? (
+                          <p className="text-sm font-semibold text-white truncate">
+                            {displayNameText}
+                          </p>
+                        ) : null}
+                        <p className="text-xs font-mono text-gray-400 truncate">
+                          {shortAddress}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button
+                      onClick={copyAddress}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
+                    >
+                      <Copy className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-white">Copy Address</span>
+                    </button>
+                    <button
+                      onClick={viewOnExplorer}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
+                    >
+                      <ExternalLink className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-white">View on BaseScan</span>
+                    </button>
+                    <div className="my-1 h-px bg-blue-500/10"></div>
+                    <button
+                      onClick={handleDisconnect}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-left"
+                    >
+                      <LogOut className="w-4 h-4 text-red-400" />
+                      <span className="text-sm text-red-400">Disconnect</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           <div className="flex-1">
@@ -141,7 +209,7 @@ export default function Header() {
         )}
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0" ref={menuRef}>
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Search - Mobile */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
