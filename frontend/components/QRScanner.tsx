@@ -10,21 +10,39 @@ interface QRScannerProps {
   onScan: (address: string) => void;
 }
 
+// Type for Html5Qrcode
+type Html5QrcodeType = {
+  new (elementId: string): {
+    start: (
+      videoConstraints: { facingMode: string },
+      config: { fps: number; qrbox: { width: number; height: number } },
+      onScanSuccess: (decodedText: string) => void,
+      onScanError: (errorMessage: string) => void
+    ) => Promise<void>;
+    stop: () => Promise<void>;
+  };
+};
+
 export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const scannerRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
-  const [Html5QrcodeLib, setHtml5QrcodeLib] = useState<any>(null);
+  const [Html5QrcodeLib, setHtml5QrcodeLib] = useState<Html5QrcodeType | null>(null);
 
   // Dynamically load html5-qrcode only on client side
   useEffect(() => {
     if (typeof window !== 'undefined' && isOpen) {
-      import('html5-qrcode').then((module) => {
-        setHtml5QrcodeLib(module.Html5Qrcode);
-      }).catch((err) => {
-        console.error('Failed to load html5-qrcode:', err);
-        setError('QR scanner library failed to load');
-      });
+      // Use dynamic import with error handling
+      import('html5-qrcode')
+        .then((module) => {
+          // Handle both default and named exports
+          const Html5Qrcode = (module.default || module.Html5Qrcode) as Html5QrcodeType;
+          setHtml5QrcodeLib(Html5Qrcode);
+        })
+        .catch((err) => {
+          console.error('Failed to load html5-qrcode:', err);
+          setError('QR scanner library failed to load. Please refresh the page.');
+        });
     }
   }, [isOpen]);
 

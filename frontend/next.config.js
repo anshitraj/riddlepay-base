@@ -36,11 +36,10 @@ const nextConfig = {
       tls: false,
     };
     
-    // Fix for html5-qrcode SSR issues
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-      };
+    // Fix for html5-qrcode SSR issues - mark as external for SSR
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('html5-qrcode');
     }
     
     return config;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { motion } from 'framer-motion';
@@ -10,8 +11,13 @@ import ConfirmationModal from './ConfirmationModal';
 import RiddlePayLogo from './RiddlePayLogo';
 import SuggestedRiddles from './SuggestedRiddles';
 import ConversationalFeedback from './ConversationalFeedback';
-import QRScanner from './QRScanner';
 import SuccessAnimation from './SuccessAnimation';
+
+// Dynamically import QRScanner with SSR disabled to prevent html5-qrcode bundling issues
+const QRScanner = dynamic(() => import('./QRScanner'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function SendGiftForm() {
   const { address, ensureBaseMainnet } = useWallet();
