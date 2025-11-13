@@ -16,8 +16,8 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl border-t border-border shadow-lg">
-      <div className="flex items-center justify-around px-2 py-2 safe-area-bottom">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0E152B]/95 backdrop-blur-2xl border-t border-[#0066FF]/10 shadow-2xl pb-safe">
+      <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -29,25 +29,30 @@ export default function BottomNav() {
               className="flex flex-col items-center justify-center gap-1 px-3 py-2 min-w-[44px] min-h-[60px] rounded-xl transition-all touch-manipulation relative"
             >
               {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-gradient-to-r from-[#0052FF]/20 to-[#00C2FF]/20 rounded-xl border border-[#0052FF]/30 shadow-lg shadow-[#0052FF]/20"
-                  initial={false}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
+                <>
+                  {/* Neon glow background */}
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-gradient-to-br from-[#0052FF]/30 to-[#00C2FF]/30 rounded-xl border border-[#0052FF]/40 shadow-lg shadow-[#0052FF]/30"
+                    initial={false}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                  {/* Outer glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-[#0052FF]/20 to-[#00C2FF]/20 rounded-xl blur-md -z-10" />
+                </>
               )}
               <Icon
-                className={`w-5 h-5 relative z-10 transition-colors ${
+                className={`w-6 h-6 relative z-10 transition-all ${
                   isActive
-                    ? 'text-[#0052FF] dark:text-[#00C2FF]'
-                    : 'text-gray-400 dark:text-gray-600'
+                    ? 'text-[#0052FF] drop-shadow-[0_0_8px_rgba(0,82,255,0.6)]'
+                    : 'text-gray-400'
                 }`}
               />
               <span
-                className={`text-xs font-semibold relative z-10 transition-colors ${
+                className={`text-[11px] font-semibold relative z-10 transition-colors ${
                   isActive
-                    ? 'text-[#0052FF] dark:text-[#00C2FF]'
-                    : 'text-gray-400 dark:text-gray-600'
+                    ? 'text-[#0052FF]'
+                    : 'text-gray-400'
                 }`}
               >
                 {item.label}
