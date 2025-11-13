@@ -11,6 +11,7 @@ import RiddlePayLogo from './RiddlePayLogo';
 import SuggestedRiddles from './SuggestedRiddles';
 import ConversationalFeedback from './ConversationalFeedback';
 import QRScanner from './QRScanner';
+import SuccessAnimation from './SuccessAnimation';
 
 export default function SendGiftForm() {
   const { address, ensureBaseMainnet } = useWallet();
