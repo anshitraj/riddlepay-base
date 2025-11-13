@@ -12,6 +12,7 @@ import RiddlePayLogo from './RiddlePayLogo';
 import SuggestedRiddles from './SuggestedRiddles';
 import ConversationalFeedback from './ConversationalFeedback';
 import SuccessAnimation from './SuccessAnimation';
+import { addXP, getUserXP } from '@/utils/xpSystem';
 
 // Dynamically import QRScanner with SSR disabled to prevent html5-qrcode bundling issues
 const QRScanner = dynamic(() => import('./QRScanner'), {
