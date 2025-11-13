@@ -21,14 +21,30 @@ export default function Header() {
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
-        setShowSettingsMenu(false);
+      const target = event.target as Node;
+      
+      // Check if click is inside user menu container
+      const userMenuContainer = document.querySelector('[data-user-menu]');
+      if (userMenuContainer && userMenuContainer.contains(target)) {
+        return; // Don't close if clicking inside user menu area
       }
+      
+      // Check if click is inside settings menu container
+      const settingsMenuContainer = document.querySelector('[data-settings-menu]');
+      if (settingsMenuContainer && settingsMenuContainer.contains(target)) {
+        return; // Don't close if clicking inside settings menu area
+      }
+      
+      // Close both menus if clicking outside
+      setShowUserMenu(false);
+      setShowSettingsMenu(false);
     };
 
     if (showUserMenu || showSettingsMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
+      // Use setTimeout to avoid immediate closure
+      setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 0);
     }
 
     return () => {
@@ -99,10 +115,11 @@ export default function Header() {
       <div className="flex items-center justify-between p-3 sm:p-4">
         {/* Left: Base-Style Profile Header */}
         {address ? (
-          <div className="relative flex items-center gap-2 sm:gap-3 min-w-0 flex-1" ref={menuRef}>
+          <div className="relative flex items-center gap-2 sm:gap-3 min-w-0 flex-1" data-user-menu>
             {/* Avatar - Clickable */}
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setShowUserMenu(!showUserMenu);
                 setShowSettingsMenu(false);
               }}
@@ -122,7 +139,8 @@ export default function Header() {
 
             {/* Username & Network - Clickable */}
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setShowUserMenu(!showUserMenu);
                 setShowSettingsMenu(false);
               }}
@@ -225,9 +243,10 @@ export default function Header() {
           </div>
 
           {/* Settings */}
-          <div className="relative">
+          <div className="relative" data-settings-menu>
             <button
-              onClick={() => {
+              onClick={(e) => {
+                e.stopPropagation();
                 setShowSettingsMenu(!showSettingsMenu);
                 setShowUserMenu(false);
               }}
@@ -280,9 +299,10 @@ export default function Header() {
 
           {/* User Menu - Mobile */}
           {address && (
-            <div className="relative">
+            <div className="relative" data-user-menu>
               <button
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setShowUserMenu(!showUserMenu);
                   setShowSettingsMenu(false);
                 }}
