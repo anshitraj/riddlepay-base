@@ -10,24 +10,11 @@ interface QRScannerProps {
   onScan: (address: string) => void;
 }
 
-// Type for Html5Qrcode
-type Html5QrcodeType = {
-  new (elementId: string): {
-    start: (
-      videoConstraints: { facingMode: string },
-      config: { fps: number; qrbox: { width: number; height: number } },
-      onScanSuccess: (decodedText: string) => void,
-      onScanError: (errorMessage: string) => void
-    ) => Promise<void>;
-    stop: () => Promise<void>;
-  };
-};
-
 export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   const scannerRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
-  const [Html5QrcodeLib, setHtml5QrcodeLib] = useState<Html5QrcodeType | null>(null);
+  const [Html5QrcodeLib, setHtml5QrcodeLib] = useState<any>(null);
 
   // Dynamically load html5-qrcode only on client side
   useEffect(() => {
@@ -35,9 +22,13 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
       // Use dynamic import with error handling
       import('html5-qrcode')
         .then((module) => {
-          // Handle both default and named exports
-          const Html5Qrcode = (module.default || module.Html5Qrcode) as Html5QrcodeType;
-          setHtml5QrcodeLib(Html5Qrcode);
+          // html5-qrcode exports Html5Qrcode as default
+          const Html5Qrcode = module.default || module.Html5Qrcode;
+          if (Html5Qrcode) {
+            setHtml5QrcodeLib(() => Html5Qrcode);
+          } else {
+            throw new Error('Html5Qrcode not found in module');
+          }
         })
         .catch((err) => {
           console.error('Failed to load html5-qrcode:', err);
@@ -49,11 +40,19 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
   useEffect(() => {
     if (!isOpen || !Html5QrcodeLib) return;
 
+    let isMounted = true;
     const startScanning = async () => {
       try {
         setError(null);
         setScanning(true);
         
+        // Wait for the DOM element to be available
+        const element = document.getElementById('qr-reader');
+        if (!element) {
+          throw new Error('QR reader element not found');
+        }
+
+        // Create instance with proper error handling
         const html5QrCode = new Html5QrcodeLib('qr-reader');
         scannerRef.current = html5QrCode;
 
@@ -63,40 +62,51 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
             fps: 10,
             qrbox: { width: 250, height: 250 },
           },
-          (decodedText) => {
+          (decodedText: string) => {
+            if (!isMounted) return;
+            
             // Validate if it's an Ethereum address
             if (/^0x[a-fA-F0-9]{40}$/.test(decodedText)) {
-              html5QrCode.stop();
+              html5QrCode.stop().catch(() => {});
               onScan(decodedText);
               onClose();
             } else if (decodedText.startsWith('ethereum:')) {
               // Handle ethereum: URI scheme
               const address = decodedText.split(':')[1]?.split('?')[0];
               if (address && /^0x[a-fA-F0-9]{40}$/.test(address)) {
-                html5QrCode.stop();
+                html5QrCode.stop().catch(() => {});
                 onScan(address);
                 onClose();
               }
             }
           },
-          (errorMessage) => {
+          (errorMessage: string) => {
             // Ignore errors - they're expected during scanning
+            console.debug('QR scan error (ignored):', errorMessage);
           }
         );
       } catch (err: any) {
         console.error('QR Scanner error:', err);
-        setError(err.message || 'Failed to start camera');
-        setScanning(false);
+        if (isMounted) {
+          setError(err.message || 'Failed to start camera. Please ensure camera permissions are granted.');
+          setScanning(false);
+        }
       }
     };
 
-    startScanning();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      startScanning();
+    }, 100);
 
     return () => {
+      isMounted = false;
+      clearTimeout(timer);
       if (scannerRef.current) {
         scannerRef.current.stop().catch(() => {
           // Ignore stop errors
         });
+        scannerRef.current = null;
       }
     };
   }, [isOpen, Html5QrcodeLib, onScan, onClose]);
