@@ -15,6 +15,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <meta property="og:title" content="RiddlePay" />
         <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
         <meta property="og:type" content="website" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="alternate icon" href="/favicon.svg" />
       </Head>
