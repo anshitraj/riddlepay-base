@@ -102,7 +102,7 @@ export default function Header() {
             exit={{ height: 0, opacity: 0 }}
             className="md:hidden overflow-hidden border-b border-blue-500/10"
           >
-            <div className="p-3">
+            <div className="p-3 sm:p-4 bg-[#0A0F1F]/95 backdrop-blur-xl">
               <SearchBar />
             </div>
           </motion.div>
