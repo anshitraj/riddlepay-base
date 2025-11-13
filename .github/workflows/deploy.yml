@@ -1,5 +1,7 @@
-name: Deploy to Vercel
+name: Build Check
 
+# This workflow just verifies the build works
+# Vercel will auto-deploy if connected via Git integration
 on:
   push:
     branches:
@@ -11,7 +13,7 @@ on:
       - master
 
 jobs:
-  deploy:
+  build-check:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -31,23 +33,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Build Next.js app
+        run: npm run build
         env:
           NODE_ENV: production
-
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          # Use default values for build check (Vercel will use actual env vars)
+          NEXT_PUBLIC_CONTRACT_ADDRESS: ${{ secrets.NEXT_PUBLIC_CONTRACT_ADDRESS || '0x57acfC996520417828B8693deb87C4D66814E5f9' }}
+          NEXT_PUBLIC_USDC_ADDRESS: ${{ secrets.NEXT_PUBLIC_USDC_ADDRESS || '' }}
+          NEXT_PUBLIC_BASE_RPC: ${{ secrets.NEXT_PUBLIC_BASE_RPC || 'https://mainnet.base.org' }}
 
