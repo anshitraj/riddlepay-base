@@ -147,6 +147,18 @@ export default function Header() {
 
         {/* Right: Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
+          {/* Refresh Button */}
+          <button
+            onClick={() => {
+              window.location.reload();
+            }}
+            className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center group"
+            aria-label="Refresh"
+            title="Refresh page"
+          >
+            <RefreshCw className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 group-hover:rotate-180 transition-transform duration-500" />
+          </button>
+
           {/* Search - Mobile */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
