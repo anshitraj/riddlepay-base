@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { User, LogOut, Copy, ExternalLink, Settings, Search, Send } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
@@ -112,12 +113,23 @@ export default function Header() {
       <div className="flex items-center justify-between p-3 sm:p-4 lg:pl-4">
         {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
         <div className="flex-1 min-w-0 lg:ml-60">
-          {/* Mobile: RiddlePay Branding - moved right to avoid hamburger menu */}
-          <div className="sm:hidden flex flex-col ml-12">
+          {/* Mobile: RiddlePay Branding with Logo - moved right to avoid hamburger menu */}
+          <div className="sm:hidden flex items-center gap-2 ml-12">
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
-              <span className="text-lg font-bold text-white">RiddlePay</span>
+              <div className="relative w-8 h-8 flex-shrink-0">
+                <Image
+                  src="/icon.svg"
+                  alt="RiddlePay Logo"
+                  width={32}
+                  height={32}
+                  className="w-full h-full"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-white leading-tight">RiddlePay</span>
+                <span className="text-[10px] text-gray-400 leading-tight">powered by Base</span>
+              </div>
             </Link>
-            <span className="text-[10px] text-gray-400 mt-0.5">powered by Base</span>
           </div>
           {/* Desktop: Create Secret Airdrop Button */}
           <Link href="/" prefetch={true} className="hidden sm:block">
