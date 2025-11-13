@@ -59,29 +59,29 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 md:p-6 overflow-y-auto">
-            <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
+          <main className="flex-1 p-2 sm:p-3 md:p-4 lg:p-6 overflow-y-auto">
+            <div className="max-w-7xl mx-auto space-y-3 sm:space-y-4 md:space-y-6">
               {/* Dashboard Stats */}
               <Dashboard />
 
               {/* Send Gift Form */}
               <motion.div 
-                className="glass rounded-2xl p-4 sm:p-6 md:p-8 border border-border"
+                className="glass rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 border border-border"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <div className="mb-4 sm:mb-6">
+                <div className="mb-3 sm:mb-4 md:mb-6">
                   <div className="mb-2">
-                      <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-gray-900">
+                      <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-gray-900">
                         Create New Crypto Airdrop
                       </h2>
-                      <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600 mt-1">
+                      <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-600 mt-1">
                         Send a secure, on-chain airdrop with an optional riddle and personal message.
                       </p>
                   </div>
                   {/* Light gradient separator */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-4"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-3 sm:mt-4"></div>
                 </div>
                 <SendGiftForm />
               </motion.div>

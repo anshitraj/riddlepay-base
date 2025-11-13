@@ -141,17 +141,17 @@ export default function Header() {
         </div>
       )}
       
-      <div className="flex items-center justify-between p-3 md:p-4">
+      <div className="flex items-center justify-between p-2 sm:p-3 md:p-4">
         {/* Left: RiddlePay Branding + Page Title */}
-        <div className="flex items-center gap-2 md:gap-4 min-w-0 flex-1">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0 flex-1">
           <div className="hidden sm:block">
-            <RiddlePayLogo size={28} showText={true} />
+            <RiddlePayLogo size={24} showText={true} />
           </div>
           <div className="sm:hidden">
-            <RiddlePayLogo size={24} showText={false} />
+            <RiddlePayLogo size={20} showText={false} />
           </div>
           <div className="hidden md:block h-6 w-px bg-border"></div>
-          <h2 className="hidden sm:block text-base md:text-lg font-semibold text-gray-400 dark:text-gray-600 truncate">Dashboard</h2>
+          <h2 className="hidden sm:block text-sm sm:text-base md:text-lg font-semibold text-gray-400 dark:text-gray-600 truncate">Dashboard</h2>
         </div>
 
         {/* Center: Search - Desktop */}
@@ -160,14 +160,14 @@ export default function Header() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
           {/* Mobile Search Toggle */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="md:hidden p-2 glass rounded-lg border border-border hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all"
+            className="md:hidden p-1.5 sm:p-2 glass rounded-lg border border-border hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Toggle search"
           >
-            <svg className="w-5 h-5 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>

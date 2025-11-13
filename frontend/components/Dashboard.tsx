@@ -174,49 +174,50 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 sm:space-y-4 md:space-y-6">
       {/* Total Balance Card */}
       <motion.div
-        className="relative glass rounded-2xl p-8 border border-border overflow-hidden group"
+        className="relative glass rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-border overflow-hidden group"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
         {/* Gradient Background Effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-blue-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         
-        <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6 mb-6">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2 md:mb-3">
-              <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">TOTAL VALUE LOCKED</p>
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing || loading}
-                className="p-1.5 rounded-lg glass border border-border hover:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
-                title="Refresh stats"
-              >
-                <RefreshCw className={`w-4 h-4 text-gray-400 dark:text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
-              </button>
+        <div className="relative flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <p className="text-[10px] sm:text-xs uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">TOTAL VALUE LOCKED</p>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
-              ${(parseFloat(stats.totalValueETH) * 3000 + parseFloat(stats.totalValueUSDC)).toFixed(2)}
-            </h2>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing || loading}
+              className="p-1.5 sm:p-2 rounded-lg glass border border-border hover:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              title="Refresh stats"
+            >
+              <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          <div className="flex gap-3 sm:gap-6 flex-wrap">
-            <div className="text-left sm:text-right">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent">
+            ${(parseFloat(stats.totalValueETH) * 3000 + parseFloat(stats.totalValueUSDC)).toFixed(2)}
+          </h2>
+          {/* Hide stats on mobile, show on larger screens */}
+          <div className="hidden md:flex gap-6 flex-wrap">
+            <div className="text-right">
               <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">Today</p>
               <p className="text-sm font-bold text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
-            <div className="text-left sm:text-right">
+            <div className="text-right">
               <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">7 Days</p>
               <p className="text-sm font-bold text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
-            <div className="text-left sm:text-right">
+            <div className="text-right">
               <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">30 Days</p>
               <p className="text-sm font-bold text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
@@ -227,149 +228,157 @@ export default function Dashboard() {
         </div>
         
         {/* Token Cards */}
-        <div className="relative grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+        <div className="relative grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4 md:gap-4">
           <motion.div 
-            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 group cursor-pointer touch-manipulation"
+            className="glass rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 group cursor-pointer touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col justify-between"
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all">
                 <span className="text-orange-400 font-bold text-base sm:text-lg">B</span>
               </div>
               <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">ETH</p>
-            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueETH}</p>
-            <p className="text-xs text-green-400 font-semibold flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              +0.00%
-            </p>
+            <div>
+              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-600 mb-1 font-medium">ETH</p>
+              <p className="text-base sm:text-lg md:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueETH}</p>
+              <p className="text-[10px] sm:text-xs text-green-400 font-semibold flex items-center gap-1">
+                <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                +0.00%
+              </p>
+            </div>
           </motion.div>
           
           <motion.div 
-            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation"
+            className="glass rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col justify-between"
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
                 <span className="text-blue-400 font-bold text-base sm:text-lg">U</span>
               </div>
               <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">USDC</p>
-            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueUSDC}</p>
-            <p className="text-xs text-green-400 font-semibold flex items-center gap-1">
-              <ArrowUpRight className="w-3 h-3" />
-              +0.00%
-            </p>
+            <div>
+              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-600 mb-1 font-medium">USDC</p>
+              <p className="text-base sm:text-lg md:text-xl font-bold text-white dark:text-gray-900 mb-1 break-all">{stats.totalValueUSDC}</p>
+              <p className="text-[10px] sm:text-xs text-green-400 font-semibold flex items-center gap-1">
+                <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                +0.00%
+              </p>
+            </div>
           </motion.div>
 
           <motion.div 
-            className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation"
+            className="glass rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col justify-between"
             whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all">
                 <Gift className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
               </div>
               <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
             </div>
-            <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">Total Airdrops</p>
-            <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1">{stats.totalGifts}</p>
-            <p className="text-xs text-green-400 font-semibold">Active</p>
+            <div>
+              <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-600 mb-1 font-medium">Total Airdrops</p>
+              <p className="text-base sm:text-lg md:text-xl font-bold text-white dark:text-gray-900 mb-1">{stats.totalGifts}</p>
+              <p className="text-[10px] sm:text-xs text-green-400 font-semibold">Active</p>
+            </div>
           </motion.div>
 
           {address && (
             <motion.div 
-              className="glass rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20 group cursor-pointer touch-manipulation"
+              className="glass rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border border-border hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20 group cursor-pointer touch-manipulation min-h-[100px] sm:min-h-[120px] flex flex-col justify-between"
               whileHover={{ scale: 1.02, y: -2 }}
               whileTap={{ scale: 0.98 }}
             >
-              <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all">
                   <Users className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400" />
                 </div>
                 <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
               </div>
-              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1 sm:mb-2 font-medium">Your Airdrops</p>
-              <p className="text-lg sm:text-xl font-bold text-white dark:text-gray-900 mb-1">
-                {stats.userGiftsSent + stats.userGiftsReceived}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-600">
-                {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
-              </p>
+              <div>
+                <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-600 mb-1 font-medium">Your Airdrops</p>
+                <p className="text-base sm:text-lg md:text-xl font-bold text-white dark:text-gray-900 mb-1">
+                  {stats.userGiftsSent + stats.userGiftsReceived}
+                </p>
+                <p className="text-[10px] sm:text-xs text-gray-400 dark:text-gray-600">
+                  {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
+                </p>
+              </div>
             </motion.div>
           )}
         </div>
       </motion.div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
         <Link href="/">
           <motion.div
-            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            className="relative glass rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[80px] sm:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-3 sm:gap-4">
-              <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110">
-                <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="relative flex items-center gap-2 sm:gap-3 md:gap-4">
+              <div className="p-2.5 sm:p-3 md:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5 sm:mb-1">
                   Send Airdrop
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">Create a new airdrop</p>
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-600">Create a new airdrop</p>
               </div>
-              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
           </motion.div>
         </Link>
 
         <Link href="/bulk-giveaway">
           <motion.div
-            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            className="relative glass rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[80px] sm:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-3 sm:gap-4">
-              <div className="p-3 sm:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110">
-                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="relative flex items-center gap-2 sm:gap-3 md:gap-4">
+              <div className="p-2.5 sm:p-3 md:p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5 sm:mb-1">
                   Bulk Airdrop
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">Send to multiple winners</p>
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-600">Send to multiple winners</p>
               </div>
-              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
           </motion.div>
         </Link>
 
         <Link href="/my-gifts">
           <motion.div
-            className="relative glass rounded-2xl p-4 sm:p-5 md:p-6 border border-border hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation"
+            className="relative glass rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 lg:p-6 border border-border hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[80px] sm:min-h-[100px]"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-3 sm:gap-4">
-              <div className="p-3 sm:p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg shadow-green-500/30 group-hover:shadow-green-500/50 transition-all group-hover:scale-110">
-                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="relative flex items-center gap-2 sm:gap-3 md:gap-4">
+              <div className="p-2.5 sm:p-3 md:p-4 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl shadow-lg shadow-green-500/30 group-hover:shadow-green-500/50 transition-all group-hover:scale-110 flex-shrink-0">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-base sm:text-lg font-bold text-white dark:text-gray-900 group-hover:text-green-400 transition-colors mb-1">
+                <h3 className="text-sm sm:text-base md:text-lg font-bold text-white dark:text-gray-900 group-hover:text-green-400 transition-colors mb-0.5 sm:mb-1">
                   My Airdrops
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-600">View all your airdrops</p>
+                <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-600">View all your airdrops</p>
               </div>
-              <ArrowUpRight className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+              <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
           </motion.div>
         </Link>

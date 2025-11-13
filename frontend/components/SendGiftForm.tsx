@@ -195,21 +195,21 @@ export default function SendGiftForm() {
 
   return (
     <motion.div 
-      className="bg-white dark:bg-baseLight/50 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl"
+      className="bg-white dark:bg-baseLight/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-4 sm:mb-6 md:mb-8">
         <div className="flex items-center gap-2 sm:gap-3 mb-2">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
             <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
             Send Secret Airdrop
           </h2>
         </div>
-        <p className="text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-12">
+        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-10 md:ml-12">
           Enter recipient details and customize your airdrop.
         </p>
       </div>
@@ -244,103 +244,107 @@ export default function SendGiftForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Recipient Wallet Address
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-6">
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Recipient Wallet Address</span>
           </label>
           <input
             type="text"
             value={receiver}
             onChange={(e) => setReceiver(e.target.value)}
             placeholder="0x..."
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+            className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
             required
           />
         </div>
 
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Riddle Challenge <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
+            <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Riddle Challenge</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <textarea
             value={riddle}
             onChange={(e) => setRiddle(e.target.value)}
             placeholder="What has keys but no locks? (Leave empty for direct airdrop)"
-            rows={4}
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
+            rows={3}
+            className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
           />
         </div>
 
         {riddle.trim() && (
-          <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-            <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-              Answer (hidden from receiver)
+          <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+              <span>Answer (hidden from receiver)</span>
             </label>
             <input
               type="text"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               placeholder="piano"
-              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required={riddle.trim().length > 0}
             />
           </div>
         )}
 
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-            <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Personal Message <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Revealed After Claim)</span>
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
+            <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Personal Message</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Revealed After Claim)</span>
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Happy holidays! Hope you enjoy this gift..."
             rows={3}
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
+            className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 resize-none touch-manipulation"
           />
         </div>
 
         {/* Gift Settings Section Divider */}
-        <div className="pt-4 sm:pt-6 border-t border-gray-600 dark:border-gray-700">
-          <div className="mb-4 sm:mb-6">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">Airdrop Settings</h3>
-            <p className="text-xs text-gray-500 dark:text-gray-500">Set unlock time and transfer amount</p>
+        <div className="pt-3 sm:pt-4 md:pt-6 border-t border-gray-600 dark:border-gray-700">
+          <div className="mb-3 sm:mb-4 md:mb-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-1">Airdrop Settings</h3>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500">Set unlock time and transfer amount</p>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-            <Clock className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Unlock Day <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
+            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Unlock Day</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <input
             type="date"
             value={unlockTime}
             onChange={(e) => setUnlockTime(e.target.value)}
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+            className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
           />
           {unlockTime && (
-            <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
               Airdrop will unlock on: {new Date(unlockTime).toLocaleDateString()}
             </p>
           )}
         </div>
 
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Expiration Time <span className="text-xs text-gray-500 dark:text-gray-500 font-normal">(Auto-refund if not claimed)</span>
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
+            <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Expiration Time</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Auto-refund if not claimed)</span>
           </label>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <select
               value={expirationTime}
               onChange={(e) => setExpirationTime(e.target.value)}
-              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation"
+              className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation"
             >
               <option value="24hours">24 Hours</option>
               <option value="7days">7 Days</option>
@@ -355,10 +359,10 @@ export default function SendGiftForm() {
                   onChange={(e) => setCustomExpirationHours(e.target.value)}
                   placeholder="Enter hours (e.g., 48 for 2 days)"
                   min="1"
-                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+                  className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
                 />
                 {customExpirationHours && (
-                  <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                  <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
                     Airdrop will expire in: {Number(customExpirationHours) >= 24 
                       ? `${(Number(customExpirationHours) / 24).toFixed(1)} days`
                       : `${customExpirationHours} hours`}
@@ -367,7 +371,7 @@ export default function SendGiftForm() {
               </div>
             )}
             {expirationTime !== 'custom' && (
-              <p className="text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
                 {expirationTime === '24hours' && 'Airdrop will expire in 24 hours if not claimed'}
                 {expirationTime === '7days' && 'Airdrop will expire in 7 days if not claimed'}
                 {expirationTime === '1month' && 'Airdrop will expire in 30 days if not claimed'}
@@ -376,10 +380,10 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 bg-gray-50 dark:glass rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
-            <Coins className="w-4 h-4 text-blue-600 dark:text-blue-500" />
-            Airdrop Amount
+        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+            <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
+            <span>Airdrop Amount</span>
           </label>
           <div className="flex gap-2 sm:gap-3">
             <input
@@ -388,13 +392,13 @@ export default function SendGiftForm() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={isETH ? "0.001" : "1.0"}
-              className="flex-1 px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required
             />
             <select
               value={isETH ? 'ETH' : 'USDC'}
               onChange={(e) => setIsETH(e.target.value === 'ETH')}
-              className="px-4 sm:px-6 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation"
+              className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation flex-shrink-0"
             >
               <option value="ETH">ETH</option>
               <option value="USDC">USDC</option>
@@ -402,27 +406,27 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="pt-4 sm:pt-6">
+        <div className="pt-3 sm:pt-4 md:pt-6">
           <motion.button
             type="submit"
             disabled={loading || approving}
-            className="w-full py-4 sm:py-5 min-h-[56px] bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-base sm:text-lg touch-manipulation shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+            className="w-full py-3 sm:py-4 md:py-5 min-h-[52px] sm:min-h-[56px] bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold rounded-lg sm:rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-sm sm:text-base md:text-lg touch-manipulation shadow-md hover:shadow-lg flex items-center justify-center gap-2"
             whileHover={{ scale: loading || approving ? 1 : 1.02 }}
             whileTap={{ scale: loading || approving ? 1 : 0.98 }}
           >
             {approving ? (
               <>
-                <Clock className="w-5 h-5 animate-spin" />
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 <span>Approving USDC...</span>
               </>
             ) : loading ? (
               <>
-                <Gift className="w-5 h-5 animate-pulse" />
+                <Gift className="w-4 h-4 sm:w-5 sm:h-5 animate-pulse" />
                 <span>Creating Gift...</span>
               </>
             ) : (
               <>
-                <Gift className="w-5 h-5" />
+                <Gift className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>Send Airdrop Securely</span>
               </>
             )}
