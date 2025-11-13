@@ -395,37 +395,39 @@ export default function Dashboard() {
           </motion.div>
 
           {address && (
-          <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-          >
-              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <div className="relative flex items-center justify-between mb-3">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0 ring-2 ring-yellow-500/10 group-hover:ring-yellow-500/30">
-                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-400" />
+          <Link href="/my-gifts" prefetch={true} className="block">
+            <motion.div 
+              className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+              whileHover={{ scale: 1.02, y: -4 }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+            >
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="relative flex items-center justify-between mb-3">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0 ring-2 ring-yellow-500/10 group-hover:ring-yellow-500/30">
+                    <Users className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-400" />
+                  </div>
+                  <motion.div
+                    whileHover={{ scale: 1.2, rotate: 45 }}
+                    className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
+                  >
+                    <ArrowUpRight className="w-full h-full" />
+                  </motion.div>
                 </div>
-                <motion.div
-                  whileHover={{ scale: 1.2, rotate: 45 }}
-                  className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
-                >
-                  <ArrowUpRight className="w-full h-full" />
-                </motion.div>
-              </div>
-              <div className="relative flex-1 flex flex-col justify-end">
-                <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Your Airdrops</p>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">
-                  {stats.userGiftsSent + stats.userGiftsReceived}
-                </p>
-                <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Sent + Received</p>
-                <p className="text-xs sm:text-sm text-gray-400 leading-tight">
-                  {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
-                </p>
-              </div>
-            </motion.div>
+                <div className="relative flex-1 flex flex-col justify-end">
+                  <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Your Airdrops</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">
+                    {stats.userGiftsSent + stats.userGiftsReceived}
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Sent + Received</p>
+                  <p className="text-xs sm:text-sm text-gray-400 leading-tight">
+                    {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
+                  </p>
+                </div>
+              </motion.div>
+            </Link>
           )}
         </div>
       </motion.div>
