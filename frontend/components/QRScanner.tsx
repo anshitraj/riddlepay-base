@@ -18,16 +18,27 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
   // Dynamically load html5-qrcode only on client side
   useEffect(() => {
-    if (typeof window !== 'undefined' && isOpen) {
+    if (typeof window !== 'undefined' && isOpen && !Html5QrcodeLib) {
       // Use dynamic import with error handling
       import('html5-qrcode')
         .then((module) => {
-          // html5-qrcode exports Html5Qrcode as default
-          const Html5Qrcode = module.default || module.Html5Qrcode;
-          if (Html5Qrcode) {
-            setHtml5QrcodeLib(() => Html5Qrcode);
+          // html5-qrcode v2+ exports Html5Qrcode as default
+          // Check for both default export and named export
+          let Html5Qrcode = null;
+          
+          if (module.default) {
+            Html5Qrcode = module.default;
+          } else if (module.Html5Qrcode) {
+            Html5Qrcode = module.Html5Qrcode;
+          } else if ((module as any).Html5QrcodeScanner) {
+            Html5Qrcode = (module as any).Html5QrcodeScanner;
+          }
+          
+          if (Html5Qrcode && typeof Html5Qrcode === 'function') {
+            setHtml5QrcodeLib(Html5Qrcode);
           } else {
-            throw new Error('Html5Qrcode not found in module');
+            console.error('Html5Qrcode module structure:', module);
+            throw new Error('Html5Qrcode constructor not found in module');
           }
         })
         .catch((err) => {
@@ -35,7 +46,7 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           setError('QR scanner library failed to load. Please refresh the page.');
         });
     }
-  }, [isOpen]);
+  }, [isOpen, Html5QrcodeLib]);
 
   useEffect(() => {
     if (!isOpen || !Html5QrcodeLib) return;
@@ -53,36 +64,51 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
         }
 
         // Create instance with proper error handling
+        // html5-qrcode v2+ uses Html5Qrcode constructor
         const html5QrCode = new Html5QrcodeLib('qr-reader');
         scannerRef.current = html5QrCode;
 
+        // Start scanning with proper config
         await html5QrCode.start(
           { facingMode: 'environment' },
           {
             fps: 10,
             qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0,
           },
-          (decodedText: string) => {
+          (decodedText: string, result: any) => {
             if (!isMounted) return;
             
             // Validate if it's an Ethereum address
             if (/^0x[a-fA-F0-9]{40}$/.test(decodedText)) {
-              html5QrCode.stop().catch(() => {});
-              onScan(decodedText);
-              onClose();
+              html5QrCode.stop().then(() => {
+                onScan(decodedText);
+                onClose();
+              }).catch(() => {
+                onScan(decodedText);
+                onClose();
+              });
             } else if (decodedText.startsWith('ethereum:')) {
               // Handle ethereum: URI scheme
               const address = decodedText.split(':')[1]?.split('?')[0];
               if (address && /^0x[a-fA-F0-9]{40}$/.test(address)) {
-                html5QrCode.stop().catch(() => {});
-                onScan(address);
-                onClose();
+                html5QrCode.stop().then(() => {
+                  onScan(address);
+                  onClose();
+                }).catch(() => {
+                  onScan(address);
+                  onClose();
+                });
               }
             }
           },
           (errorMessage: string) => {
             // Ignore errors - they're expected during scanning
-            console.debug('QR scan error (ignored):', errorMessage);
+            // Only log if it's not a common scanning error
+            if (!errorMessage.includes('NotFoundException') && 
+                !errorMessage.includes('No MultiFormat Readers')) {
+              console.debug('QR scan error (ignored):', errorMessage);
+            }
           }
         );
       } catch (err: any) {
