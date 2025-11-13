@@ -7,10 +7,12 @@ import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
 import RiddlePayLogo from './RiddlePayLogo';
 import { useWallet } from '@/contexts/WalletContext';
+import { useFarcasterUser } from '@/hooks/useFarcasterUser';
 import toast from 'react-hot-toast';
 
 export default function Header() {
   const { address, disconnect } = useWallet();
+  const { username, avatar, displayName } = useFarcasterUser(address);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const desktopUserMenuRef = useRef<HTMLDivElement>(null);
@@ -177,20 +179,56 @@ export default function Header() {
               <div className="relative" ref={desktopUserMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer overflow-hidden"
                   aria-label="User menu"
                 >
-                  <User className="w-4 h-4 text-white" />
+                  {avatar ? (
+                    <img
+                      src={avatar}
+                      alt={username || displayName || 'User'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-4 h-4 text-white" />
+                  )}
                 </button>
                 
                 {/* User Menu Dropdown */}
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 glass-strong rounded-xl border border-border shadow-xl z-50 overflow-hidden">
                     <div className="p-3 border-b border-border">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
-                      <p className="text-sm font-mono dark:text-white text-gray-900 break-all">
-                        {address.slice(0, 6)}...{address.slice(-4)}
-                      </p>
+                      <div className="flex items-center gap-3 mb-2">
+                        {avatar ? (
+                          <img
+                            src={avatar}
+                            alt={username || displayName || 'User'}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          {username || displayName ? (
+                            <>
+                              <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">
+                                {displayName || `@${username}`}
+                              </p>
+                              {username && displayName && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  @{username}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
+                          )}
+                          <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
+                            {address.slice(0, 6)}...{address.slice(-4)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="p-1" onClick={(e) => e.stopPropagation()}>
                       <button
@@ -235,20 +273,56 @@ export default function Header() {
               <div className="relative" ref={mobileUserMenuRef}>
                 <button
                   onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer overflow-hidden"
                   aria-label="User menu"
                 >
-                  <User className="w-4 h-4 text-white" />
+                  {avatar ? (
+                    <img
+                      src={avatar}
+                      alt={username || displayName || 'User'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-4 h-4 text-white" />
+                  )}
                 </button>
                 
                 {/* Mobile User Menu Dropdown */}
                 {showUserMenu && (
                   <div className="absolute right-0 mt-2 w-56 glass-strong rounded-xl border border-border shadow-xl z-50 overflow-hidden">
                     <div className="p-3 border-b border-border">
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
-                      <p className="text-sm font-mono dark:text-white text-gray-900 break-all">
-                        {address.slice(0, 6)}...{address.slice(-4)}
-                      </p>
+                      <div className="flex items-center gap-3 mb-2">
+                        {avatar ? (
+                          <img
+                            src={avatar}
+                            alt={username || displayName || 'User'}
+                            className="w-10 h-10 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          {username || displayName ? (
+                            <>
+                              <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">
+                                {displayName || `@${username}`}
+                              </p>
+                              {username && displayName && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  @{username}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
+                          )}
+                          <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
+                            {address.slice(0, 6)}...{address.slice(-4)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                     <div className="p-1" onClick={(e) => e.stopPropagation()}>
                       <button
