@@ -33,7 +33,8 @@ export default function Dashboard() {
       const [totalGifts, valueLocked, userGiftIds] = await Promise.all([
         getGiftCount().catch(err => {
           console.error('Error getting gift count:', err);
-          return 0;
+          // Return current totalGifts instead of 0 to prevent reset
+          return stats.totalGifts;
         }),
         getTotalValueLocked().catch(err => {
           console.error('Error getting total value locked:', err);
@@ -131,14 +132,9 @@ export default function Dashboard() {
       });
     } catch (err) {
       console.error('Error loading stats:', err);
-      // Set default values on error
-      setStats({
-        totalGifts: 0,
-        totalValueETH: '0.0000',
-        totalValueUSDC: '0.00',
-        userGiftsSent: 0,
-        userGiftsReceived: 0,
-      });
+      // Don't reset to 0 on error - keep previous values
+      // Only update if we have valid data
+      console.warn('⚠️ Stats loading error, keeping previous values');
     } finally {
       setLoading(false);
       setRefreshing(false);
