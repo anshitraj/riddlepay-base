@@ -227,7 +227,7 @@ export default function Dashboard() {
         
         {/* Base-Style Cards Grid */}
         {/* Row 1: Tokens */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4">
           <motion.div 
             className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
@@ -261,7 +261,7 @@ export default function Dashboard() {
           </motion.div>
           
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
@@ -293,9 +293,9 @@ export default function Dashboard() {
         </div>
 
         {/* Row 2: Airdrops */}
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4 mt-4 sm:mt-5 md:mt-4">
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
@@ -323,14 +323,14 @@ export default function Dashboard() {
           </motion.div>
 
           {address && (
-            <motion.div 
-              className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-            >
+          <motion.div 
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            whileHover={{ scale: 1.02, y: -4 }}
+            whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
               <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex items-center justify-between mb-3">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0 ring-2 ring-yellow-500/10 group-hover:ring-yellow-500/30">
