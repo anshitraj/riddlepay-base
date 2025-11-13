@@ -23,7 +23,23 @@ export function useStatsPreview() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!readContract || !CONTRACT_ADDRESS) return;
+    // If readContract is not available, set loading to false and use default values
+    if (!readContract || !CONTRACT_ADDRESS) {
+      // Wait a bit for readContract to initialize
+      const timeout = setTimeout(() => {
+        if (!readContract) {
+          console.warn('⚠️ readContract not available, using default stats');
+          setLoading(false);
+          setStats({
+            tvlChange: 0,
+            claimsToday: 0,
+            riddleSolves: 0,
+          });
+        }
+      }, 2000); // Wait 2 seconds for initialization
+      
+      return () => clearTimeout(timeout);
+    }
 
     const fetchStats = async () => {
       try {
@@ -139,17 +155,39 @@ export function useStatsPreview() {
         });
       } catch (error) {
         console.error('Error fetching stats preview:', error);
+        // Set default values on error
+        setStats({
+          tvlChange: 0,
+          claimsToday: 0,
+          riddleSolves: 0,
+        });
       } finally {
         setLoading(false);
       }
     };
 
+    // Add timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (loading) {
+        console.warn('⚠️ Stats preview loading timeout, setting default values');
+        setLoading(false);
+        setStats({
+          tvlChange: 0,
+          claimsToday: 0,
+          riddleSolves: 0,
+        });
+      }
+    }, 10000); // 10 second timeout
+
     fetchStats();
     
     // Refresh every 30 seconds
     const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-  }, [readContract, getTotalValueLocked, getGiftCount, getGift]);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeoutId);
+    };
+  }, [readContract, getTotalValueLocked, getGiftCount, getGift, loading]);
 
   return { stats, loading };
 }
