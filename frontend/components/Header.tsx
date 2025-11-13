@@ -1,373 +1,288 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Copy, ExternalLink } from 'lucide-react';
+import { User, LogOut, Copy, ExternalLink, Settings, Search, MoreVertical } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
-import RiddlePayLogo from './RiddlePayLogo';
 import { useWallet } from '@/contexts/WalletContext';
 import { useFarcasterUser } from '@/hooks/useFarcasterUser';
 import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Header() {
   const { address, disconnect } = useWallet();
   const { username, avatar, displayName } = useFarcasterUser(address);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const desktopUserMenuRef = useRef<HTMLDivElement>(null);
-  const mobileUserMenuRef = useRef<HTMLDivElement>(null);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      
-      // Check if click is inside desktop menu
-      if (desktopUserMenuRef.current && desktopUserMenuRef.current.contains(target)) {
-        return; // Don't close if clicking inside desktop menu
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+        setShowSettingsMenu(false);
       }
-      
-      // Check if click is inside mobile menu
-      if (mobileUserMenuRef.current && mobileUserMenuRef.current.contains(target)) {
-        return; // Don't close if clicking inside mobile menu
-      }
-      
-      // Close menu if clicked outside both menus
-      setShowUserMenu(false);
     };
 
-    if (showUserMenu) {
-      // Use a small delay to ensure button clicks are processed first
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 0);
+    if (showUserMenu || showSettingsMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showUserMenu]);
+  }, [showUserMenu, showSettingsMenu]);
 
-  const copyAddress = async (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    if (!address) {
-      toast.error('No address to copy');
-      return;
-    }
-    
+  const copyAddress = async () => {
+    if (!address) return;
     try {
       await navigator.clipboard.writeText(address);
-      toast.success('Address copied to clipboard!');
-      setTimeout(() => setShowUserMenu(false), 100);
+      toast.success('Address copied!');
+      setShowUserMenu(false);
     } catch (err) {
-      // Fallback for older browsers
-      try {
-        const textArea = document.createElement('textarea');
-        textArea.value = address;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        const successful = document.execCommand('copy');
-        textArea.remove();
-        
-        if (successful) {
-          toast.success('Address copied to clipboard!');
-          setTimeout(() => setShowUserMenu(false), 100);
-        } else {
-          throw new Error('Copy command failed');
-        }
-      } catch (fallbackErr) {
-        console.error('Failed to copy address:', fallbackErr);
-        toast.error('Failed to copy address. Please copy manually.');
-      }
+      toast.error('Failed to copy');
     }
   };
 
-  const viewOnExplorer = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!address) {
-      toast.error('No address to view');
-      return;
-    }
-    
-    const url = `https://basescan.org/address/${address}`;
-    
-    try {
-      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-      
-      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-        toast.error('Popup blocked. Please allow popups for this site.');
-      } else {
-        setTimeout(() => setShowUserMenu(false), 100);
-      }
-    } catch (err) {
-      console.error('Error opening explorer:', err);
-      toast.error('Failed to open explorer');
-    }
+  const viewOnExplorer = () => {
+    if (!address) return;
+    window.open(`https://basescan.org/address/${address}`, '_blank');
+    setShowUserMenu(false);
   };
 
-  const handleDisconnect = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    try {
-      disconnect();
-      setTimeout(() => setShowUserMenu(false), 100);
-      toast.success('Wallet disconnected');
-    } catch (err) {
-      console.error('Error disconnecting:', err);
-      toast.error('Failed to disconnect wallet');
-    }
+  const handleDisconnect = () => {
+    disconnect();
+    setShowUserMenu(false);
+    toast.success('Disconnected');
   };
+
+  // Generate avatar from address if no avatar
+  const getAvatarUrl = () => {
+    if (avatar) return avatar;
+    // Generate a simple gradient avatar based on address
+    const colors = ['#0052FF', '#00C2FF', '#7B61FF', '#FF6B6B', '#4ECDC4'];
+    const colorIndex = parseInt(address?.slice(2, 3) || '0', 16) % colors.length;
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+        <rect width="40" height="40" fill="${colors[colorIndex]}"/>
+        <text x="20" y="28" font-family="Arial" font-size="18" font-weight="bold" fill="white" text-anchor="middle">
+          ${(username || displayName || address?.slice(2, 3) || '?').charAt(0).toUpperCase()}
+        </text>
+      </svg>
+    `)}`;
+  };
+
+  const displayNameText = displayName || username ? `@${username || displayName}` : null;
+  const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <header className="sticky top-0 z-30 bg-baseLight/40 dark:bg-white/8 backdrop-blur-xl border-b border-border shadow-lg shadow-black/5">
+    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg">
       {/* Mobile Search Bar */}
-      {showMobileSearch && (
-        <div className="md:hidden p-3 border-b border-border">
-          <SearchBar />
-        </div>
-      )}
+      <AnimatePresence>
+        {showMobileSearch && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden overflow-hidden border-b border-blue-500/10"
+          >
+            <div className="p-3">
+              <SearchBar />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      <div className="flex items-center justify-between p-2 sm:p-3 md:p-4">
-        {/* Left: RiddlePay Branding + Page Title */}
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0 flex-1">
-          <div className="hidden sm:block">
-            <RiddlePayLogo size={24} showText={true} />
-          </div>
-          <div className="sm:hidden">
-            <RiddlePayLogo size={20} showText={false} />
-          </div>
-          <div className="hidden md:block h-6 w-px bg-border"></div>
-          <h2 className="hidden sm:block text-sm sm:text-base md:text-lg font-semibold text-gray-400 dark:text-gray-600 truncate">Dashboard</h2>
-        </div>
+      <div className="flex items-center justify-between p-3 sm:p-4">
+        {/* Left: Base-Style Profile Header */}
+        {address ? (
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <img
+                src={getAvatarUrl()}
+                alt={displayNameText || 'User'}
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full border-2 border-blue-500/30 ring-2 ring-blue-500/10"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = getAvatarUrl();
+                }}
+              />
+              {/* Online indicator */}
+              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0A0F1F]"></div>
+            </div>
 
-        {/* Center: Search - Desktop */}
-        <div className="hidden md:block flex-1 max-w-md mx-4">
-          <SearchBar />
-        </div>
+            {/* Username & Network */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                {displayNameText ? (
+                  <span className="text-sm sm:text-base font-semibold text-white truncate">
+                    {displayNameText}
+                  </span>
+                ) : (
+                  <span className="text-xs sm:text-sm font-mono text-gray-400 truncate">
+                    {shortAddress}
+                  </span>
+                )}
+                {/* Network Badge */}
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-[10px] sm:text-xs font-medium text-blue-400">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                  Base Mainnet
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1">
+            <WalletConnect />
+          </div>
+        )}
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 flex-shrink-0">
-          {/* Mobile Search Toggle */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0" ref={menuRef}>
+          {/* Search - Mobile */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="md:hidden p-1.5 sm:p-2 glass rounded-lg border border-border hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
-            aria-label="Toggle search"
+            className="md:hidden p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label="Search"
           >
-            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
           </button>
-          
-          <ThemeToggle />
-          {address ? (
-            <div className="hidden sm:flex items-center gap-2">
-              {/* User Menu */}
-              <div className="relative" ref={desktopUserMenuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer overflow-hidden"
-                  aria-label="User menu"
+
+          {/* Search - Desktop */}
+          <div className="hidden md:block">
+            <SearchBar />
+          </div>
+
+          {/* Settings */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                setShowSettingsMenu(!showSettingsMenu);
+                setShowUserMenu(false);
+              }}
+              className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Settings"
+            >
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+            </button>
+
+            {/* Settings Menu */}
+            <AnimatePresence>
+              {showSettingsMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="absolute right-0 mt-2 w-56 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
                 >
-                  {avatar ? (
-                    <img
-                      src={avatar}
-                      alt={username || displayName || 'User'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4 h-4 text-white" />
-                  )}
-                </button>
-                
-                {/* User Menu Dropdown */}
+                  <div className="p-2">
+                    <button
+                      onClick={copyAddress}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
+                    >
+                      <Copy className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-white">Copy Address</span>
+                    </button>
+                    <button
+                      onClick={viewOnExplorer}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
+                    >
+                      <ExternalLink className="w-4 h-4 text-blue-400" />
+                      <span className="text-sm text-white">View on BaseScan</span>
+                    </button>
+                    <div className="my-1 h-px bg-blue-500/10"></div>
+                    <button
+                      onClick={handleDisconnect}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-left"
+                    >
+                      <LogOut className="w-4 h-4 text-red-400" />
+                      <span className="text-sm text-red-400">Disconnect</span>
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
+
+          {/* User Menu - Mobile */}
+          {address && (
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setShowUserMenu(!showUserMenu);
+                  setShowSettingsMenu(false);
+                }}
+                className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                aria-label="Menu"
+              >
+                <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+              </button>
+
+              {/* User Menu Dropdown */}
+              <AnimatePresence>
                 {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 glass-strong rounded-xl border border-border shadow-xl z-50 overflow-hidden">
-                    <div className="p-3 border-b border-border">
-                      <div className="flex items-center gap-3 mb-2">
-                        {avatar ? (
-                          <img
-                            src={avatar}
-                            alt={username || displayName || 'User'}
-                            className="w-10 h-10 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                        )}
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-56 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-3 border-b border-blue-500/10">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={getAvatarUrl()}
+                          alt={displayNameText || 'User'}
+                          className="w-10 h-10 rounded-full border-2 border-blue-500/30"
+                        />
                         <div className="flex-1 min-w-0">
-                          {username || displayName ? (
-                            <>
-                              <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">
-                                {displayName || `@${username}`}
-                              </p>
-                              {username && displayName && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                  @{username}
-                                </p>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
-                          )}
-                          <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-                            {address.slice(0, 6)}...{address.slice(-4)}
+                          {displayNameText ? (
+                            <p className="text-sm font-semibold text-white truncate">
+                              {displayNameText}
+                            </p>
+                          ) : null}
+                          <p className="text-xs font-mono text-gray-400 truncate">
+                            {shortAddress}
                           </p>
                         </div>
                       </div>
                     </div>
-                    <div className="p-1" onClick={(e) => e.stopPropagation()}>
+                    <div className="p-2">
                       <button
-                        type="button"
                         onClick={copyAddress}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all text-left cursor-pointer active:scale-95"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
                       >
-                        <Copy className="w-4 h-4 text-gray-400 dark:text-gray-600" />
-                        <span className="text-sm dark:text-white text-gray-900">Copy Address</span>
+                        <Copy className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm text-white">Copy Address</span>
                       </button>
                       <button
-                        type="button"
                         onClick={viewOnExplorer}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all text-left cursor-pointer active:scale-95"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
                       >
-                        <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-600" />
-                        <span className="text-sm dark:text-white text-gray-900">View on BaseScan</span>
+                        <ExternalLink className="w-4 h-4 text-blue-400" />
+                        <span className="text-sm text-white">View on BaseScan</span>
                       </button>
-                      <div className="my-1 h-px bg-border"></div>
+                      <div className="my-1 h-px bg-blue-500/10"></div>
                       <button
-                        type="button"
                         onClick={handleDisconnect}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/10 transition-all text-left cursor-pointer active:scale-95"
+                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-left"
                       >
-                        <LogOut className="w-4 h-4 text-red-500" />
-                        <span className="text-sm text-red-500">Disconnect</span>
+                        <LogOut className="w-4 h-4 text-red-400" />
+                        <span className="text-sm text-red-400">Disconnect</span>
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 )}
-              </div>
-              <WalletConnect />
-            </div>
-          ) : (
-            <div className="hidden sm:block">
-              <WalletConnect />
+              </AnimatePresence>
             </div>
           )}
-          {/* Mobile Wallet Button */}
-          <div className="sm:hidden">
-            {address ? (
-              <div className="relative" ref={mobileUserMenuRef}>
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center hover:scale-110 transition-all duration-200 cursor-pointer overflow-hidden"
-                  aria-label="User menu"
-                >
-                  {avatar ? (
-                    <img
-                      src={avatar}
-                      alt={username || displayName || 'User'}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-4 h-4 text-white" />
-                  )}
-                </button>
-                
-                {/* Mobile User Menu Dropdown */}
-                {showUserMenu && (
-                  <div className="absolute right-0 mt-2 w-56 glass-strong rounded-xl border border-border shadow-xl z-50 overflow-hidden">
-                    <div className="p-3 border-b border-border">
-                      <div className="flex items-center gap-3 mb-2">
-                        {avatar ? (
-                          <img
-                            src={avatar}
-                            alt={username || displayName || 'User'}
-                            className="w-10 h-10 rounded-full"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          {username || displayName ? (
-                            <>
-                              <p className="text-sm font-semibold dark:text-white text-gray-900 truncate">
-                                {displayName || `@${username}`}
-                              </p>
-                              {username && displayName && (
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                  @{username}
-                                </p>
-                              )}
-                            </>
-                          ) : (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Connected Wallet</p>
-                          )}
-                          <p className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-                            {address.slice(0, 6)}...{address.slice(-4)}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-1" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={copyAddress}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all text-left cursor-pointer active:scale-95"
-                      >
-                        <Copy className="w-4 h-4 text-gray-400 dark:text-gray-600" />
-                        <span className="text-sm dark:text-white text-gray-900">Copy Address</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={viewOnExplorer}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all text-left cursor-pointer active:scale-95"
-                      >
-                        <ExternalLink className="w-4 h-4 text-gray-400 dark:text-gray-600" />
-                        <span className="text-sm dark:text-white text-gray-900">View on BaseScan</span>
-                      </button>
-                      <div className="my-1 h-px bg-border"></div>
-                      <button
-                        type="button"
-                        onClick={handleDisconnect}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-red-500/10 transition-all text-left cursor-pointer active:scale-95"
-                      >
-                        <LogOut className="w-4 h-4 text-red-500" />
-                        <span className="text-sm text-red-500">Disconnect</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <WalletConnect />
-            )}
-          </div>
         </div>
       </div>
-      
-      {/* Mobile Wallet Connect Dropdown */}
-      {address && (
-        <div className="sm:hidden border-t border-border p-3">
-          <WalletConnect />
-        </div>
-      )}
     </header>
   );
 }
-

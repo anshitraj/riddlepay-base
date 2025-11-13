@@ -225,86 +225,131 @@ export default function Dashboard() {
           </div>
         </div>
         
-        {/* Token Cards */}
-        <div className="relative grid grid-cols-2 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4 md:grid-cols-4">
+        {/* Base-Style Cards Grid */}
+        {/* Row 1: Tokens */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <motion.div 
-            className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-orange-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/20 group cursor-pointer touch-manipulation min-h-[90px] sm:min-h-[100px] md:min-h-[120px] flex flex-col justify-between"
-            whileHover={{ scale: 1.02, y: -2 }}
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
           >
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all flex-shrink-0">
-                <span className="text-orange-400 font-bold text-sm sm:text-base md:text-lg">B</span>
+            {/* Neon glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-3">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all flex-shrink-0 ring-2 ring-orange-500/10 group-hover:ring-orange-500/30">
+                <span className="text-orange-400 font-bold text-lg sm:text-xl">B</span>
               </div>
-              <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 text-green-400 flex-shrink-0" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 45 }}
+                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
+              >
+                <ArrowUpRight className="w-full h-full" />
+              </motion.div>
             </div>
-            <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 mb-0.5 sm:mb-1 font-medium">ETH</p>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white dark:text-gray-900 mb-0.5 sm:mb-1 break-all leading-tight">{stats.totalValueETH}</p>
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-green-400 font-semibold flex items-center gap-0.5 sm:gap-1">
-                <ArrowUpRight className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3" />
+            <div className="relative flex-1 flex flex-col justify-end">
+              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">ETH</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">{stats.totalValueETH}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your Base ETH balance</p>
+              <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
           </motion.div>
           
           <motion.div 
-            className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation min-h-[90px] sm:min-h-[100px] md:min-h-[120px] flex flex-col justify-between"
-            whileHover={{ scale: 1.02, y: -2 }}
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
           >
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0">
-                <span className="text-blue-400 font-bold text-sm sm:text-base md:text-lg">U</span>
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-3">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0 ring-2 ring-blue-500/10 group-hover:ring-blue-500/30">
+                <span className="text-blue-400 font-bold text-lg sm:text-xl">U</span>
               </div>
-              <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 text-green-400 flex-shrink-0" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 45 }}
+                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
+              >
+                <ArrowUpRight className="w-full h-full" />
+              </motion.div>
             </div>
-            <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 mb-0.5 sm:mb-1 font-medium">USDC</p>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white dark:text-gray-900 mb-0.5 sm:mb-1 break-all leading-tight">{stats.totalValueUSDC}</p>
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-green-400 font-semibold flex items-center gap-0.5 sm:gap-1">
-                <ArrowUpRight className="w-2 h-2 sm:w-2.5 sm:h-2.5 md:w-3 md:h-3" />
+            <div className="relative flex-1 flex flex-col justify-end">
+              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">USDC</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">{stats.totalValueUSDC}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your stablecoins balance</p>
+              <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
+                <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
           </motion.div>
+        </div>
 
+        {/* Row 2: Airdrops */}
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <motion.div 
-            className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group cursor-pointer touch-manipulation min-h-[90px] sm:min-h-[100px] md:min-h-[120px] flex flex-col justify-between"
-            whileHover={{ scale: 1.02, y: -2 }}
+            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0">
-                <Gift className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-400" />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div className="relative flex items-center justify-between mb-3">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0 ring-2 ring-blue-500/10 group-hover:ring-blue-500/30">
+                <Gift className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
               </div>
-              <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 text-green-400 flex-shrink-0" />
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 45 }}
+                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
+              >
+                <ArrowUpRight className="w-full h-full" />
+              </motion.div>
             </div>
-            <div className="flex-1 flex flex-col justify-end">
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 mb-0.5 sm:mb-1 font-medium">Total Airdrops</p>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white dark:text-gray-900 mb-0.5 sm:mb-1 leading-tight">{stats.totalGifts}</p>
-              <p className="text-[9px] sm:text-[10px] md:text-xs text-green-400 font-semibold">Active</p>
+            <div className="relative flex-1 flex flex-col justify-end">
+              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Total Airdrops</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">{stats.totalGifts}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Active drops</p>
+              <p className="text-xs sm:text-sm text-green-400 font-semibold">Active</p>
             </div>
           </motion.div>
 
           {address && (
             <motion.div 
-              className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-yellow-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-yellow-500/20 group cursor-pointer touch-manipulation min-h-[90px] sm:min-h-[100px] md:min-h-[120px] flex flex-col justify-between"
-              whileHover={{ scale: 1.02, y: -2 }}
+              className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+              whileHover={{ scale: 1.02, y: -4 }}
               whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
             >
-              <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0">
-                  <Users className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-400" />
+              <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative flex items-center justify-between mb-3">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0 ring-2 ring-yellow-500/10 group-hover:ring-yellow-500/30">
+                  <Users className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-400" />
                 </div>
-                <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 text-green-400 flex-shrink-0" />
+                <motion.div
+                  whileHover={{ scale: 1.2, rotate: 45 }}
+                  className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
+                >
+                  <ArrowUpRight className="w-full h-full" />
+                </motion.div>
               </div>
-              <div className="flex-1 flex flex-col justify-end">
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 mb-0.5 sm:mb-1 font-medium">Your Airdrops</p>
-                <p className="text-sm sm:text-base md:text-lg lg:text-xl font-bold text-white dark:text-gray-900 mb-0.5 sm:mb-1 leading-tight">
+              <div className="relative flex-1 flex flex-col justify-end">
+                <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Your Airdrops</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">
                   {stats.userGiftsSent + stats.userGiftsReceived}
                 </p>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 leading-tight">
+                <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Sent + Received</p>
+                <p className="text-xs sm:text-sm text-gray-400 leading-tight">
                   {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
                 </p>
               </div>

@@ -12,6 +12,8 @@ import OnboardingModal from '@/components/OnboardingModal';
 import BottomNav from '@/components/BottomNav';
 import { useNotifications } from '@/hooks/useNotifications';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Send, ArrowUpRight } from 'lucide-react';
 
 function HomeContent() {
   const { isConnected } = useWallet();
@@ -63,43 +65,104 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          {/* Mobile-optimized layout v2 */}
-          <main className="flex-1 p-1.5 sm:p-2 md:p-3 lg:p-4 xl:p-6 overflow-y-auto w-full">
-            <div className="max-w-7xl mx-auto space-y-1.5 sm:space-y-2 md:space-y-3 lg:space-y-4 xl:space-y-6 w-full">
+          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B]">
+            <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
+              {/* Big Center CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="flex justify-center"
+              >
+                <Link href="/">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-2xl sm:rounded-3xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-3 group"
+                  >
+                    <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:translate-x-1 transition-transform" />
+                    <span className="text-base sm:text-lg md:text-xl font-bold text-white">
+                      Create Secret Airdrop
+                    </span>
+                    <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                  </motion.button>
+                </Link>
+              </motion.div>
+
+              {/* Stats Preview Row */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-400"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Today:</span>
+                  <span className="text-green-400 font-semibold flex items-center gap-1">
+                    <ArrowUpRight className="w-3 h-3" />
+                    +0.00%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Claims:</span>
+                  <span className="text-white font-semibold">0</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-500">Riddle Solves:</span>
+                  <span className="text-white font-semibold">0</span>
+                </div>
+              </motion.div>
+
               {/* Dashboard Stats */}
               <Dashboard />
 
-              {/* What is RiddlePay Link */}
-              <div className="flex justify-center px-2">
-                <button
-                  onClick={handleShowOnboarding}
-                  className="text-xs sm:text-sm text-blue-400 hover:text-blue-300 dark:text-blue-500 dark:hover:text-blue-400 flex items-center gap-1.5 transition-colors touch-manipulation min-h-[44px] px-3"
-                >
-                  <span>ℹ️</span>
-                  <span>What is RiddlePay?</span>
-                </button>
-              </div>
-
               {/* Send Gift Form */}
               <motion.div 
-                className="glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border w-full"
+                className="bg-[#0E152B]/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 lg:p-8 border border-[#0066FF]/10 shadow-xl w-full"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.3 }}
               >
-                <div className="mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 xl:mb-6">
-                  <div className="mb-1 sm:mb-1.5 md:mb-2">
-                      <h2 className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold text-white dark:text-gray-900 leading-tight">
+                <div className="mb-4 sm:mb-5 md:mb-6">
+                  <div className="mb-2 sm:mb-3">
+                      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white leading-tight">
                         Create New Crypto Airdrop
                       </h2>
-                      <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-gray-400 dark:text-gray-600 mt-0.5 sm:mt-1 leading-tight">
+                      <p className="text-xs sm:text-sm md:text-base text-gray-400 mt-2 leading-tight">
                         Send a secure, on-chain airdrop with an optional riddle and personal message.
                       </p>
                   </div>
                   {/* Light gradient separator */}
-                  <div className="h-px bg-gradient-to-r from-transparent via-gray-600 dark:via-gray-700 to-transparent mt-1.5 sm:mt-2 md:mt-3"></div>
+                  <div className="h-px bg-gradient-to-r from-transparent via-[#0066FF]/30 to-transparent mt-3 sm:mt-4"></div>
                 </div>
                 <SendGiftForm />
+              </motion.div>
+
+              {/* How To Use Mini Card */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <button
+                  onClick={handleShowOnboarding}
+                  className="w-full bg-[#0E152B]/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                      <span className="text-xl">ℹ️</span>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h3 className="text-sm sm:text-base font-semibold text-white mb-1">
+                        How RiddlePay Works
+                      </h3>
+                      <p className="text-xs sm:text-sm text-gray-400">
+                        Learn how to send and claim secret airdrops
+                      </p>
+                    </div>
+                    <ArrowUpRight className="w-5 h-5 text-blue-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
+                  </div>
+                </button>
               </motion.div>
             </div>
           </main>
