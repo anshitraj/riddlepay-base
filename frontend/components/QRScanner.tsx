@@ -26,20 +26,39 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           // Check for both default export and named export
           let Html5Qrcode = null;
           
+          // html5-qrcode v2.3.8 exports structure
+          // Try different possible export formats
+          let Html5Qrcode = null;
+          
+          // Check for default export (most common)
           if (module.default) {
             Html5Qrcode = module.default;
-          } else if (module.Html5Qrcode) {
-            Html5Qrcode = module.Html5Qrcode;
-          } else if ((module as any).Html5QrcodeScanner) {
+          }
+          // Check for named export Html5Qrcode
+          else if ((module as any).Html5Qrcode) {
+            Html5Qrcode = (module as any).Html5Qrcode;
+          }
+          // Check for Html5QrcodeScanner (older versions)
+          else if ((module as any).Html5QrcodeScanner) {
             Html5Qrcode = (module as any).Html5QrcodeScanner;
           }
+          // Check if module itself is the constructor
+          else if (typeof module === 'function') {
+            Html5Qrcode = module;
+          }
           
-          if (Html5Qrcode && typeof Html5Qrcode === 'function') {
-            setHtml5QrcodeLib(Html5Qrcode);
-          } else {
-            console.error('Html5Qrcode module structure:', module);
+          if (!Html5Qrcode) {
+            console.error('Html5Qrcode module structure:', Object.keys(module));
             throw new Error('Html5Qrcode constructor not found in module');
           }
+          
+          // Verify it's a constructor function
+          if (typeof Html5Qrcode !== 'function') {
+            console.error('Html5Qrcode is not a function:', typeof Html5Qrcode);
+            throw new Error('Html5Qrcode is not a constructor function');
+          }
+          
+          setHtml5QrcodeLib(() => Html5Qrcode);
         })
         .catch((err) => {
           console.error('Failed to load html5-qrcode:', err);
@@ -65,8 +84,15 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
         // Create instance with proper error handling
         // html5-qrcode v2+ uses Html5Qrcode constructor
-        const html5QrCode = new Html5QrcodeLib('qr-reader');
-        scannerRef.current = html5QrCode;
+        // The constructor takes the element ID as a string
+        let html5QrCode;
+        try {
+          html5QrCode = new Html5QrcodeLib('qr-reader');
+          scannerRef.current = html5QrCode;
+        } catch (constructorError: any) {
+          console.error('Failed to create Html5Qrcode instance:', constructorError);
+          throw new Error(`Failed to initialize QR scanner: ${constructorError.message}`);
+        }
 
         // Start scanning with proper config
         await html5QrCode.start(
