@@ -13,8 +13,7 @@ import BottomNav from '@/components/BottomNav';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useStatsPreview } from '@/hooks/useStatsPreview';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Send, ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
 function HomeContent() {
   const { isConnected } = useWallet();
@@ -72,28 +71,6 @@ function HomeContent() {
           {/* Content */}
           <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B]">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
-              {/* Big Center CTA Button */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="flex justify-center"
-              >
-                <Link href="/" prefetch={true}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full sm:w-auto px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-[#0052FF] to-[#00C2FF] rounded-2xl sm:rounded-3xl shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 flex items-center justify-center gap-3 group"
-                  >
-                    <Send className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:translate-x-1 transition-transform" />
-                    <span className="text-base sm:text-lg md:text-xl font-bold text-white">
-                      Create Secret Airdrop
-                    </span>
-                    <ArrowUpRight className="w-5 h-5 sm:w-6 sm:h-6 text-white opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
-                  </motion.button>
-                </Link>
-              </motion.div>
-
               {/* Stats Preview Row */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
