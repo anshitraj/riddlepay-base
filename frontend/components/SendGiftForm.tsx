@@ -226,21 +226,21 @@ export default function SendGiftForm() {
 
   return (
     <motion.div 
-      className="bg-white dark:bg-baseLight/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl"
+      className="bg-white dark:bg-baseLight/50 rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-6 xl:p-8 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl w-full"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="mb-4 sm:mb-6 md:mb-8">
-        <div className="flex items-center gap-2 sm:gap-3 mb-2">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
-            <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+      <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 mb-1.5 sm:mb-2">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
+            <Gift className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white" />
           </div>
-          <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+          <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent leading-tight">
             Send Secret Airdrop
           </h2>
         </div>
-        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-10 md:ml-12">
+        <p className="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-9 md:ml-10 lg:ml-12 leading-tight">
           Enter recipient details and customize your airdrop.
         </p>
       </div>
@@ -275,8 +275,8 @@ export default function SendGiftForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-6">
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+      <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Recipient Wallet Address</span>
