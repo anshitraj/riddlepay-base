@@ -20,18 +20,28 @@ export default function Header() {
 
   // Close menu when clicking outside
   useEffect(() => {
+    if (!showUserMenu && !showSettingsMenu) return;
+
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
+      const target = event.target as HTMLElement;
       
-      // Check if click is inside user menu container
+      // Check if click is inside user menu container or dropdown
       const userMenuContainer = document.querySelector('[data-user-menu]');
-      if (userMenuContainer && userMenuContainer.contains(target)) {
+      const userMenuDropdown = document.querySelector('[data-user-menu-dropdown]');
+      if (
+        (userMenuContainer && userMenuContainer.contains(target)) ||
+        (userMenuDropdown && userMenuDropdown.contains(target))
+      ) {
         return; // Don't close if clicking inside user menu area
       }
       
-      // Check if click is inside settings menu container
+      // Check if click is inside settings menu container or dropdown
       const settingsMenuContainer = document.querySelector('[data-settings-menu]');
-      if (settingsMenuContainer && settingsMenuContainer.contains(target)) {
+      const settingsMenuDropdown = document.querySelector('[data-settings-menu-dropdown]');
+      if (
+        (settingsMenuContainer && settingsMenuContainer.contains(target)) ||
+        (settingsMenuDropdown && settingsMenuDropdown.contains(target))
+      ) {
         return; // Don't close if clicking inside settings menu area
       }
       
@@ -40,15 +50,11 @@ export default function Header() {
       setShowSettingsMenu(false);
     };
 
-    if (showUserMenu || showSettingsMenu) {
-      // Use setTimeout to avoid immediate closure
-      setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside);
-      }, 0);
-    }
+    // Use capture phase to catch clicks before they bubble
+    document.addEventListener('mousedown', handleClickOutside, true);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside, true);
     };
   }, [showUserMenu, showSettingsMenu]);
 
@@ -120,8 +126,13 @@ export default function Header() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowUserMenu(!showUserMenu);
-                setShowSettingsMenu(false);
+                e.preventDefault();
+                if (showSettingsMenu) {
+                  setShowSettingsMenu(false);
+                  setTimeout(() => setShowUserMenu(true), 0);
+                } else {
+                  setShowUserMenu(!showUserMenu);
+                }
               }}
               className="relative flex-shrink-0 hover:scale-105 transition-transform"
             >
@@ -141,8 +152,13 @@ export default function Header() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowUserMenu(!showUserMenu);
-                setShowSettingsMenu(false);
+                e.preventDefault();
+                if (showSettingsMenu) {
+                  setShowSettingsMenu(false);
+                  setTimeout(() => setShowUserMenu(true), 0);
+                } else {
+                  setShowUserMenu(!showUserMenu);
+                }
               }}
               className="flex-1 min-w-0 text-left hover:opacity-80 transition-opacity"
             >
@@ -168,10 +184,12 @@ export default function Header() {
             <AnimatePresence>
               {showUserMenu && (
                 <motion.div
+                  data-user-menu-dropdown
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute left-0 top-full mt-2 w-64 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-3 border-b border-blue-500/10">
                     <div className="flex items-center gap-3">
@@ -247,8 +265,13 @@ export default function Header() {
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                setShowSettingsMenu(!showSettingsMenu);
-                setShowUserMenu(false);
+                e.preventDefault();
+                if (showUserMenu) {
+                  setShowUserMenu(false);
+                  setTimeout(() => setShowSettingsMenu(true), 0);
+                } else {
+                  setShowSettingsMenu(!showSettingsMenu);
+                }
               }}
               className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Settings"
@@ -260,10 +283,12 @@ export default function Header() {
             <AnimatePresence>
               {showSettingsMenu && (
                 <motion.div
+                  data-settings-menu-dropdown
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   className="absolute right-0 mt-2 w-56 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <div className="p-2">
                     <button
@@ -303,8 +328,13 @@ export default function Header() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowUserMenu(!showUserMenu);
-                  setShowSettingsMenu(false);
+                  e.preventDefault();
+                  if (showSettingsMenu) {
+                    setShowSettingsMenu(false);
+                    setTimeout(() => setShowUserMenu(true), 0);
+                  } else {
+                    setShowUserMenu(!showUserMenu);
+                  }
                 }}
                 className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
                 aria-label="Menu"
@@ -316,10 +346,12 @@ export default function Header() {
               <AnimatePresence>
                 {showUserMenu && (
                   <motion.div
+                    data-user-menu-dropdown
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="absolute right-0 mt-2 w-56 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <div className="p-3 border-b border-blue-500/10">
                       <div className="flex items-center gap-3">
