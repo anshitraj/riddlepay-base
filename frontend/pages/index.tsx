@@ -91,25 +91,32 @@ function HomeContent() {
 
               {/* Stats Preview Row */}
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs sm:text-sm text-gray-400"
+                className="bg-[#0E152B]/30 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#0066FF]/10"
               >
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">Today:</span>
-                  <span className="text-green-400 font-semibold flex items-center gap-1">
-                    <ArrowUpRight className="w-3 h-3" />
-                    +0.00%
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">Claims:</span>
-                  <span className="text-white font-semibold">0</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-500">Riddle Solves:</span>
-                  <span className="text-white font-semibold">0</span>
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
+                    <span className="text-xs sm:text-sm text-gray-400">TVL Change</span>
+                    <span className="text-sm sm:text-base text-green-400 font-semibold flex items-center gap-1">
+                      <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                      +0.00%
+                    </span>
+                  </div>
+                  <div className="h-4 w-px bg-[#0066FF]/20"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                    <span className="text-xs sm:text-sm text-gray-400">Claims Today</span>
+                    <span className="text-sm sm:text-base text-white font-semibold">0</span>
+                  </div>
+                  <div className="h-4 w-px bg-[#0066FF]/20"></div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                    <span className="text-xs sm:text-sm text-gray-400">Riddle Solves</span>
+                    <span className="text-sm sm:text-base text-white font-semibold">0</span>
+                  </div>
                 </div>
               </motion.div>
 
