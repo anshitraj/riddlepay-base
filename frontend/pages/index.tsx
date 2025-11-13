@@ -10,10 +10,14 @@ import SendGiftForm from '@/components/SendGiftForm';
 import LandingPage from '@/components/LandingPage';
 import OnboardingModal from '@/components/OnboardingModal';
 import BottomNav from '@/components/BottomNav';
+import { useNotifications } from '@/hooks/useNotifications';
 import { motion } from 'framer-motion';
 
 function HomeContent() {
   const { isConnected } = useWallet();
+  
+  // Enable notifications when user is connected
+  useNotifications();
   const [hasLaunchedBefore, setHasLaunchedBefore] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
 
