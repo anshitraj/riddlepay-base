@@ -246,17 +246,17 @@ export default function SendGiftForm() {
       </div>
       
       {success && (
-        <div className="mb-6 p-5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/50 rounded-xl backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">✅</span>
+        <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 md:p-5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/50 rounded-lg sm:rounded-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xl sm:text-2xl">✅</span>
             <div>
-              <p className="text-green-700 dark:text-green-400 font-semibold text-lg">Airdrop created successfully!</p>
+              <p className="text-green-700 dark:text-green-400 font-semibold text-sm sm:text-base md:text-lg leading-tight">Airdrop created successfully!</p>
               {txHash && (
                 <a
                   href={`https://basescan.org/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm underline mt-1 inline-block transition-colors"
+                  className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-xs sm:text-sm underline mt-1 inline-block transition-colors"
                 >
                   View on BaseScan →
                 </a>
@@ -267,10 +267,10 @@ export default function SendGiftForm() {
       )}
 
       {error && (
-        <div className="mb-6 p-5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-xl backdrop-blur-sm">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">⚠️</span>
-            <p className="text-red-700 dark:text-red-400">{error}</p>
+        <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 md:p-5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/50 rounded-lg sm:rounded-xl backdrop-blur-sm">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-xl sm:text-2xl">⚠️</span>
+            <p className="text-red-700 dark:text-red-400 text-sm sm:text-base leading-tight">{error}</p>
           </div>
         </div>
       )}
@@ -301,7 +301,7 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Riddle Challenge</span>
@@ -339,7 +339,7 @@ export default function SendGiftForm() {
           </div>
         )}
 
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Personal Message</span>
@@ -362,7 +362,7 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Unlock Day</span>
@@ -381,7 +381,7 @@ export default function SendGiftForm() {
           )}
         </div>
 
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Expiration Time</span>
@@ -427,7 +427,7 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
             <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Airdrop Amount</span>
