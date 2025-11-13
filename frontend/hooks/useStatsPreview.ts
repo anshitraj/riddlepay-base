@@ -41,9 +41,16 @@ export function useStatsPreview() {
       return () => clearTimeout(timeout);
     }
 
+    let timeoutId: NodeJS.Timeout | null = null;
+    
     const fetchStats = async () => {
       try {
         setLoading(true);
+        // Clear any existing timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
 
         // Get current TVL
         const currentTVL = await getTotalValueLocked();
@@ -162,25 +169,26 @@ export function useStatsPreview() {
           riddleSolves: 0,
         });
       } finally {
+        // Clear timeout since fetch completed
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
         setLoading(false);
       }
     };
 
-    // Add timeout to prevent infinite loading
-    let timeoutId: NodeJS.Timeout;
-    const startTimeout = () => {
-      timeoutId = setTimeout(() => {
-        console.warn('⚠️ Stats preview loading timeout, setting default values');
-        setLoading(false);
-        setStats({
-          tvlChange: 0,
-          claimsToday: 0,
-          riddleSolves: 0,
-        });
-      }, 10000); // 10 second timeout
-    };
+    // Add timeout to prevent infinite loading (only fires if fetchStats doesn't complete)
+    timeoutId = setTimeout(() => {
+      console.warn('⚠️ Stats preview loading timeout, setting default values');
+      setLoading(false);
+      setStats({
+        tvlChange: 0,
+        claimsToday: 0,
+        riddleSolves: 0,
+      });
+    }, 10000); // 10 second timeout
 
-    startTimeout();
     fetchStats();
     
     // Refresh every 30 seconds
