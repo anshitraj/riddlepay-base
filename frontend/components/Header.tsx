@@ -110,9 +110,9 @@ export default function Header() {
         )}
       </AnimatePresence>
       
-      <div className="flex items-center justify-between p-3 sm:p-4">
+      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
         {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-shrink-0">
           {/* Mobile: RiddlePay Branding with Logo - moved right to avoid hamburger menu */}
           <div className="sm:hidden flex items-center gap-2 ml-12">
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
@@ -140,8 +140,13 @@ export default function Header() {
           </Link>
         </div>
 
+        {/* Center: Search Bar (Desktop) - Properly spaced */}
+        <div className="hidden md:flex flex-1 justify-center items-center max-w-lg mx-4">
+          <SearchBar />
+        </div>
+
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
           {/* Search - Mobile */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
@@ -150,11 +155,6 @@ export default function Header() {
           >
             <Search className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
           </button>
-
-          {/* Search - Desktop */}
-          <div className="hidden md:block w-full max-w-md ml-6">
-            <SearchBar />
-          </div>
 
           {/* Profile Menu - Combined with Settings */}
           {address ? (
