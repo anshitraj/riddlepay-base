@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { User, LogOut, Copy, ExternalLink, Settings, Search, MoreVertical } from 'lucide-react';
+import { User, LogOut, Copy, ExternalLink, Settings, Search } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
@@ -245,86 +245,6 @@ export default function Header() {
 
           {/* Theme Toggle */}
           <ThemeToggle />
-
-          {/* User Menu - Mobile */}
-          {address && (
-            <div className="relative" data-user-menu>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  if (showSettingsMenu) {
-                    setShowSettingsMenu(false);
-                    setTimeout(() => setShowUserMenu(true), 0);
-                  } else {
-                    setShowUserMenu(!showUserMenu);
-                  }
-                }}
-                className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
-                aria-label="Menu"
-              >
-                <MoreVertical className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-              </button>
-
-              {/* User Menu Dropdown */}
-              <AnimatePresence>
-                {showUserMenu && (
-                  <motion.div
-                    data-user-menu-dropdown
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-56 bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 shadow-2xl z-50 overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <div className="p-3 border-b border-blue-500/10">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={getAvatarUrl()}
-                          alt={displayNameText || 'User'}
-                          className="w-10 h-10 rounded-full border-2 border-blue-500/30"
-                        />
-                        <div className="flex-1 min-w-0">
-                          {displayNameText ? (
-                            <p className="text-sm font-semibold text-white truncate">
-                              {displayNameText}
-                            </p>
-                          ) : null}
-                          <p className="text-xs font-mono text-gray-400 truncate">
-                            {shortAddress}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-2">
-                      <button
-                        onClick={copyAddress}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
-                      >
-                        <Copy className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm text-white">Copy Address</span>
-                      </button>
-                      <button
-                        onClick={viewOnExplorer}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-blue-500/10 transition-all text-left"
-                      >
-                        <ExternalLink className="w-4 h-4 text-blue-400" />
-                        <span className="text-sm text-white">View on BaseScan</span>
-                      </button>
-                      <div className="my-1 h-px bg-blue-500/10"></div>
-                      <button
-                        onClick={handleDisconnect}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-red-500/10 transition-all text-left"
-                      >
-                        <LogOut className="w-4 h-4 text-red-400" />
-                        <span className="text-sm text-red-400">Disconnect</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          )}
         </div>
       </div>
     </header>
