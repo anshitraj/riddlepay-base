@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { User, LogOut, Copy, ExternalLink, Settings, Search, Send } from 'lucide-react';
 import WalletConnect from './WalletConnect';
 import ThemeToggle from './ThemeToggle';
