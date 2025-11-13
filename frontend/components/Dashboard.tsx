@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
@@ -19,9 +19,15 @@ export default function Dashboard() {
     userGiftsSent: 0,
     userGiftsReceived: 0,
   });
+  const statsRef = useRef(stats);
   const [loading, setLoading] = useState(true);
   const [recentGifts, setRecentGifts] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Keep statsRef in sync with stats
+  useEffect(() => {
+    statsRef.current = stats;
+  }, [stats]);
 
   const loadStats = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) {
@@ -34,7 +40,7 @@ export default function Dashboard() {
         getGiftCount().catch(err => {
           console.error('Error getting gift count:', err);
           // Return current totalGifts instead of 0 to prevent reset
-          return stats.totalGifts;
+          return statsRef.current.totalGifts;
         }),
         getTotalValueLocked().catch(err => {
           console.error('Error getting total value locked:', err);
