@@ -42,7 +42,10 @@ export default function Dashboard() {
         getGiftCount().catch(err => {
           console.error('Error getting gift count:', err);
           // Return current totalGifts instead of 0 to prevent reset
-          return statsRef.current.totalGifts;
+          // But if it's the first load and we have no previous value, try to return a fallback
+          const fallback = statsRef.current.totalGifts || 0;
+          console.warn(`⚠️ Using fallback gift count: ${fallback}`);
+          return fallback;
         }),
         getTotalValueLocked().catch(err => {
           console.error('Error getting total value locked:', err);
@@ -50,35 +53,61 @@ export default function Dashboard() {
         }),
         address ? getGiftsForUser(address).catch(err => {
           console.error('Error getting user gifts:', err);
+          // Return previous user gift IDs if available to prevent reset
+          const previousUserGifts = statsRef.current.userGiftsSent + statsRef.current.userGiftsReceived;
+          if (previousUserGifts > 0) {
+            console.warn(`⚠️ Using previous user gift count: ${previousUserGifts}`);
+            // Return a dummy array to maintain structure, but we'll use previous counts
+            return [];
+          }
           return [];
         }) : Promise.resolve([]),
       ]);
 
-      // Get user's gifts
-      let userSent = 0;
-      let userReceived = 0;
-      const giftPromises = userGiftIds.slice(0, 5).map(async (id) => {
-        try {
-          const gift = await getGift(id);
-          return { gift, id };
-        } catch {
-          return null;
-        }
-      });
-      const userGifts = await Promise.all(giftPromises);
+      // Get user's gifts - count ALL gifts for accurate totals
+      let userSent = statsRef.current.userGiftsSent || 0;
+      let userReceived = statsRef.current.userGiftsReceived || 0;
       
-      userGifts.forEach((item) => {
-        if (!item) return;
-        const { gift } = item;
-        if (gift.sender.toLowerCase() === address?.toLowerCase()) {
-          userSent++;
-        }
-        if (gift.receiver.toLowerCase() === address?.toLowerCase()) {
-          userReceived++;
-        }
-      });
+      // Count all user gifts for accurate totals
+      if (userGiftIds && userGiftIds.length > 0) {
+        // Limit to first 50 gifts for performance (for counting)
+        const giftsToCount = userGiftIds.slice(0, 50);
+        const giftPromises = giftsToCount.map(async (id) => {
+          try {
+            const gift = await getGift(id);
+            return { gift, id };
+          } catch {
+            return null;
+          }
+        });
+        const userGifts = await Promise.all(giftPromises);
+        
+        // Reset counters before counting
+        userSent = 0;
+        userReceived = 0;
+        
+        userGifts.forEach((item) => {
+          if (!item) return;
+          const { gift } = item;
+          if (gift.sender.toLowerCase() === address?.toLowerCase()) {
+            userSent++;
+          }
+          if (gift.receiver.toLowerCase() === address?.toLowerCase()) {
+            userReceived++;
+          }
+        });
 
-      setRecentGifts(userGifts.filter(g => g !== null).slice(0, 5) as Array<{ gift: any; id: number }>);
+        // Set recent gifts (first 5) for display
+        setRecentGifts(userGifts.filter(g => g !== null).slice(0, 5) as Array<{ gift: any; id: number }>);
+      } else {
+        setRecentGifts([]);
+        // If we got an empty array but had previous counts, keep them
+        // Only reset if this is a fresh load (no previous counts)
+        if (statsRef.current.userGiftsSent === 0 && statsRef.current.userGiftsReceived === 0) {
+          userSent = 0;
+          userReceived = 0;
+        }
+      }
       
       // Parse values safely
       let ethValue = parseFloat(valueLocked.totalETH) || 0;
