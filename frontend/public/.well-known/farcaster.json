@@ -1,8 +1,8 @@
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjE0MTkxOTAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwRGNlNWM5NTJhNDEyNDU4YjZkNDcxMDVBMzFDQzkxMzc4RUQyNGYxIn0",
-    "payload": "eyJkb21haW4iOiJyaWRkbGVwYXkudmVyY2VsLmFwcCJ9",
-    "signature": "fWZB1QdSxtlXiHuUETo9d+WutOTyrBK+ETHARlRSgDItJ2ClrzUXYowCUqbd/oMt8ITK5P0RPCCQ97bqT5/WfRs="
+    "payload": "eyJkb21haW4iOiJyaWRkbGVwYXkudGVjaCJ9",
+    "signature": ""
   },
   "baseBuilder": {
     "ownerAddress": "0x0CF70E448ac98689e326bd79075a96CcBcec1665"
@@ -10,9 +10,9 @@
   "miniapp": {
     "version": "1",
     "name": "RiddlePay",
-    "homeUrl": "https://riddlepay.vercel.app",
-    "iconUrl": "https://riddlepay.vercel.app/icon.png",
-    "splashImageUrl": "https://riddlepay.vercel.app/icon.png",
+    "homeUrl": "https://riddlepay.tech",
+    "iconUrl": "https://riddlepay.tech/icon.png",
+    "splashImageUrl": "https://riddlepay.tech/icon.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "Crypto airdrops with riddles",
     "description": "Send and claim crypto airdrops with riddles or giveaways, powered by Base.",
