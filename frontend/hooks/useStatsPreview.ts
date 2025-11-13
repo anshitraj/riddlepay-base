@@ -167,8 +167,9 @@ export function useStatsPreview() {
     };
 
     // Add timeout to prevent infinite loading
-    const timeoutId = setTimeout(() => {
-      if (loading) {
+    let timeoutId: NodeJS.Timeout;
+    const startTimeout = () => {
+      timeoutId = setTimeout(() => {
         console.warn('⚠️ Stats preview loading timeout, setting default values');
         setLoading(false);
         setStats({
@@ -176,18 +177,19 @@ export function useStatsPreview() {
           claimsToday: 0,
           riddleSolves: 0,
         });
-      }
-    }, 10000); // 10 second timeout
+      }, 10000); // 10 second timeout
+    };
 
+    startTimeout();
     fetchStats();
     
     // Refresh every 30 seconds
     const interval = setInterval(fetchStats, 30000);
     return () => {
       clearInterval(interval);
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [readContract, getTotalValueLocked, getGiftCount, getGift, loading]);
+  }, [readContract, getTotalValueLocked, getGiftCount, getGift]);
 
   return { stats, loading };
 }
