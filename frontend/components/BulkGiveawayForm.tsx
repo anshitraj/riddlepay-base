@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Plus, X, Users, AlertCircle, Upload, FileText } from 'lucide-react';
 import Papa from 'papaparse';
+import { addXP, getUserXP } from '@/utils/xpSystem';
 
 interface Recipient {
   address: string;
@@ -214,9 +215,20 @@ export default function BulkGiveawayForm() {
       setSuccess(true);
       
       toast.dismiss(loadingToast);
-      toast.success(`${validRecipients.length} Airdrops Created! 🎁`, {
-        duration: 5000,
-      });
+      
+      // Award XP for bulk send
+      if (address) {
+        const currentXP = getUserXP(address);
+        const newXP = addXP(address, 'bulk_send', false);
+        const xpEarned = newXP - currentXP;
+        toast.success(`${validRecipients.length} Airdrops Created! 🎁 +${xpEarned} XP earned! ⭐`, {
+          duration: 5000,
+        });
+      } else {
+        toast.success(`${validRecipients.length} Airdrops Created! 🎁`, {
+          duration: 5000,
+        });
+      }
 
       // Reset form after 5 seconds
       setTimeout(() => {

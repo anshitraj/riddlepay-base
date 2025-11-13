@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Gift } from '@/hooks/useContract';
 import { formatAmount } from '@/utils/formatAmount';
+import { addXP, getUserXP } from '@/utils/xpSystem';
 
 interface ClaimGiftProps {
   giftId: number;
@@ -92,9 +93,21 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       setShowConfetti(true);
       
       toast.dismiss(loadingToast);
-      toast.success('Airdrop Claimed! 🎉', {
-        duration: 5000,
-      });
+      
+      // Award XP for claiming
+      if (address) {
+        const hasRiddle = !isDirectGift && gift.riddle && gift.riddle.trim().length > 0;
+        const currentXP = getUserXP(address);
+        const newXP = addXP(address, hasRiddle ? 'solve_riddle' : 'claim', false);
+        const xpEarned = newXP - currentXP;
+        toast.success(`Airdrop Claimed! 🎉 +${xpEarned} XP earned! ⭐`, {
+          duration: 5000,
+        });
+      } else {
+        toast.success('Airdrop Claimed! 🎉', {
+          duration: 5000,
+        });
+      }
 
       // Hide confetti after 5 seconds
       setTimeout(() => {
