@@ -11,6 +11,7 @@ import LandingPage from '@/components/LandingPage';
 import OnboardingModal from '@/components/OnboardingModal';
 import BottomNav from '@/components/BottomNav';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useStatsPreview } from '@/hooks/useStatsPreview';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Send, ArrowUpRight } from 'lucide-react';
@@ -20,6 +21,10 @@ function HomeContent() {
   
   // Enable notifications when user is connected
   useNotifications();
+  
+  // Get stats preview data
+  const { stats: previewStats, loading: statsLoading } = useStatsPreview();
+  
   const [hasLaunchedBefore, setHasLaunchedBefore] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   
@@ -100,22 +105,40 @@ function HomeContent() {
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">TVL Change</span>
-                    <span className="text-sm sm:text-base text-green-400 font-semibold flex items-center gap-1">
-                      <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                      +0.00%
-                    </span>
+                    {statsLoading ? (
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                    ) : (
+                      <span className={`text-sm sm:text-base font-semibold flex items-center gap-1 ${
+                        previewStats.tvlChange >= 0 ? 'text-green-400' : 'text-red-400'
+                      }`}>
+                        {previewStats.tvlChange >= 0 ? (
+                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                        ) : (
+                          <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+                        )}
+                        {previewStats.tvlChange >= 0 ? '+' : ''}{previewStats.tvlChange.toFixed(2)}%
+                      </span>
+                    )}
                   </div>
                   <div className="h-4 w-px bg-[#0066FF]/20"></div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">Claims Today</span>
-                    <span className="text-sm sm:text-base text-white font-semibold">0</span>
+                    {statsLoading ? (
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                    ) : (
+                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.claimsToday}</span>
+                    )}
                   </div>
                   <div className="h-4 w-px bg-[#0066FF]/20"></div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                     <span className="text-xs sm:text-sm text-gray-400">Riddle Solves</span>
-                    <span className="text-sm sm:text-base text-white font-semibold">0</span>
+                    {statsLoading ? (
+                      <span className="text-sm sm:text-base text-gray-500 font-semibold">...</span>
+                    ) : (
+                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.riddleSolves}</span>
+                    )}
                   </div>
                 </div>
               </motion.div>
