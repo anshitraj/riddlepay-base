@@ -51,6 +51,81 @@ export default function BulkGiveawayForm() {
     setRecipients(updated);
   };
 
+  const handleCSVUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
+      toast.error('Please upload a CSV file');
+      return;
+    }
+
+    setCsvFile(file);
+
+    // Read and parse CSV
+    Papa.parse(file, {
+      header: false,
+      skipEmptyLines: true,
+      complete: (results) => {
+        try {
+          const parsedRecipients: Recipient[] = [];
+          const errors: string[] = [];
+
+          results.data.forEach((row: any, index: number) => {
+            // Skip header row if it exists
+            if (index === 0 && (row[0]?.toLowerCase().includes('address') || row[0]?.toLowerCase().includes('wallet'))) {
+              return;
+            }
+
+            const address = (row[0] || '').trim();
+            const amount = (row[1] || '').trim();
+
+            // Validate address
+            if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+              errors.push(`Row ${index + 1}: Invalid address "${address}"`);
+              return;
+            }
+
+            // Validate amount
+            const amountNum = parseFloat(amount);
+            if (!amount || isNaN(amountNum) || amountNum <= 0) {
+              errors.push(`Row ${index + 1}: Invalid amount "${amount}"`);
+              return;
+            }
+
+            parsedRecipients.push({ address, amount });
+          });
+
+          if (errors.length > 0) {
+            toast.error(`CSV parsing errors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? `\n...and ${errors.length - 5} more` : ''}`);
+          }
+
+          if (parsedRecipients.length === 0) {
+            toast.error('No valid recipients found in CSV');
+            return;
+          }
+
+          if (parsedRecipients.length > 100) {
+            toast.error('CSV contains more than 100 recipients. Only the first 100 will be used.');
+            setRecipients(parsedRecipients.slice(0, 100));
+          } else {
+            setRecipients(parsedRecipients);
+          }
+
+          toast.success(`Loaded ${parsedRecipients.length} recipient(s) from CSV`);
+        } catch (error: any) {
+          console.error('Error parsing CSV:', error);
+          toast.error('Failed to parse CSV file. Please check the format.');
+        }
+      },
+      error: (error) => {
+        console.error('CSV parsing error:', error);
+        toast.error('Failed to read CSV file');
+      },
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
