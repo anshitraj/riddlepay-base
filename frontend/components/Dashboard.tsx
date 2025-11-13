@@ -10,12 +10,14 @@ import Link from 'next/link';
 import { formatAmount } from '@/utils/formatAmount';
 
 export default function Dashboard() {
-  const { address } = useWallet();
+  const { address, provider } = useWallet();
   const { getGiftCount, getTotalValueLocked, getGiftsForUser, getGift } = useContract();
   const [stats, setStats] = useState({
     totalGifts: 0,
     totalValueETH: '0',
     totalValueUSDC: '0',
+    userETHBalance: '0',
+    userUSDCBalance: '0',
     userGiftsSent: 0,
     userGiftsReceived: 0,
   });
@@ -82,6 +84,39 @@ export default function Dashboard() {
       let ethValue = parseFloat(valueLocked.totalETH) || 0;
       let usdcValue = parseFloat(valueLocked.totalUSDC) || 0;
       
+      // Get user's wallet balances
+      let userETHBalance = '0';
+      let userUSDCBalance = '0';
+      
+      if (address && provider) {
+        try {
+          // Get ETH balance
+          const ethBalance = await provider.getBalance(address);
+          userETHBalance = parseFloat(ethers.formatEther(ethBalance)).toFixed(4);
+          
+          // Get USDC balance
+          const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+          if (USDC_ADDRESS) {
+            try {
+              const usdcContract = new ethers.Contract(
+                USDC_ADDRESS,
+                ['function balanceOf(address owner) external view returns (uint256)'],
+                provider
+              );
+              const usdcBalance = await usdcContract.balanceOf(address);
+              userUSDCBalance = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
+            } catch (usdcErr) {
+              console.warn('Error fetching USDC balance:', usdcErr);
+              userUSDCBalance = statsRef.current.userUSDCBalance || '0';
+            }
+          }
+        } catch (balanceErr) {
+          console.warn('Error fetching wallet balances:', balanceErr);
+          userETHBalance = statsRef.current.userETHBalance || '0';
+          userUSDCBalance = statsRef.current.userUSDCBalance || '0';
+        }
+      }
+      
       // If contract function returns 0 or very small values, manually calculate TVL
       const totalGiftsNum = Number(totalGifts) || 0;
       if ((ethValue === 0 && usdcValue === 0 && totalGiftsNum > 0) || 
@@ -133,6 +168,8 @@ export default function Dashboard() {
         totalGifts: totalGiftsNum,
         totalValueETH: ethValue.toFixed(4),
         totalValueUSDC: usdcValue.toFixed(2),
+        userETHBalance: userETHBalance,
+        userUSDCBalance: userUSDCBalance,
         userGiftsSent: userSent,
         userGiftsReceived: userReceived,
       });
@@ -145,7 +182,7 @@ export default function Dashboard() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [address, getGiftCount, getTotalValueLocked, getGiftsForUser, getGift]);
+  }, [address, provider, getGiftCount, getTotalValueLocked, getGiftsForUser, getGift]);
 
   useEffect(() => {
     loadStats();
@@ -253,7 +290,9 @@ export default function Dashboard() {
             </div>
             <div className="relative flex-1 flex flex-col justify-end">
               <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">ETH</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">{stats.totalValueETH}</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">
+                {address ? stats.userETHBalance : '0.0000'}
+              </p>
               <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your Base ETH balance</p>
               <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
@@ -284,7 +323,9 @@ export default function Dashboard() {
             </div>
             <div className="relative flex-1 flex flex-col justify-end">
               <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">USDC</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">{stats.totalValueUSDC}</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">
+                {address ? stats.userUSDCBalance : '0.00'}
+              </p>
               <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your stablecoins balance</p>
               <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
