@@ -110,9 +110,9 @@ export default function Header() {
         )}
       </AnimatePresence>
       
-      <div className="flex items-center justify-between p-3 sm:p-4 lg:pl-4">
+      <div className="flex items-center justify-between p-3 sm:p-4">
         {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
-        <div className="flex-1 min-w-0 lg:ml-60">
+        <div className="flex-1 min-w-0">
           {/* Mobile: RiddlePay Branding with Logo - moved right to avoid hamburger menu */}
           <div className="sm:hidden flex items-center gap-2 ml-12">
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
