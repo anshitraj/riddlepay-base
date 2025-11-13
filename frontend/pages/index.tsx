@@ -31,6 +31,29 @@ function HomeContent() {
     setShowOnboarding(true);
   };
 
+  // Handle scroll to airdrop form when hash is present
+  useEffect(() => {
+    const handleHashScroll = () => {
+      if (typeof window !== 'undefined' && window.location.hash === '#create-airdrop-form') {
+        setTimeout(() => {
+          const element = document.getElementById('create-airdrop-form');
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            // Remove hash from URL after scrolling
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }, 300);
+      }
+    };
+
+    // Check on initial load
+    handleHashScroll();
+
+    // Also listen for hash changes
+    window.addEventListener('hashchange', handleHashScroll);
+    return () => window.removeEventListener('hashchange', handleHashScroll);
+  }, []);
+
   // Check on mount if user has launched dashboard before
   useEffect(() => {
     const launched = sessionStorage.getItem('dappLaunched') === 'true';
