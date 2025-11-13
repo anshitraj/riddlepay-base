@@ -117,15 +117,13 @@ export default function Header() {
           <div className="sm:hidden flex items-center gap-2 ml-12">
             <Link href="/" prefetch={true} className="flex items-center gap-2 group">
               <div className="relative w-8 h-8 flex-shrink-0">
-                <Image
-                  src="/riddlepay-logo.png"
+                <img
+                  src="/riddlepay-logo.svg"
                   alt="RiddlePay Logo"
-                  width={32}
-                  height={32}
-                  className="w-full h-full"
+                  className="w-full h-full object-contain"
                   onError={(e) => {
-                    // Fallback to SVG if PNG doesn't exist
-                    (e.target as HTMLImageElement).src = '/riddlepay-logo.svg';
+                    // Fallback to icon if logo doesn't exist
+                    (e.target as HTMLImageElement).src = '/icon.svg';
                   }}
                 />
               </div>
