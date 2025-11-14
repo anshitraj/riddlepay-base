@@ -12,6 +12,7 @@
     "name": "RiddlePay",
     "homeUrl": "https://riddlepay.tech",
     "iconUrl": "https://riddlepay.tech/icon.png",
+    "imageUrl": "https://riddlepay.tech/og-image.png",
     "splashImageUrl": "https://riddlepay.tech/splash.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "Unlock crypto gifts",
@@ -28,6 +29,8 @@
     "ogTitle": "RiddlePay",
     "ogDescription": "Send secret crypto airdrops unlocked by riddles on Base Network.",
     "ogImageUrl": "https://riddlepay.tech/og-image.png",
+    "buttonTitle": "Try RiddlePay",
+    "castShareUrl": "https://riddlepay.tech",
     "noindex": false
   }
 }
