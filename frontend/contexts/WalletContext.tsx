@@ -22,32 +22,76 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
 
+  // Helper to check if running in Farcaster
+  const isFarcaster = () => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.location.href.includes('farcaster.xyz') || 
+      window.location.href.includes('warpcast.com') ||
+      !!(window as any).farcaster ||
+      !!(window as any).parent?.farcaster
+    );
+  };
+
+  // Helper to get wallet provider (Farcaster SDK or window.ethereum)
+  const getWalletProvider = async () => {
+    if (typeof window === 'undefined') return null;
+
+    // In Farcaster, window.ethereum should be available
+    // The SDK context doesn't directly expose wallet, but window.ethereum works
+    if (window.ethereum) {
+      return window.ethereum;
+    }
+
+    // If in Farcaster but window.ethereum not ready yet, wait a bit
+    if (isFarcaster()) {
+      // Wait for wallet to be injected (Farcaster injects it)
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const checkWallet = () => {
+          if (window.ethereum) {
+            resolve(window.ethereum);
+          } else if (attempts < 10) {
+            attempts++;
+            setTimeout(checkWallet, 100);
+          } else {
+            resolve(null);
+          }
+        };
+        checkWallet();
+      });
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     // Check if running in Base App (Farcaster) - auto-connect if available
-    const isBaseApp = typeof window !== 'undefined' && 
-      (window.location.href.includes('farcaster.xyz') || 
-       window.location.href.includes('warpcast.com') ||
-       (window as any).farcaster);
+    const isBaseApp = isFarcaster();
     
-    // Only check for existing connection if we don't have a stored disconnect state
-    // This ensures users must explicitly reconnect after disconnecting
-    if (typeof window !== 'undefined' && window.ethereum) {
-      // Check localStorage for explicit disconnect state
+    // Auto-connect in Farcaster or if window.ethereum is available
+    const initWallet = async () => {
+      const walletProvider = await getWalletProvider();
+      
+      if (!walletProvider) return;
+
+      // Only check for existing connection if we don't have a stored disconnect state
+      // This ensures users must explicitly reconnect after disconnecting
+      // In Farcaster, always try to auto-connect
       const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
       
-      // In Base App, auto-connect if wallet is available (no external redirects)
-      if ((!wasDisconnected || isBaseApp) && typeof window !== 'undefined' && window.ethereum) {
-        const ethereum = window.ethereum;
-        ethereum.request({ method: 'eth_accounts' }).then((accounts: string[]) => {
-          if (accounts.length > 0 && ethereum) {
-            const provider = new ethers.BrowserProvider(ethereum);
+      if ((!wasDisconnected || isBaseApp) && walletProvider) {
+        try {
+          const accounts = await walletProvider.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            const provider = new ethers.BrowserProvider(walletProvider as any);
             setProvider(provider);
             setAddress(accounts[0]);
             
             // Get current chain ID - ensure it's properly parsed
             // Add a small delay to ensure wallet is ready
             setTimeout(() => {
-              ethereum.request({ method: 'eth_chainId' }).then((id: string) => {
+              walletProvider.request({ method: 'eth_chainId' }).then((id: string) => {
                 const parsedChainId = typeof id === 'string' ? parseInt(id, 16) : Number(id);
                 console.log('Initial chainId from eth_chainId:', id, 'parsed:', parsedChainId);
                 setChainId(parsedChainId);
@@ -55,7 +99,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
                 // Double-check after a delay
                 setTimeout(async () => {
                   try {
-                    const recheckId = await ethereum.request({ method: 'eth_chainId' });
+                    const recheckId = await walletProvider.request({ method: 'eth_chainId' });
                     const recheckParsed = typeof recheckId === 'string' ? parseInt(recheckId, 16) : Number(recheckId);
                     if (recheckParsed !== parsedChainId) {
                       console.log('ChainId updated on recheck:', recheckParsed);
@@ -76,20 +120,31 @@ export function WalletProvider({ children }: { children: ReactNode }) {
               });
             }, 300);
           }
-        });
+        } catch (error) {
+          console.error('Error initializing wallet:', error);
+        }
       }
       
       // Listen for chain changes
-      window.ethereum.on('chainChanged', (chainId: string) => {
-        const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
-        console.log('Chain changed to:', parsedChainId);
-        setChainId(parsedChainId);
-        window.location.reload();
-      });
-    }
+      if (walletProvider && typeof walletProvider.on === 'function') {
+        walletProvider.on('chainChanged', (chainId: string) => {
+          const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
+          console.log('Chain changed to:', parsedChainId);
+          setChainId(parsedChainId);
+          window.location.reload();
+        });
+      }
+    };
+
+    initWallet();
   }, []);
 
   const switchToBaseMainnet = async () => {
+    const walletProvider = await getWalletProvider();
+    if (!walletProvider) {
+      throw new Error('Wallet provider not available');
+    }
+
     const BASE_MAINNET_CHAIN_ID = '0x2105'; // 8453 in hex
     const BASE_MAINNET_NETWORK = {
       chainId: BASE_MAINNET_CHAIN_ID,
@@ -105,22 +160,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     try {
       // Try to switch to Base Mainnet
-      await window.ethereum!.request({
+      await walletProvider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: BASE_MAINNET_CHAIN_ID }],
       });
     } catch (switchError: any) {
-      // This error code indicates that the chain has not been added to MetaMask
+      // This error code indicates that the chain has not been added
       if (switchError.code === 4902) {
         try {
           // Add Base Mainnet network
-          await window.ethereum!.request({
+          await walletProvider.request({
             method: 'wallet_addEthereumChain',
             params: [BASE_MAINNET_NETWORK],
           });
         } catch (addError) {
           console.error('Error adding Base Mainnet network:', addError);
-          throw new Error('Failed to add Base Mainnet network. Please add it manually in MetaMask.');
+          throw new Error('Failed to add Base Mainnet network.');
         }
       } else {
         console.error('Error switching to Base Mainnet:', switchError);
@@ -130,6 +185,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const switchToBaseSepolia = async () => {
+    const walletProvider = await getWalletProvider();
+    if (!walletProvider) {
+      throw new Error('Wallet provider not available');
+    }
+
     const BASE_SEPOLIA_CHAIN_ID = '0x14a34'; // 84532 in hex
     const BASE_SEPOLIA_NETWORK = {
       chainId: BASE_SEPOLIA_CHAIN_ID,
@@ -145,22 +205,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     try {
       // Try to switch to Base Sepolia
-      await window.ethereum!.request({
+      await walletProvider.request({
         method: 'wallet_switchEthereumChain',
         params: [{ chainId: BASE_SEPOLIA_CHAIN_ID }],
       });
     } catch (switchError: any) {
-      // This error code indicates that the chain has not been added to MetaMask
+      // This error code indicates that the chain has not been added
       if (switchError.code === 4902) {
         try {
           // Add Base Sepolia network
-          await window.ethereum!.request({
+          await walletProvider.request({
             method: 'wallet_addEthereumChain',
             params: [BASE_SEPOLIA_NETWORK],
           });
         } catch (addError) {
           console.error('Error adding Base Sepolia network:', addError);
-          throw new Error('Failed to add Base Sepolia network. Please add it manually in MetaMask.');
+          throw new Error('Failed to add Base Sepolia network.');
         }
       } else {
         console.error('Error switching to Base Sepolia:', switchError);
@@ -170,7 +230,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const connect = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) {
+    const walletProvider = await getWalletProvider();
+    
+    if (!walletProvider) {
+      // In Farcaster, wallet should always be available
+      if (isFarcaster()) {
+        console.error('Farcaster wallet not available');
+        return;
+      }
       alert('Please install MetaMask or another Web3 wallet');
       return;
     }
@@ -180,14 +247,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('wallet_disconnected');
       
       // First, switch to Base Mainnet network (production)
-      await switchToBaseMainnet();
-      
-      // Wait a moment for network switch to complete
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Skip network switching in Farcaster as it's handled by the platform
+      if (!isFarcaster()) {
+        await switchToBaseMainnet();
+        // Wait a moment for network switch to complete
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
 
-      // Always request accounts explicitly - this ensures MetaMask popup opens
+      // Always request accounts explicitly - this ensures wallet popup opens
       // Using eth_requestAccounts instead of eth_accounts ensures user approval
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(walletProvider as any);
       await provider.send('eth_requestAccounts', []);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
@@ -196,13 +265,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setAddress(address);
 
       // Listen for account changes
-      window.ethereum.on('accountsChanged', (accounts: string[]) => {
-        if (accounts.length > 0) {
-          setAddress(accounts[0]);
-        } else {
-          disconnect();
-        }
-      });
+      if (walletProvider && typeof walletProvider.on === 'function') {
+        walletProvider.on('accountsChanged', (accounts: string[]) => {
+          if (accounts.length > 0) {
+            setAddress(accounts[0]);
+          } else {
+            disconnect();
+          }
+        });
+      }
 
       // Get current chain ID - check both methods to ensure accuracy
       // Wait a bit for the network to stabilize after connection
@@ -212,7 +283,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const networkChainId = Number(network.chainId);
       
       // Also check via eth_chainId for verification
-      const ethChainId = await window.ethereum.request({ method: 'eth_chainId' });
+      const ethChainId = await walletProvider.request({ method: 'eth_chainId' });
       const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
       
       console.log('Connected - chainId from network:', networkChainId, 'from eth_chainId:', parsedEthChainId);
@@ -225,14 +296,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Double-check after a short delay to ensure it's correct
       setTimeout(async () => {
         try {
-          if (typeof window !== 'undefined' && window.ethereum) {
-            const recheckChainId = await window.ethereum.request({ method: 'eth_chainId' });
-            const recheckParsed = typeof recheckChainId === 'string' ? parseInt(recheckChainId, 16) : Number(recheckChainId);
-            console.log('Recheck chainId:', recheckParsed);
-            if (recheckParsed !== finalChainId) {
-              console.log('ChainId changed, updating to:', recheckParsed);
-              setChainId(recheckParsed);
-            }
+          const recheckChainId = await walletProvider.request({ method: 'eth_chainId' });
+          const recheckParsed = typeof recheckChainId === 'string' ? parseInt(recheckChainId, 16) : Number(recheckChainId);
+          console.log('Recheck chainId:', recheckParsed);
+          if (recheckParsed !== finalChainId) {
+            console.log('ChainId changed, updating to:', recheckParsed);
+            setChainId(recheckParsed);
           }
         } catch (err) {
           console.error('Error rechecking chainId:', err);
@@ -240,17 +309,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }, 1000);
 
       // Listen for chain changes
-      window.ethereum.on('chainChanged', (chainId: string) => {
-        setChainId(parseInt(chainId, 16));
-        window.location.reload();
-      });
+      if (walletProvider && typeof walletProvider.on === 'function') {
+        walletProvider.on('chainChanged', (chainId: string) => {
+          setChainId(parseInt(chainId, 16));
+          window.location.reload();
+        });
+      }
     } catch (error: any) {
       console.error('Error connecting wallet:', error);
       // If user rejects, set disconnect state
       if (error.code === 4001) {
         localStorage.setItem('wallet_disconnected', 'true');
       }
-      alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+      // Don't show alert in Farcaster - errors are handled by the platform
+      if (!isFarcaster()) {
+        alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+      }
     }
   };
 
@@ -271,16 +345,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const switchWallet = async () => {
-    if (typeof window === 'undefined' || !window.ethereum) {
+    const walletProvider = await getWalletProvider();
+    
+    if (!walletProvider) {
+      if (isFarcaster()) {
+        console.error('Farcaster wallet not available');
+        return;
+      }
       alert('Please install MetaMask or another Web3 wallet');
       return;
     }
 
     try {
-      // Request account selection - this will show MetaMask's account picker
+      // Request account selection - this will show wallet's account picker
       // First try wallet_requestPermissions which shows account selection UI
       try {
-        await window.ethereum.request({
+        await walletProvider.request({
           method: 'wallet_requestPermissions',
           params: [{ eth_accounts: {} }],
         });
@@ -293,7 +373,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
 
       // Request accounts - this will show account picker if multiple accounts exist
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(walletProvider as any);
       const accounts = await provider.send('eth_requestAccounts', []);
       
       if (accounts && accounts.length > 0) {
@@ -308,17 +388,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         const providerChainId = Number(network.chainId);
         
         // Also check via eth_chainId (more reliable)
-        if (typeof window !== 'undefined' && window.ethereum) {
-          try {
-            const ethChainId = await window.ethereum.request({ method: 'eth_chainId' });
-            const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
-            console.log('Switch wallet - chainId from provider:', providerChainId, 'from eth_chainId:', parsedEthChainId);
-            setChainId(parsedEthChainId || providerChainId);
-          } catch (err) {
-            console.error('Error getting chainId via eth_chainId:', err);
-            setChainId(providerChainId);
-          }
-        } else {
+        try {
+          const ethChainId = await walletProvider.request({ method: 'eth_chainId' });
+          const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
+          console.log('Switch wallet - chainId from provider:', providerChainId, 'from eth_chainId:', parsedEthChainId);
+          setChainId(parsedEthChainId || providerChainId);
+        } catch (err) {
+          console.error('Error getting chainId via eth_chainId:', err);
           setChainId(providerChainId);
         }
       }
@@ -326,7 +402,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // User rejected the request or no accounts available
       if (error.code !== 4001) {
         console.error('Error switching wallet:', error);
-        alert('Failed to switch wallet. Please try switching accounts in MetaMask directly.');
+        if (!isFarcaster()) {
+          alert('Failed to switch wallet. Please try switching accounts directly.');
+        }
       }
     }
   };

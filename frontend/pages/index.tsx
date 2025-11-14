@@ -16,7 +16,7 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 
 function HomeContent() {
-  const { isConnected } = useWallet();
+  const { isConnected, connect } = useWallet();
   
   // Enable notifications when user is connected
   useNotifications();
@@ -29,6 +29,17 @@ function HomeContent() {
   
   const handleShowOnboarding = () => {
     setShowOnboarding(true);
+  };
+
+  // Check if running in Farcaster
+  const isFarcaster = () => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.location.href.includes('farcaster.xyz') || 
+      window.location.href.includes('warpcast.com') ||
+      !!(window as any).farcaster ||
+      !!(window as any).parent?.farcaster
+    );
   };
 
   // Handle scroll to airdrop form when hash is present
@@ -54,16 +65,26 @@ function HomeContent() {
     return () => window.removeEventListener('hashchange', handleHashScroll);
   }, []);
 
-  // Check on mount if user has launched dashboard before
+  // Auto-connect in Farcaster and check launch state
   useEffect(() => {
     const launched = sessionStorage.getItem('dappLaunched') === 'true';
     setHasLaunchedBefore(launched);
+    
+    // In Farcaster, try to auto-connect
+    if (isFarcaster() && !isConnected) {
+      // Wait a bit for wallet to be ready, then try to connect
+      setTimeout(() => {
+        connect().catch(err => {
+          console.log('Auto-connect in Farcaster:', err);
+        });
+      }, 500);
+    }
     
     // Show onboarding if not completed and not marked as "don't show"
     if (isConnected && !localStorage.getItem('onboarding_completed') && !localStorage.getItem('onboarding_dont_show')) {
       setShowOnboarding(true);
     }
-  }, [isConnected]);
+  }, [isConnected, connect]);
 
   const handleLaunchDApp = () => {
     setHasLaunchedBefore(true);
@@ -71,12 +92,15 @@ function HomeContent() {
   };
 
   // Show landing page if wallet is not connected
-  // This ensures landing page shows whenever user visits without a connected wallet
-  if (!isConnected) {
+  // In Farcaster, skip landing page and show dashboard (wallet will auto-connect)
+  if (!isConnected && !isFarcaster()) {
     // If user has launched before, they might want to see dashboard even without wallet
     // But for better UX, show landing page to encourage reconnection
     return <LandingPage onLaunchDApp={handleLaunchDApp} />;
   }
+  
+  // In Farcaster, show dashboard even if not connected yet (will connect automatically)
+  // This prevents the MetaMask alert from showing
 
   // Show dashboard if wallet is connected or dashboard has been launched
   return (
