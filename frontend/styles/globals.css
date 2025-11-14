@@ -52,6 +52,29 @@
   --color-border: rgba(0, 0, 0, 0.1);
 }
 
+/* CRITICAL: Override Mini App (Farcaster/Base) injected styles - but respect theme */
+html[data-theme='dark'], html[data-theme='dark'] body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  forced-color-adjust: none !important;
+  -webkit-appearance: none !important;
+}
+
+html[data-theme='light'], html[data-theme='light'] body {
+  background-color: #f8f9fa !important;
+  color: #1a1a1a !important;
+  forced-color-adjust: none !important;
+  -webkit-appearance: none !important;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+[data-theme='light'] {
+  color-scheme: light;
+}
+
 /* Mobile optimizations */
 @layer base {
   * {
@@ -64,7 +87,6 @@
     touch-action: manipulation;
     max-width: 100%;
     overflow-x: hidden;
-    zoom: 1;
   }
   
   body {
@@ -317,8 +339,15 @@ body {
   html[data-theme='light'] span.text-white,
   html[data-theme='light'] div.text-white,
   html[data-theme='light'] a.text-white,
-  html[data-theme='light'] button.text-white {
+  html[data-theme='light'] button.text-white,
+  html[data-theme='light'] .text-white.dark\:text-white {
     color: #1a1a1a !important;
+  }
+  
+  /* But keep white text on colored backgrounds in light mode */
+  html[data-theme='light'] button.bg-gradient-to-br .text-white,
+  html[data-theme='light'] .bg-gradient-to-br .text-white {
+    color: #ffffff !important;
   }
   
   html[data-theme='light'] .text-gray-300,
@@ -366,7 +395,14 @@ body {
   html[data-theme='light'] .bg-baseLight\/50 h4,
   html[data-theme='light'] .bg-baseLight\/50 p,
   html[data-theme='light'] .bg-baseLight\/50 span,
-  html[data-theme='light'] .bg-baseLight\/50 div {
+  html[data-theme='light'] .bg-baseLight\/50 div,
+  html[data-theme='light'] .bg-white\/90 h1,
+  html[data-theme='light'] .bg-white\/90 h2,
+  html[data-theme='light'] .bg-white\/90 h3,
+  html[data-theme='light'] .bg-white\/90 h4,
+  html[data-theme='light'] .bg-white\/90 p,
+  html[data-theme='light'] .bg-white\/90 span,
+  html[data-theme='light'] .bg-white\/90 div {
     color: #1a1a1a !important;
   }
   
@@ -417,6 +453,11 @@ body {
   .glow-hover:hover {
     box-shadow: 0 0 30px rgba(0, 82, 255, 0.5);
     transition: box-shadow 0.3s ease;
+  }
+  
+  /* Logo styling - BLACKLOGO.png is already dark, works in both themes */
+  img[src*="BLACKLOGO"] {
+    filter: none;
   }
 }
 

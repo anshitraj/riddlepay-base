@@ -103,7 +103,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
 
   return (
     <motion.div 
-      className="bg-baseLight/50 rounded-2xl p-4 sm:p-6 border border-blue-500/20 hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 group"
+      className="bg-baseLight/50 dark:bg-baseLight/50 bg-white/90 dark:bg-baseLight/50 rounded-2xl p-4 sm:p-6 border border-blue-500/20 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 group"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
@@ -114,27 +114,27 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-base-gradient flex items-center justify-center shadow-lg shadow-blue-500/30">
             <GiftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
-          <span className="text-xs sm:text-sm font-semibold dark:text-white text-gray-900">Airdrop #{giftId}</span>
+          <span className="text-xs sm:text-sm font-semibold dark:text-white text-white text-gray-900 dark:text-white">Airdrop #{giftId}</span>
         </div>
         {refunded ? (
           <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-purple-500/50">
             <CheckCircle className="w-4 h-4 text-purple-500" />
-            <span className="text-xs font-semibold text-purple-500 dark:text-purple-400">Refunded</span>
+            <span className="text-xs font-semibold text-purple-500 dark:text-purple-500 text-purple-600 dark:text-purple-400">Refunded</span>
           </div>
         ) : gift.claimed ? (
           <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-green-500/50">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-xs font-semibold text-green-500 dark:text-green-400">Claimed</span>
+            <span className="text-xs font-semibold text-green-500 dark:text-green-500 text-green-600 dark:text-green-400">Claimed</span>
           </div>
         ) : expired ? (
           <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-red-500/50">
             <AlertCircle className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-semibold text-red-500 dark:text-red-400">Expired</span>
+            <span className="text-xs font-semibold text-red-500 dark:text-red-500 text-red-600 dark:text-red-400">Expired</span>
           </div>
         ) : (
           <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-yellow-500/50">
             <Clock className="w-4 h-4 text-yellow-500 animate-pulse" />
-            <span className="text-xs font-semibold text-yellow-500 dark:text-yellow-400">Pending</span>
+            <span className="text-xs font-semibold text-yellow-500 dark:text-yellow-500 text-yellow-600 dark:text-yellow-400">Pending</span>
           </div>
         )}
       </div>
@@ -144,9 +144,9 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg glass flex items-center justify-center flex-shrink-0">
             <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
           </div>
-          <span className="dark:text-gray-400 text-gray-600 break-words">
+          <span className="dark:text-gray-400 text-gray-400 text-gray-600 dark:text-gray-400 break-words">
             {isReceiver ? 'From' : 'To'}:{' '}
-            <span className="dark:text-white text-gray-900 font-mono font-semibold">
+            <span className="dark:text-white text-white text-gray-900 dark:text-white font-mono font-semibold">
               {isReceiver
                 ? `${gift.sender.slice(0, 6)}...${gift.sender.slice(-4)}`
                 : `${gift.receiver.slice(0, 6)}...${gift.receiver.slice(-4)}`}
@@ -155,8 +155,8 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
         </div>
 
         {gift.riddle && gift.riddle.trim() && (
-          <div className="p-3 sm:p-4 glass rounded-xl border border-border">
-            <p className="dark:text-white text-gray-900 text-xs sm:text-sm leading-relaxed break-words">
+          <div className="p-3 sm:p-4 glass rounded-xl border border-border dark:border-border border-gray-200 dark:border-border">
+            <p className="dark:text-white text-white text-gray-900 dark:text-white text-xs sm:text-sm leading-relaxed break-words">
               <span className="font-bold text-blue-500">❓ Riddle:</span> {gift.riddle}
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
 
         {gift.unlockTime && Number(gift.unlockTime) > Math.floor(Date.now() / 1000) && (
           <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-xs text-yellow-500 dark:text-yellow-400 font-semibold">
+            <p className="text-xs text-yellow-500 dark:text-yellow-500 text-yellow-600 dark:text-yellow-400 font-semibold">
               🔒 Unlocks: {new Date(Number(gift.unlockTime) * 1000).toLocaleString()}
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
           <span className="text-xl sm:text-2xl font-extrabold bg-base-gradient bg-clip-text text-transparent">
             {formatAmount(gift.amount, gift.tokenAddress)}
           </span>
-          <span className="text-xs dark:text-gray-400 text-gray-600 font-medium">
+          <span className="text-xs dark:text-gray-400 text-gray-400 text-gray-600 dark:text-gray-400 font-medium">
             {formatDate(gift.createdAt)}
           </span>
         </div>
@@ -221,7 +221,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
         {isSender && !expired && !refunded && (
           <motion.button
             onClick={() => setShowShare(true)}
-            className="px-4 py-3 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 touch-manipulation"
+            className="px-4 py-3 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 dark:text-white text-white text-gray-900 dark:text-white transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 touch-manipulation"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >

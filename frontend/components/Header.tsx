@@ -93,7 +93,7 @@ export default function Header() {
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] backdrop-blur-xl border-b border-blue-500/10 shadow-lg">
+    <header className="sticky top-0 z-30 bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-100 to-gray-200 backdrop-blur-xl border-b border-blue-500/10 dark:border-blue-500/10 border-gray-300 dark:border-blue-500/10 shadow-lg">
       {/* Mobile Search Bar */}
       <AnimatePresence>
         {showMobileSearch && (

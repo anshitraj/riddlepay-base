@@ -7,6 +7,9 @@ interface WalletContextType {
   address: string | null;
   provider: ethers.BrowserProvider | null;
   connect: () => Promise<void>;
+  connectFarcaster: () => Promise<void>;
+  connectBase: () => Promise<void>;
+  connectBrowser: () => Promise<void>;
   disconnect: () => void;
   switchWallet: () => Promise<void>;
   isConnected: boolean;
@@ -21,9 +24,27 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [address, setAddress] = useState<string | null>(null);
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
+  const [walletType, setWalletType] = useState<'farcaster' | 'base' | 'browser' | null>(null);
 
-  // Helper to check if running in Mini App (Base App or Farcaster)
-  const isMiniApp = async (): Promise<boolean> => {
+  // Helper to check if running in Base Mini App
+  const isBaseMiniApp = (): boolean => {
+    try {
+      if (typeof window === 'undefined') return false;
+      const anyWindow = window as any;
+      return (
+        !!(anyWindow.coinbaseWalletSDK) ||
+        navigator.userAgent?.includes('BaseApp') ||
+        window.location?.href?.includes('base.org') ||
+        window.location?.href?.includes('base.build')
+      );
+    } catch (error) {
+      console.error('[RiddlePay] Error checking Base Mini App:', error);
+      return false;
+    }
+  };
+
+  // Helper to check if running in Farcaster Mini App
+  const isFarcasterMiniApp = async (): Promise<boolean> => {
     try {
       if (typeof window === 'undefined') return false;
       
@@ -40,14 +61,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       return (
         window.location?.href?.includes('farcaster.xyz') || 
         window.location?.href?.includes('warpcast.com') ||
-        window.location?.href?.includes('base.org') ||
         !!(window as any).farcaster ||
         !!(window as any).parent?.farcaster
       );
     } catch (error) {
-      console.error('[RiddlePay] Error checking Mini App environment:', error);
+      console.error('[RiddlePay] Error checking Farcaster Mini App:', error);
       return false;
     }
+  };
+
+  // Helper to check if running in any Mini App (Base App or Farcaster)
+  const isMiniApp = async (): Promise<boolean> => {
+    return isBaseMiniApp() || await isFarcasterMiniApp();
   };
 
   // Helper to check if running in Farcaster (for UI decisions)
@@ -66,33 +91,67 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Helper to get Ethereum provider (Farcaster SDK wallet or window.ethereum)
+  // Helper to get Ethereum provider based on stored wallet type or auto-detect
   const getEvmProvider = async (): Promise<ethers.BrowserProvider | null> => {
     try {
       if (typeof window === 'undefined') return null;
 
-      // 1. Try Farcaster Mini App wallet first (Base App / Farcaster)
+      // If we have a stored wallet type, use that specific provider
+      const storedWalletType = walletType || localStorage.getItem('wallet_type') as 'farcaster' | 'base' | 'browser' | null;
+      
+      if (storedWalletType === 'farcaster') {
+        try {
+          const { sdk } = await import('@farcaster/miniapp-sdk');
+          const ethProvider = await sdk.wallet.getEthereumProvider();
+          if (ethProvider) {
+            console.log('[RiddlePay] Using stored Farcaster wallet provider');
+            return new ethers.BrowserProvider(ethProvider as any);
+          }
+        } catch (err) {
+          console.warn('[RiddlePay] Stored Farcaster wallet not available, falling back');
+        }
+      }
+      
+      if (storedWalletType === 'base' || storedWalletType === 'browser') {
+        const anyWindow = window as any;
+        if (anyWindow.ethereum) {
+          console.log(`[RiddlePay] Using stored ${storedWalletType} wallet provider`);
+          return new ethers.BrowserProvider(anyWindow.ethereum as any);
+        }
+      }
+
+      // Auto-detect if no stored type (for initial connection)
+      // 1️⃣ Try Farcaster Mini App wallet first
       try {
         const { sdk } = await import('@farcaster/miniapp-sdk');
         const ethProvider = await sdk.wallet.getEthereumProvider();
         
         if (ethProvider) {
-          console.log('[RiddlePay] Using Farcaster Mini App wallet provider');
+          console.log('[RiddlePay] Auto-detected Farcaster Mini App wallet provider');
           return new ethers.BrowserProvider(ethProvider as any);
         }
       } catch (err) {
-        console.log('[RiddlePay] Not running as Farcaster Mini App, falling back', err);
+        // Not Farcaster, continue
       }
 
-      // 2. Fall back to browser-injected provider (MetaMask, Coinbase, etc.)
+      // 2️⃣ Try Base Mini App provider (uses window.ethereum from Coinbase Wallet SDK)
+      if (isBaseMiniApp()) {
+        const anyWindow = window as any;
+        if (anyWindow.ethereum) {
+          console.log('[RiddlePay] Auto-detected Base Mini App wallet provider');
+          return new ethers.BrowserProvider(anyWindow.ethereum as any);
+        }
+      }
+
+      // 3️⃣ Fall back to normal browser wallet (MetaMask, Coinbase, etc.)
       const anyWindow = window as any;
       if (anyWindow.ethereum) {
-        console.log('[RiddlePay] Using window.ethereum provider');
+        console.log('[RiddlePay] Auto-detected browser wallet provider');
         return new ethers.BrowserProvider(anyWindow.ethereum as any);
       }
 
-      // 3. No wallet anywhere
-      console.warn('[RiddlePay] No Ethereum wallet available (Mini App or browser)');
+      // 4️⃣ No wallet anywhere
+      console.warn('[RiddlePay] No Ethereum wallet available');
       return null;
     } catch (error) {
       console.error('[RiddlePay] Error getting wallet provider:', error);
@@ -100,28 +159,54 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Helper to get raw wallet provider (for direct requests)
+  // Helper to get raw wallet provider (for direct requests) - respects stored wallet type
   const getWalletProvider = async () => {
     try {
       if (typeof window === 'undefined') return null;
 
-      // 1. Try Farcaster Mini App wallet first
+      // If we have a stored wallet type, use that specific provider
+      const storedWalletType = walletType || localStorage.getItem('wallet_type') as 'farcaster' | 'base' | 'browser' | null;
+      
+      if (storedWalletType === 'farcaster') {
+        try {
+          const { sdk } = await import('@farcaster/miniapp-sdk');
+          const ethProvider = await sdk.wallet.getEthereumProvider();
+          if (ethProvider) {
+            console.log('[RiddlePay] Using stored Farcaster wallet provider (raw)');
+            return ethProvider;
+          }
+        } catch (err) {
+          console.warn('[RiddlePay] Stored Farcaster wallet not available, falling back');
+        }
+      }
+      
+      if (storedWalletType === 'base' || storedWalletType === 'browser') {
+        const anyWindow = window as any;
+        if (anyWindow.ethereum) {
+          console.log(`[RiddlePay] Using stored ${storedWalletType} wallet provider (raw)`);
+          return anyWindow.ethereum;
+        }
+      }
+
+      // Auto-detect if no stored type (for initial connection)
+      // 1️⃣ Try Farcaster Mini App wallet first
       try {
         const { sdk } = await import('@farcaster/miniapp-sdk');
         const ethProvider = await sdk.wallet.getEthereumProvider();
         
         if (ethProvider) {
-          console.log('[RiddlePay] Using Farcaster Mini App wallet provider (raw)');
+          console.log('[RiddlePay] Auto-detected Farcaster Mini App wallet provider (raw)');
           return ethProvider;
         }
       } catch (err) {
-        console.log('[RiddlePay] Not running as Farcaster Mini App, falling back', err);
+        // Not Farcaster, continue
       }
 
-      // 2. Fall back to window.ethereum
-      if (window.ethereum) {
-        console.log('[RiddlePay] Using window.ethereum provider (raw)');
-        return window.ethereum;
+      // 2️⃣ Try Base Mini App or browser wallet
+      const anyWindow = window as any;
+      if (anyWindow.ethereum) {
+        console.log('[RiddlePay] Auto-detected window.ethereum provider (raw)');
+        return anyWindow.ethereum;
       }
 
       return null;
@@ -146,8 +231,16 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // In normal browser, only auto-connect if not explicitly disconnected
         if (wasDisconnected && !inMiniApp) return;
 
-        // Check for existing accounts
-        const accounts = await provider.send('eth_accounts', []);
+        // Check for existing accounts with error handling
+        let accounts: string[] = [];
+        try {
+          accounts = await provider.send('eth_accounts', []) as string[];
+        } catch (error: any) {
+          console.warn('[RiddlePay] Error checking existing accounts:', error);
+          // If there's an error, don't auto-connect
+          return;
+        }
+        
         if (accounts && accounts.length > 0) {
           setProvider(provider);
           setAddress(accounts[0]);
@@ -156,7 +249,56 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const network = await provider.getNetwork();
           const networkChainId = Number(network.chainId);
           setChainId(networkChainId);
-          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId, 'Mini App:', inMiniApp);
+          
+          // Restore wallet type from localStorage if available
+          const storedWalletType = localStorage.getItem('wallet_type') as 'farcaster' | 'base' | 'browser' | null;
+          if (storedWalletType) {
+            setWalletType(storedWalletType);
+          } else {
+            // Auto-detect wallet type
+            if (await isFarcasterMiniApp()) {
+              setWalletType('farcaster');
+              localStorage.setItem('wallet_type', 'farcaster');
+            } else if (isBaseMiniApp()) {
+              setWalletType('base');
+              localStorage.setItem('wallet_type', 'base');
+            } else {
+              setWalletType('browser');
+              localStorage.setItem('wallet_type', 'browser');
+            }
+          }
+          
+          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId, 'Type:', storedWalletType || 'auto-detected');
+          
+          // Setup listeners only once
+          const walletProvider = await getWalletProvider();
+          if (walletProvider && typeof walletProvider.on === 'function') {
+            // Remove any existing listeners first to prevent duplicates
+            if (typeof walletProvider.removeAllListeners === 'function') {
+              walletProvider.removeAllListeners('accountsChanged');
+              walletProvider.removeAllListeners('chainChanged');
+            }
+            
+            walletProvider.on('accountsChanged', (accounts: string[]) => {
+              if (accounts.length > 0) {
+                setAddress(accounts[0]);
+              } else {
+                disconnect();
+              }
+            });
+
+            walletProvider.on('chainChanged', async (chainId: string) => {
+              const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
+              console.log('[RiddlePay] Chain changed to:', parsedChainId);
+              setChainId(parsedChainId);
+              try {
+                const newProvider = new ethers.BrowserProvider(walletProvider as any);
+                setProvider(newProvider);
+              } catch (error) {
+                console.error('[RiddlePay] Error updating provider after chain change:', error);
+              }
+            });
+          }
         }
       } catch (error) {
         console.error('[RiddlePay] Error initializing wallet:', error);
@@ -164,6 +306,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     };
 
     initWallet();
+    
+    // Cleanup function to remove listeners on unmount
+    return () => {
+      // Cleanup is handled by removeAllListeners in setupWalletConnection
+    };
   }, []);
 
   const switchToBaseMainnet = async () => {
@@ -256,26 +403,222 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Helper to setup wallet listeners and handle connection
+  const setupWalletConnection = async (provider: ethers.BrowserProvider, walletProvider: any) => {
+    try {
+      // Check if we're explicitly disconnected before attempting connection
+      const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
+      if (wasDisconnected) {
+        console.log('[RiddlePay] Skipping connection - wallet was explicitly disconnected');
+        return;
+      }
+
+      // Request accounts explicitly with error handling
+      let accounts: string[] = [];
+      try {
+        accounts = await provider.send('eth_requestAccounts', []) as string[];
+      } catch (error: any) {
+        // Handle user rejection or connection errors
+        if (error.code === 4001) {
+          console.log('[RiddlePay] User rejected connection request');
+          localStorage.setItem('wallet_disconnected', 'true');
+          throw new Error('Connection rejected by user');
+        }
+        // Handle other errors
+        console.error('[RiddlePay] Error requesting accounts:', error);
+        throw new Error(`Failed to connect: ${error.message || 'Unknown error'}`);
+      }
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts available');
+      }
+
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      
+      setProvider(provider);
+      setAddress(address);
+
+      // Get current chain ID
+      const network = await provider.getNetwork();
+      const networkChainId = Number(network.chainId);
+      setChainId(networkChainId);
+      
+      console.log('[RiddlePay] Connected wallet:', address, 'Chain:', networkChainId);
+
+      // Listen for account changes - remove existing listeners first to prevent duplicates
+      if (walletProvider && typeof walletProvider.on === 'function') {
+        // Remove any existing listeners to prevent multiple registrations
+        if (typeof walletProvider.removeAllListeners === 'function') {
+          walletProvider.removeAllListeners('accountsChanged');
+          walletProvider.removeAllListeners('chainChanged');
+        }
+        
+        walletProvider.on('accountsChanged', (accounts: string[]) => {
+          if (accounts.length > 0) {
+            setAddress(accounts[0]);
+          } else {
+            disconnect();
+          }
+        });
+
+        // Listen for chain changes - update state without reloading
+        walletProvider.on('chainChanged', async (chainId: string) => {
+          const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
+          console.log('[RiddlePay] Chain changed to:', parsedChainId);
+          setChainId(parsedChainId);
+          // Update provider to reflect new chain
+          try {
+            const newProvider = new ethers.BrowserProvider(walletProvider as any);
+            setProvider(newProvider);
+          } catch (error) {
+            console.error('[RiddlePay] Error updating provider after chain change:', error);
+          }
+        });
+      }
+    } catch (error: any) {
+      console.error('[RiddlePay] Error in setupWalletConnection:', error);
+      // Clean up on error
+      setProvider(null);
+      setAddress(null);
+      setChainId(null);
+      throw error;
+    }
+  };
+
+  // Connect to Farcaster Mini App
+  const connectFarcaster = async () => {
+    try {
+      localStorage.removeItem('wallet_disconnected');
+      
+      const { sdk } = await import('@farcaster/miniapp-sdk');
+      const ethProvider = await sdk.wallet.getEthereumProvider();
+      
+      if (!ethProvider) {
+        alert('Farcaster wallet not available. Please open this app in Farcaster.');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(ethProvider as any);
+      setWalletType('farcaster');
+      localStorage.setItem('wallet_type', 'farcaster');
+      await setupWalletConnection(provider, ethProvider);
+    } catch (error: any) {
+      console.error('[RiddlePay] Error connecting to Farcaster:', error);
+      alert('Failed to connect to Farcaster: ' + (error.message || 'Please open this app in Farcaster'));
+    }
+  };
+
+  // Connect to Base Mini App
+  const connectBase = async () => {
+    try {
+      localStorage.removeItem('wallet_disconnected');
+      
+      const anyWindow = window as any;
+      if (!anyWindow.ethereum) {
+        alert('Base wallet not available. Please open this app in Base App.');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(anyWindow.ethereum as any);
+      setWalletType('base');
+      localStorage.setItem('wallet_type', 'base');
+      
+      // Check if we're on Base network, if not, switch
+      const network = await provider.getNetwork();
+      const networkChainId = Number(network.chainId);
+      
+      if (networkChainId !== 8453) {
+        await switchToBaseMainnet();
+        // Wait a moment for network switch, then reconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const updatedProvider = new ethers.BrowserProvider(anyWindow.ethereum as any);
+        const updatedNetwork = await updatedProvider.getNetwork();
+        const updatedChainId = Number(updatedNetwork.chainId);
+        setChainId(updatedChainId);
+        await setupWalletConnection(updatedProvider, anyWindow.ethereum);
+        return;
+      }
+
+      await setupWalletConnection(provider, anyWindow.ethereum);
+    } catch (error: any) {
+      console.error('[RiddlePay] Error connecting to Base:', error);
+      alert('Failed to connect to Base: ' + (error.message || 'Please open this app in Base App'));
+    }
+  };
+
+  // Connect to browser wallet (MetaMask, Coinbase, etc.)
+  const connectBrowser = async () => {
+    try {
+      localStorage.removeItem('wallet_disconnected');
+      
+      const anyWindow = window as any;
+      if (!anyWindow.ethereum) {
+        alert('Please install MetaMask or another Web3 wallet');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(anyWindow.ethereum as any);
+      setWalletType('browser');
+      localStorage.setItem('wallet_type', 'browser');
+      
+      // Ensure we're on Base Mainnet
+      const network = await provider.getNetwork();
+      const networkChainId = Number(network.chainId);
+      
+      if (networkChainId !== 8453) {
+        await switchToBaseMainnet();
+        // Wait a moment for network switch, then reconnect
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const updatedProvider = new ethers.BrowserProvider(anyWindow.ethereum as any);
+        const updatedNetwork = await updatedProvider.getNetwork();
+        const updatedChainId = Number(updatedNetwork.chainId);
+        setChainId(updatedChainId);
+        await setupWalletConnection(updatedProvider, anyWindow.ethereum);
+        return;
+      }
+
+      await setupWalletConnection(provider, anyWindow.ethereum);
+    } catch (error: any) {
+      console.error('[RiddlePay] Error connecting browser wallet:', error);
+      if (error.code === 4001) {
+        localStorage.setItem('wallet_disconnected', 'true');
+      }
+      alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+    }
+  };
+
+  // Auto-connect (tries all methods in priority order)
   const connect = async () => {
     try {
-      // Clear disconnect state to allow reconnection
       localStorage.removeItem('wallet_disconnected');
       
       // Get the appropriate provider (Farcaster SDK or window.ethereum)
       const provider = await getEvmProvider();
       
       if (!provider) {
-        // Only show alert in normal browser, not in Farcaster
-        if (!isFarcaster()) {
-          alert('Please install MetaMask or another Web3 wallet');
-        } else {
-          console.error('[RiddlePay] Farcaster wallet not available');
-        }
+        alert('Please install MetaMask or another Web3 wallet');
         return;
       }
 
-      // Request accounts explicitly - this ensures wallet popup opens
-      await provider.send('eth_requestAccounts', []);
+      // Request accounts explicitly with error handling
+      let accounts: string[] = [];
+      try {
+        accounts = await provider.send('eth_requestAccounts', []) as string[];
+      } catch (error: any) {
+        if (error.code === 4001) {
+          console.log('[RiddlePay] User rejected connection request');
+          localStorage.setItem('wallet_disconnected', 'true');
+          throw new Error('Connection rejected by user');
+        }
+        console.error('[RiddlePay] Error requesting accounts:', error);
+        throw new Error(`Failed to connect: ${error.message || 'Unknown error'}`);
+      }
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts available');
+      }
+
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
       
@@ -290,12 +633,36 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       console.log('[RiddlePay] Connected wallet:', address, 'Chain:', networkChainId);
 
       // In normal browser (not Mini App), ensure we're on Base Mainnet
-      // Mini Apps (Base App/Farcaster) handle network switching automatically
       const inMiniApp = await isMiniApp();
       if (!inMiniApp && networkChainId !== 8453) {
         await switchToBaseMainnet();
-        // Reload to get updated chain ID
-        window.location.reload();
+        // Wait a moment for network switch, then update state
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const updatedNetwork = await provider.getNetwork();
+        const updatedChainId = Number(updatedNetwork.chainId);
+        setChainId(updatedChainId);
+        // Re-setup listeners with updated provider
+        const walletProvider = await getWalletProvider();
+        if (walletProvider && typeof walletProvider.on === 'function') {
+          walletProvider.on('accountsChanged', (accounts: string[]) => {
+            if (accounts.length > 0) {
+              setAddress(accounts[0]);
+            } else {
+              disconnect();
+            }
+          });
+          walletProvider.on('chainChanged', async (chainId: string) => {
+            const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
+            console.log('[RiddlePay] Chain changed to:', parsedChainId);
+            setChainId(parsedChainId);
+            try {
+              const newProvider = new ethers.BrowserProvider(walletProvider as any);
+              setProvider(newProvider);
+            } catch (error) {
+              console.error('[RiddlePay] Error updating provider after chain change:', error);
+            }
+          });
+        }
         return;
       }
 
@@ -320,14 +687,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
     } catch (error: any) {
       console.error('[RiddlePay] Error connecting wallet:', error);
-      // If user rejects, set disconnect state
       if (error.code === 4001) {
         localStorage.setItem('wallet_disconnected', 'true');
       }
-      // Don't show alert in Farcaster - errors are handled by the platform
-      if (!isFarcaster()) {
-        alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
-      }
+      alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -377,7 +740,22 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       }
 
       // Request accounts - this will show account picker if multiple accounts exist
-      await provider.send('eth_requestAccounts', []);
+      let accounts: string[] = [];
+      try {
+        accounts = await provider.send('eth_requestAccounts', []) as string[];
+      } catch (error: any) {
+        if (error.code === 4001) {
+          console.log('[RiddlePay] User rejected account switch request');
+          return;
+        }
+        console.error('[RiddlePay] Error requesting accounts for switch:', error);
+        throw new Error(`Failed to switch accounts: ${error.message || 'Unknown error'}`);
+      }
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts available');
+      }
+
       const signer = await provider.getSigner();
       const newAddress = await signer.getAddress();
       
@@ -401,12 +779,30 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const disconnect = () => {
+  const disconnect = async () => {
+    // Clean up listeners before disconnecting
+    try {
+      const walletProvider = await getWalletProvider();
+      if (walletProvider && typeof walletProvider.removeAllListeners === 'function') {
+        walletProvider.removeAllListeners('accountsChanged');
+        walletProvider.removeAllListeners('chainChanged');
+        console.log('[RiddlePay] Removed wallet listeners on disconnect');
+      }
+    } catch (error) {
+      console.warn('[RiddlePay] Error removing listeners on disconnect:', error);
+    }
+
+    // Clear state
     setAddress(null);
     setProvider(null);
     setChainId(null);
+    setWalletType(null);
+    
     // Mark as explicitly disconnected - this prevents auto-reconnection
     localStorage.setItem('wallet_disconnected', 'true');
+    localStorage.removeItem('wallet_type');
+    
+    console.log('[RiddlePay] Wallet disconnected');
   };
 
   return (
@@ -415,6 +811,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         address,
         provider,
         connect,
+        connectFarcaster,
+        connectBase,
+        connectBrowser,
         disconnect,
         switchWallet,
         isConnected: !!address,

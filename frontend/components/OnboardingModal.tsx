@@ -90,7 +90,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
             {/* Logo for Welcome Screen */}
             {currentStep === 0 && currentStepData.showLogo && (
               <div className="flex justify-center mb-4">
-                <RiddlePayLogo size={64} showText={false} />
+                <RiddlePayLogo size={120} showText={false} />
               </div>
             )}
 

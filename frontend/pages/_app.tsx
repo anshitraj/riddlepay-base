@@ -12,6 +12,10 @@ export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Force dark theme immediately to override Mini App injected styles
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.classList.add('dark');
+
     let cancelled = false;
 
     const markReady = async () => {
@@ -27,7 +31,8 @@ export default function App({ Component, pageProps }: AppProps) {
           console.log('✅ RiddlePay mini app called sdk.actions.ready()');
         }
       } catch (error) {
-        console.error('Error calling sdk.actions.ready():', error);
+        // Not a Farcaster Mini App, that's okay
+        console.log('[RiddlePay] Not running as Farcaster Mini App');
       }
     };
 

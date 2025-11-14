@@ -245,7 +245,7 @@ export default function Dashboard() {
     <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 xl:space-y-6">
       {/* Total Balance Card */}
       <motion.div
-        className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border overflow-hidden group"
+        className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border dark:border-border border-gray-200 dark:border-border overflow-hidden group"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
@@ -254,14 +254,14 @@ export default function Dashboard() {
         
         <div className="relative flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
           <div className="flex items-center justify-between">
-            <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-wider text-gray-400 dark:text-gray-600 font-semibold">TOTAL VALUE LOCKED</p>
+            <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-wider text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 font-semibold">TOTAL VALUE LOCKED</p>
             <button
               onClick={handleRefresh}
               disabled={refreshing || loading}
               className="p-1.5 sm:p-2 rounded-lg glass border border-border hover:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
               title="Refresh stats"
             >
-              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 dark:text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent leading-tight">
@@ -270,22 +270,22 @@ export default function Dashboard() {
           {/* Hide stats on mobile, show on larger screens */}
           <div className="hidden md:flex gap-6 flex-wrap">
             <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">Today</p>
-              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">Today</p>
+              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">7 Days</p>
-              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">7 Days</p>
+              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-600 mb-1">30 Days</p>
-              <p className="text-sm font-bold text-green-400 flex items-center gap-1">
+              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">30 Days</p>
+              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
@@ -297,7 +297,7 @@ export default function Dashboard() {
         {/* Row 1: Tokens */}
         <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4">
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
@@ -318,11 +318,11 @@ export default function Dashboard() {
               </motion.div>
             </div>
             <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">ETH</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">
+              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">ETH</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 break-all leading-tight">
                 {address ? stats.userETHBalance : '0.0000'}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your Base ETH balance</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Your Base ETH balance</p>
               <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
@@ -331,7 +331,7 @@ export default function Dashboard() {
           </motion.div>
           
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
@@ -351,11 +351,11 @@ export default function Dashboard() {
               </motion.div>
             </div>
             <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">USDC</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 break-all leading-tight">
+              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">USDC</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 break-all leading-tight">
                 {address ? stats.userUSDCBalance : '0.00'}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Your stablecoins balance</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Your stablecoins balance</p>
               <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
@@ -367,7 +367,7 @@ export default function Dashboard() {
         {/* Row 2: Airdrops */}
         <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4 mt-4 sm:mt-5 md:mt-4">
           <motion.div 
-            className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
             whileHover={{ scale: 1.02, y: -4 }}
             whileTap={{ scale: 0.98 }}
             initial={{ opacity: 0, y: 20 }}
@@ -387,9 +387,9 @@ export default function Dashboard() {
               </motion.div>
             </div>
             <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Total Airdrops</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">{stats.totalGifts}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Active drops</p>
+              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">Total Airdrops</p>
+              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 leading-tight">{stats.totalGifts}</p>
+              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Active drops</p>
               <p className="text-xs sm:text-sm text-green-400 font-semibold">Active</p>
             </div>
           </motion.div>
@@ -397,7 +397,7 @@ export default function Dashboard() {
           {address && (
           <Link href="/my-gifts" prefetch={true} className="block">
             <motion.div 
-              className="relative bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
+              className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
               whileHover={{ scale: 1.02, y: -4 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, y: 20 }}
@@ -417,12 +417,12 @@ export default function Dashboard() {
                   </motion.div>
                 </div>
                 <div className="relative flex-1 flex flex-col justify-end">
-                  <p className="text-xs sm:text-sm text-gray-400 mb-1 font-medium">Your Airdrops</p>
-                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 leading-tight">
+                  <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">Your Airdrops</p>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 leading-tight">
                     {stats.userGiftsSent + stats.userGiftsReceived}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 mb-1">Sent + Received</p>
-                  <p className="text-xs sm:text-sm text-gray-400 leading-tight">
+                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Sent + Received</p>
+                  <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">
                     {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
                   </p>
                 </div>
@@ -443,13 +443,13 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
               <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
+                <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
+                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
                   Send Airdrop
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 leading-tight">Create a new airdrop</p>
+                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">Create a new airdrop</p>
               </div>
               <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
@@ -465,13 +465,13 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
               <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Package className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
+                <Package className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
+                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
                   Bulk Airdrop
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 leading-tight">Send to multiple winners</p>
+                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">Send to multiple winners</p>
               </div>
               <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
@@ -487,13 +487,13 @@ export default function Dashboard() {
             <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
               <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl shadow-lg shadow-green-500/30 group-hover:shadow-green-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Clock className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white" />
+                <Clock className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-gray-900 group-hover:text-green-400 transition-colors mb-0.5">
+                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-green-400 transition-colors mb-0.5">
                   My Airdrops
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-600 leading-tight">View all your airdrops</p>
+                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">View all your airdrops</p>
               </div>
               <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
@@ -504,12 +504,12 @@ export default function Dashboard() {
       {/* Recent Gifts */}
       {address && recentGifts.length > 0 && (
         <motion.div
-          className="glass rounded-2xl p-6 border border-border"
+          className="glass rounded-2xl p-6 border border-border dark:border-border border-gray-200 dark:border-border"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-white dark:text-gray-900 flex items-center gap-2">
+            <h3 className="text-xl font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 flex items-center gap-2">
               <div className="p-2 bg-gradient-to-br from-blue-500/20 to-blue-400/20 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-blue-400" />
               </div>
@@ -526,7 +526,7 @@ export default function Dashboard() {
               return (
                 <Link key={idx} href={`/claim?giftId=${id}`} prefetch={true}>
                   <motion.div 
-                    className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-border hover:border-blue-500/50 transition-all cursor-pointer group touch-manipulation"
+                    className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-border dark:border-border border-gray-200 dark:border-border hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all cursor-pointer group touch-manipulation"
                     whileHover={{ scale: 1.01, x: 4 }}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -546,10 +546,10 @@ export default function Dashboard() {
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm md:text-base font-bold text-white dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5 truncate">
+                          <p className="text-xs sm:text-sm md:text-base font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5 truncate">
                             {gift.riddle && gift.riddle.trim() ? 'Riddle Airdrop' : 'Direct Airdrop'}
                           </p>
-                          <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-600 truncate">
+                          <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 truncate">
                             {formatAmount(gift.amount, gift.tokenAddress)}
                             {gift.claimed && ' • Claimed'}
                           </p>
@@ -586,10 +586,10 @@ export default function Dashboard() {
                 <rect width="20" height="20" rx="4" fill="#0052FF"/>
               </svg>
             </div>
-            <span className="text-white dark:text-gray-900 font-semibold text-sm sm:text-base">Base</span>
+            <span className="text-white dark:text-white text-gray-900 dark:text-gray-900 font-semibold text-sm sm:text-base">Base</span>
           </div>
-          <span className="hidden sm:inline text-gray-600 dark:text-gray-500">—</span>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-400 text-center">
+          <span className="hidden sm:inline text-gray-600 dark:text-gray-500 text-gray-600 dark:text-gray-500">—</span>
+          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-400 text-center">
             Secure, low-cost Ethereum L2 blockchain
           </p>
         </div>

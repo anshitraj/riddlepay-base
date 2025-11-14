@@ -261,7 +261,7 @@ export default function SendGiftForm() {
 
   return (
     <motion.div 
-      className="bg-white dark:bg-baseLight/50 rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl w-full"
+      className="bg-white dark:bg-baseLight/50 bg-white dark:bg-baseLight/50 rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-gray-200 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl w-full"
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}
@@ -275,7 +275,7 @@ export default function SendGiftForm() {
             Send Secret Airdrop
           </h2>
         </div>
-        <p className="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-500 dark:text-gray-400 ml-0 sm:ml-9 md:ml-10 lg:ml-12 leading-tight">
+        <p className="text-[9px] sm:text-[10px] md:text-xs lg:text-sm text-gray-500 dark:text-gray-400 text-gray-600 dark:text-gray-400 ml-0 sm:ml-9 md:ml-10 lg:ml-12 leading-tight">
           Enter recipient details and customize your airdrop.
         </p>
       </div>
@@ -314,8 +314,8 @@ export default function SendGiftForm() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Recipient Wallet Address</span>
           </label>
@@ -339,11 +339,11 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Riddle Challenge</span>
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <textarea
             value={riddle}
@@ -362,7 +362,7 @@ export default function SendGiftForm() {
 
         {riddle.trim() && (
           <div className="p-3 sm:p-4 md:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-            <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+            <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
               <span>Answer (hidden from receiver)</span>
             </label>
@@ -377,11 +377,11 @@ export default function SendGiftForm() {
           </div>
         )}
 
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <MessageSquare className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Personal Message</span>
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Revealed After Claim)</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 font-normal">(Revealed After Claim)</span>
           </label>
           <textarea
             value={message}
@@ -393,18 +393,18 @@ export default function SendGiftForm() {
         </div>
 
         {/* Gift Settings Section Divider */}
-        <div className="pt-3 sm:pt-4 md:pt-6 border-t border-gray-600 dark:border-gray-700">
+        <div className="pt-3 sm:pt-4 md:pt-6 border-t border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700">
           <div className="mb-3 sm:mb-4 md:mb-6">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white mb-1">Airdrop Settings</h3>
-            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500">Set unlock time and transfer amount</p>
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white text-gray-900 dark:text-white mb-1">Airdrop Settings</h3>
+            <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500">Set unlock time and transfer amount</p>
           </div>
         </div>
 
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Unlock Day</span>
-            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 font-normal">(Optional)</span>
+            <span className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 font-normal">(Optional)</span>
           </label>
           <input
             type="date"
@@ -413,13 +413,13 @@ export default function SendGiftForm() {
             className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
           />
           {unlockTime && (
-            <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+            <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 text-gray-700 dark:text-gray-400">
               Airdrop will unlock on: {new Date(unlockTime).toLocaleDateString()}
             </p>
           )}
         </div>
 
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2 flex-wrap">
             <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Expiration Time</span>
@@ -447,7 +447,7 @@ export default function SendGiftForm() {
                   className="w-full px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
                 />
                 {customExpirationHours && (
-                  <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+                  <p className="mt-2 text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 text-gray-700 dark:text-gray-400">
                     Airdrop will expire in: {Number(customExpirationHours) >= 24 
                       ? `${(Number(customExpirationHours) / 24).toFixed(1)} days`
                       : `${customExpirationHours} hours`}
@@ -456,7 +456,7 @@ export default function SendGiftForm() {
               </div>
             )}
             {expirationTime !== 'custom' && (
-              <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400">
+              <p className="text-[10px] sm:text-xs text-gray-600 dark:text-gray-400 text-gray-700 dark:text-gray-400">
                 {expirationTime === '24hours' && 'Airdrop will expire in 24 hours if not claimed'}
                 {expirationTime === '7days' && 'Airdrop will expire in 7 days if not claimed'}
                 {expirationTime === '1month' && 'Airdrop will expire in 30 days if not claimed'}
@@ -465,8 +465,8 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 transition-all duration-200">
-          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
+        <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+          <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
             <Coins className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />
             <span>Airdrop Amount</span>
           </label>
@@ -520,11 +520,11 @@ export default function SendGiftForm() {
       </form>
 
       {/* Footer Branding */}
-      <div className="mt-8 pt-6 border-t border-gray-600 dark:border-gray-700">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-500">
+      <div className="mt-8 pt-6 border-t border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500">
           <div className="flex items-center gap-2">
-            <RiddlePayLogo size={16} showText={false} />
-            <span>Powered by <span className="font-semibold text-gray-600 dark:text-gray-400">Riddle Pay</span></span>
+            <RiddlePayLogo size={36} showText={false} />
+            <span>Powered by <span className="font-semibold text-gray-600 dark:text-gray-400 text-gray-700 dark:text-gray-400">Riddle Pay</span></span>
           </div>
         </div>
       </div>

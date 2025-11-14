@@ -128,7 +128,7 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] overscroll-contain touch-action-pan-y">
+          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-50 to-gray-100 dark:from-[#0A0F1F] dark:to-[#0E152B] overscroll-contain touch-action-pan-y">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
               {/* Stats Preview Row */}
               <motion.div
@@ -140,7 +140,7 @@ function HomeContent() {
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-xs sm:text-sm text-gray-400">TVL Change</span>
+                    <span className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400">TVL Change</span>
                     {statsLoading ? (
                       <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
@@ -161,21 +161,21 @@ function HomeContent() {
                   <div className="h-4 w-px bg-[#0066FF]/20"></div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                    <span className="text-xs sm:text-sm text-gray-400">Claims Today</span>
+                    <span className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400">Claims Today</span>
                     {statsLoading ? (
                       <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
-                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.claimsToday ?? 0}</span>
+                      <span className="text-sm sm:text-base text-white dark:text-white text-gray-900 dark:text-white font-semibold">{previewStats.claimsToday ?? 0}</span>
                     )}
                   </div>
                   <div className="h-4 w-px bg-[#0066FF]/20"></div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                    <span className="text-xs sm:text-sm text-gray-400">Riddle Solves</span>
+                    <span className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400">Riddle Solves</span>
                     {statsLoading ? (
                       <span className="text-sm sm:text-base text-gray-500 font-semibold">Loading...</span>
                     ) : (
-                      <span className="text-sm sm:text-base text-white font-semibold">{previewStats.riddleSolves ?? 0}</span>
+                      <span className="text-sm sm:text-base text-white dark:text-white text-gray-900 dark:text-white font-semibold">{previewStats.riddleSolves ?? 0}</span>
                     )}
                   </div>
                 </div>
@@ -194,10 +194,10 @@ function HomeContent() {
               >
                 <div className="mb-4 sm:mb-5 md:mb-6">
                   <div className="mb-2 sm:mb-3">
-                      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white leading-tight">
+                      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-white dark:text-white text-gray-900 dark:text-white leading-tight">
                         Create New Crypto Airdrop
                       </h2>
-                      <p className="text-xs sm:text-sm md:text-base text-gray-400 mt-2 leading-tight">
+                      <p className="text-xs sm:text-sm md:text-base text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mt-2 leading-tight">
                         Send a secure, on-chain airdrop with an optional riddle and personal message.
                       </p>
                   </div>
