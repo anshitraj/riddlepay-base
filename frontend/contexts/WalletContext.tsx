@@ -22,7 +22,35 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
 
-  // Helper to check if running in Farcaster
+  // Helper to check if running in Mini App (Base App or Farcaster)
+  const isMiniApp = async (): Promise<boolean> => {
+    try {
+      if (typeof window === 'undefined') return false;
+      
+      // Try to detect via SDK first (most reliable)
+      try {
+        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const ethProvider = await sdk.wallet.getEthereumProvider();
+        if (ethProvider) return true;
+      } catch (err) {
+        // SDK not available, continue with URL detection
+      }
+      
+      // Fallback: Check URLs
+      return (
+        window.location?.href?.includes('farcaster.xyz') || 
+        window.location?.href?.includes('warpcast.com') ||
+        window.location?.href?.includes('base.org') ||
+        !!(window as any).farcaster ||
+        !!(window as any).parent?.farcaster
+      );
+    } catch (error) {
+      console.error('[RiddlePay] Error checking Mini App environment:', error);
+      return false;
+    }
+  };
+
+  // Helper to check if running in Farcaster (for UI decisions)
   const isFarcaster = () => {
     try {
       if (typeof window === 'undefined') return false;
@@ -33,7 +61,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         !!(window as any).parent?.farcaster
       );
     } catch (error) {
-      console.error('Error checking Farcaster environment:', error);
+      console.error('[RiddlePay] Error checking Farcaster environment:', error);
       return false;
     }
   };
@@ -112,11 +140,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
         // Only check for existing connection if we don't have a stored disconnect state
         const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
-        const isBaseApp = isFarcaster();
+        const inMiniApp = await isMiniApp();
         
-        // In Farcaster/Base App, always try to auto-connect
+        // In Mini App (Base App/Farcaster), always try to auto-connect
         // In normal browser, only auto-connect if not explicitly disconnected
-        if (wasDisconnected && !isBaseApp) return;
+        if (wasDisconnected && !inMiniApp) return;
 
         // Check for existing accounts
         const accounts = await provider.send('eth_accounts', []);
@@ -128,7 +156,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const network = await provider.getNetwork();
           const networkChainId = Number(network.chainId);
           setChainId(networkChainId);
-          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId);
+          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId, 'Mini App:', inMiniApp);
         }
       } catch (error) {
         console.error('[RiddlePay] Error initializing wallet:', error);
@@ -261,8 +289,10 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       console.log('[RiddlePay] Connected wallet:', address, 'Chain:', networkChainId);
 
-      // In normal browser (not Farcaster), ensure we're on Base Mainnet
-      if (!isFarcaster() && networkChainId !== 8453) {
+      // In normal browser (not Mini App), ensure we're on Base Mainnet
+      // Mini Apps (Base App/Farcaster) handle network switching automatically
+      const inMiniApp = await isMiniApp();
+      if (!inMiniApp && networkChainId !== 8453) {
         await switchToBaseMainnet();
         // Reload to get updated chain ID
         window.location.reload();
