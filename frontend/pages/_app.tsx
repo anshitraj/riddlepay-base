@@ -3,8 +3,72 @@ import type { AppProps } from 'next/app';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from 'react-hot-toast';
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
+  // Call sdk.actions.ready() for Base/Farcaster mini app
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const callReady = () => {
+      try {
+        // Try different SDK locations that Base/Farcaster might use
+        const win = window as any;
+        
+        // Method 1: window.farcaster.sdk.actions.ready()
+        if (win.farcaster?.sdk?.actions?.ready) {
+          win.farcaster.sdk.actions.ready();
+          console.log('✅ Called farcaster.sdk.actions.ready()');
+          return true;
+        }
+        
+        // Method 2: window.sdk.actions.ready()
+        if (win.sdk?.actions?.ready) {
+          win.sdk.actions.ready();
+          console.log('✅ Called sdk.actions.ready()');
+          return true;
+        }
+        
+        // Method 3: Direct access via window.farcaster.actions.ready()
+        if (win.farcaster?.actions?.ready) {
+          win.farcaster.actions.ready();
+          console.log('✅ Called farcaster.actions.ready()');
+          return true;
+        }
+        
+        return false;
+      } catch (error) {
+        console.error('Error calling SDK ready():', error);
+        return false;
+      }
+    };
+
+    // Try immediately
+    if (callReady()) {
+      return;
+    }
+
+    // If SDK not ready, wait and retry multiple times
+    let retryCount = 0;
+    const maxRetries = 10;
+    
+    const retryInterval = setInterval(() => {
+      retryCount++;
+      
+      if (callReady()) {
+        clearInterval(retryInterval);
+        return;
+      }
+      
+      if (retryCount >= maxRetries) {
+        clearInterval(retryInterval);
+        console.warn('⚠️ SDK ready() not called - SDK may not be available');
+      }
+    }, 200); // Check every 200ms
+    
+    return () => clearInterval(retryInterval);
+  }, []);
+
   return (
     <ThemeProvider>
       <Head>
