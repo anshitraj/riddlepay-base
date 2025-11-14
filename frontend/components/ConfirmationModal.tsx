@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Clock, CheckCircle } from 'lucide-react';
 import { formatAmount } from '@/utils/formatAmount';
@@ -29,6 +30,22 @@ export default function ConfirmationModal({
   unlockTime,
   loading = false,
 }: ConfirmationModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  // Prevent body scroll when modal is open (modal is fixed, so no need to scroll page)
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent body scroll but allow modal content to scroll
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore body scroll
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const unlockType = unlockTime 
@@ -45,15 +62,26 @@ export default function ConfirmationModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end justify-center p-4 sm:items-center"
+            style={{ 
+              top: 0, 
+              left: 0, 
+              right: 0, 
+              bottom: 0,
+              position: 'fixed'
+            }}
           >
             {/* Modal */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              ref={modalRef}
+              initial={{ opacity: 0, scale: 0.95, y: 100 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 100 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-2xl border border-border shadow-2xl max-w-md w-full p-6 sm:p-8"
+              className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-t-2xl sm:rounded-2xl border border-border shadow-2xl max-w-md w-full p-6 sm:p-8 max-h-[85vh] overflow-y-auto"
+              style={{ 
+                marginBottom: 'env(safe-area-inset-bottom, 0px)'
+              }}
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-6">

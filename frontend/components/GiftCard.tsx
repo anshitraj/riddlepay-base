@@ -22,6 +22,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
   const [showShare, setShowShare] = useState(false);
   const [expired, setExpired] = useState(false);
   const [refunding, setRefunding] = useState(false);
+  const [refunded, setRefunded] = useState(false);
 
   useEffect(() => {
     const checkExpiration = async () => {
@@ -75,11 +76,18 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
         duration: 5000,
       });
       
+      // Mark as refunded locally
+      setRefunded(true);
+      setExpired(false); // Hide expired badge since it's now refunded
+      
       // Refresh the page or call onClaim to update UI
       if (onClaim) {
         onClaim();
       } else {
-        window.location.reload();
+        // Don't reload immediately, let user see the refunded status
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       }
     } catch (err: any) {
       toast.dismiss(loadingToast);
@@ -108,7 +116,12 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
           </div>
           <span className="text-xs sm:text-sm font-semibold dark:text-white text-gray-900">Airdrop #{giftId}</span>
         </div>
-        {gift.claimed ? (
+        {refunded ? (
+          <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-purple-500/50">
+            <CheckCircle className="w-4 h-4 text-purple-500" />
+            <span className="text-xs font-semibold text-purple-500 dark:text-purple-400">Refunded</span>
+          </div>
+        ) : gift.claimed ? (
           <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-green-500/50">
             <CheckCircle className="w-4 h-4 text-green-500" />
             <span className="text-xs font-semibold text-green-500 dark:text-green-400">Claimed</span>
@@ -178,7 +191,7 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
                   🎁 Claim Airdrop
           </motion.button>
         )}
-        {isSender && expired && !gift.claimed && (
+        {isSender && expired && !gift.claimed && !refunded && (
           <motion.button
             onClick={handleRefund}
             disabled={refunding || loading}
@@ -199,7 +212,13 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
             )}
           </motion.button>
         )}
-        {isSender && !expired && (
+        {refunded && (
+          <div className="flex-1 py-3 min-h-[44px] bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm">
+            <CheckCircle className="w-4 h-4" />
+            <span>Refunded</span>
+          </div>
+        )}
+        {isSender && !expired && !refunded && (
           <motion.button
             onClick={() => setShowShare(true)}
             className="px-4 py-3 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 touch-manipulation"

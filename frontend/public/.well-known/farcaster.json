@@ -5,7 +5,7 @@
     "signature": "IKlfZxiLHR1aKPu59Bi42hgFY4IZWCdNpOB7tM79BnQS3mTuc0afSiQdv8cxyL7/r+WQCJX+B4cVVBy0aFnR4xw="
   },
   "baseBuilder": {
-    "ownerAddress": ""
+    "ownerAddress": "0x390877aF8EDE681C938B4Ca6025594e07e6C99A4"
   },
   "miniapp": {
     "version": "1",
@@ -28,7 +28,6 @@
     "ogTitle": "RiddlePay",
     "ogDescription": "Send secret crypto airdrops unlocked by riddles on Base Network.",
     "ogImageUrl": "https://riddlepay.tech/og-image.png",
-    "webhookUrl": "",
     "noindex": false
   }
 }

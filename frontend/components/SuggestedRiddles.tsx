@@ -26,7 +26,7 @@ export default function SuggestedRiddles({ onSelect }: SuggestedRiddlesProps) {
         <span>Suggested riddles:</span>
       </div>
       <div className="flex flex-wrap gap-2">
-        {SUGGESTED_RIDDLES.slice(0, 4).map((item, idx) => (
+        {SUGGESTED_RIDDLES.slice(0, 2).map((item, idx) => (
           <motion.button
             key={idx}
             onClick={() => onSelect(item.riddle, item.answer)}

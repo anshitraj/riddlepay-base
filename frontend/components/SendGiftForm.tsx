@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
@@ -39,6 +39,7 @@ export default function SendGiftForm() {
   const [feedbackAction, setFeedbackAction] = useState<'sending' | 'sent' | 'suggest' | undefined>();
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const successRef = useRef<HTMLDivElement>(null);
 
   const validateForm = () => {
     if (!address) {
@@ -211,6 +212,39 @@ export default function SendGiftForm() {
     return isETH ? '0x0000000000000000000000000000000000000000' : (process.env.NEXT_PUBLIC_USDC_ADDRESS || '');
   };
 
+  // Auto-scroll to success message when it appears
+  useEffect(() => {
+    if (success && successRef.current) {
+      // Small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (successRef.current) {
+          // Try to find scrollable main container first
+          const mainContainer = successRef.current.closest('main[class*="overflow"]');
+          
+          if (mainContainer) {
+            // Scroll within the main container
+            const containerRect = mainContainer.getBoundingClientRect();
+            const elementRect = successRef.current.getBoundingClientRect();
+            const scrollTop = mainContainer.scrollTop;
+            const targetScroll = scrollTop + (elementRect.top - containerRect.top) - 20; // 20px offset
+            
+            mainContainer.scrollTo({
+              top: targetScroll,
+              behavior: 'smooth'
+            });
+          } else {
+            // Fallback to window scroll
+            successRef.current.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'start',
+              inline: 'nearest'
+            });
+          }
+        }
+      }, 150);
+    }
+  }, [success]);
+
   if (!address) {
     return (
       <motion.div 
@@ -247,7 +281,10 @@ export default function SendGiftForm() {
       </div>
       
       {success && (
-        <div className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 md:p-5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/50 rounded-lg sm:rounded-xl backdrop-blur-sm">
+        <div 
+          ref={successRef}
+          className="mb-3 sm:mb-4 md:mb-6 p-3 sm:p-4 md:p-5 bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/50 rounded-lg sm:rounded-xl backdrop-blur-sm scroll-mt-4"
+        >
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="text-xl sm:text-2xl">✅</span>
             <div>
