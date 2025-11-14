@@ -38,116 +38,100 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Helper to get wallet provider (Farcaster SDK or window.ethereum)
+  // Helper to get Ethereum provider (Farcaster SDK wallet or window.ethereum)
+  const getEvmProvider = async (): Promise<ethers.BrowserProvider | null> => {
+    try {
+      if (typeof window === 'undefined') return null;
+
+      // 1. Try Farcaster Mini App wallet first (Base App / Farcaster)
+      try {
+        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const ethProvider = await sdk.wallet.getEthereumProvider();
+        
+        if (ethProvider) {
+          console.log('[RiddlePay] Using Farcaster Mini App wallet provider');
+          return new ethers.BrowserProvider(ethProvider as any);
+        }
+      } catch (err) {
+        console.log('[RiddlePay] Not running as Farcaster Mini App, falling back', err);
+      }
+
+      // 2. Fall back to browser-injected provider (MetaMask, Coinbase, etc.)
+      const anyWindow = window as any;
+      if (anyWindow.ethereum) {
+        console.log('[RiddlePay] Using window.ethereum provider');
+        return new ethers.BrowserProvider(anyWindow.ethereum as any);
+      }
+
+      // 3. No wallet anywhere
+      console.warn('[RiddlePay] No Ethereum wallet available (Mini App or browser)');
+      return null;
+    } catch (error) {
+      console.error('[RiddlePay] Error getting wallet provider:', error);
+      return null;
+    }
+  };
+
+  // Helper to get raw wallet provider (for direct requests)
   const getWalletProvider = async () => {
     try {
       if (typeof window === 'undefined') return null;
 
-      // In Farcaster, window.ethereum should be available
-      // The SDK context doesn't directly expose wallet, but window.ethereum works
-      if (window.ethereum) {
-        return window.ethereum;
+      // 1. Try Farcaster Mini App wallet first
+      try {
+        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const ethProvider = await sdk.wallet.getEthereumProvider();
+        
+        if (ethProvider) {
+          console.log('[RiddlePay] Using Farcaster Mini App wallet provider (raw)');
+          return ethProvider;
+        }
+      } catch (err) {
+        console.log('[RiddlePay] Not running as Farcaster Mini App, falling back', err);
       }
 
-      // If in Farcaster but window.ethereum not ready yet, wait a bit
-      if (isFarcaster()) {
-        // Wait for wallet to be injected (Farcaster injects it)
-        return new Promise((resolve) => {
-          let attempts = 0;
-          const checkWallet = () => {
-            try {
-              if (window.ethereum) {
-                resolve(window.ethereum);
-              } else if (attempts < 10) {
-                attempts++;
-                setTimeout(checkWallet, 100);
-              } else {
-                resolve(null);
-              }
-            } catch (error) {
-              console.error('Error checking wallet:', error);
-              resolve(null);
-            }
-          };
-          checkWallet();
-        });
+      // 2. Fall back to window.ethereum
+      if (window.ethereum) {
+        console.log('[RiddlePay] Using window.ethereum provider (raw)');
+        return window.ethereum;
       }
 
       return null;
     } catch (error) {
-      console.error('Error getting wallet provider:', error);
+      console.error('[RiddlePay] Error getting wallet provider:', error);
       return null;
     }
   };
 
   useEffect(() => {
-    // Check if running in Base App (Farcaster) - auto-connect if available
-    const isBaseApp = isFarcaster();
-    
-    // Auto-connect in Farcaster or if window.ethereum is available
+    // Auto-connect wallet if available
     const initWallet = async () => {
-      const walletProvider = await getWalletProvider();
-      
-      if (!walletProvider) return;
+      try {
+        const provider = await getEvmProvider();
+        if (!provider) return;
 
-      // Only check for existing connection if we don't have a stored disconnect state
-      // This ensures users must explicitly reconnect after disconnecting
-      // In Farcaster, always try to auto-connect
-      const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
-      
-      if ((!wasDisconnected || isBaseApp) && walletProvider) {
-        try {
-          const accounts = await walletProvider.request({ method: 'eth_accounts' });
-          if (accounts && accounts.length > 0) {
-            const provider = new ethers.BrowserProvider(walletProvider as any);
-            setProvider(provider);
-            setAddress(accounts[0]);
-            
-            // Get current chain ID - ensure it's properly parsed
-            // Add a small delay to ensure wallet is ready
-            setTimeout(() => {
-              walletProvider.request({ method: 'eth_chainId' }).then((id: string) => {
-                const parsedChainId = typeof id === 'string' ? parseInt(id, 16) : Number(id);
-                console.log('Initial chainId from eth_chainId:', id, 'parsed:', parsedChainId);
-                setChainId(parsedChainId);
-                
-                // Double-check after a delay
-                setTimeout(async () => {
-                  try {
-                    const recheckId = await walletProvider.request({ method: 'eth_chainId' });
-                    const recheckParsed = typeof recheckId === 'string' ? parseInt(recheckId, 16) : Number(recheckId);
-                    if (recheckParsed !== parsedChainId) {
-                      console.log('ChainId updated on recheck:', recheckParsed);
-                      setChainId(recheckParsed);
-                    }
-                  } catch (err) {
-                    console.error('Error rechecking chainId:', err);
-                  }
-                }, 1000);
-              }).catch(err => {
-                console.error('Error getting chainId:', err);
-                // Fallback: get from provider
-                provider.getNetwork().then(network => {
-                  const providerChainId = Number(network.chainId);
-                  console.log('ChainId from provider:', providerChainId);
-                  setChainId(providerChainId);
-                });
-              });
-            }, 300);
-          }
-        } catch (error) {
-          console.error('Error initializing wallet:', error);
+        // Only check for existing connection if we don't have a stored disconnect state
+        const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
+        const isBaseApp = isFarcaster();
+        
+        // In Farcaster/Base App, always try to auto-connect
+        // In normal browser, only auto-connect if not explicitly disconnected
+        if (wasDisconnected && !isBaseApp) return;
+
+        // Check for existing accounts
+        const accounts = await provider.send('eth_accounts', []);
+        if (accounts && accounts.length > 0) {
+          setProvider(provider);
+          setAddress(accounts[0]);
+          
+          // Get current chain ID
+          const network = await provider.getNetwork();
+          const networkChainId = Number(network.chainId);
+          setChainId(networkChainId);
+          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId);
         }
-      }
-      
-      // Listen for chain changes
-      if (walletProvider && typeof walletProvider.on === 'function') {
-        walletProvider.on('chainChanged', (chainId: string) => {
-          const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
-          console.log('Chain changed to:', parsedChainId);
-          setChainId(parsedChainId);
-          window.location.reload();
-        });
+      } catch (error) {
+        console.error('[RiddlePay] Error initializing wallet:', error);
       }
     };
 
@@ -245,33 +229,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const connect = async () => {
-    const walletProvider = await getWalletProvider();
-    
-    if (!walletProvider) {
-      // In Farcaster, wallet should always be available
-      if (isFarcaster()) {
-        console.error('Farcaster wallet not available');
-        return;
-      }
-      alert('Please install MetaMask or another Web3 wallet');
-      return;
-    }
-
     try {
       // Clear disconnect state to allow reconnection
       localStorage.removeItem('wallet_disconnected');
       
-      // First, switch to Base Mainnet network (production)
-      // Skip network switching in Farcaster as it's handled by the platform
-      if (!isFarcaster()) {
-        await switchToBaseMainnet();
-        // Wait a moment for network switch to complete
-        await new Promise(resolve => setTimeout(resolve, 500));
+      // Get the appropriate provider (Farcaster SDK or window.ethereum)
+      const provider = await getEvmProvider();
+      
+      if (!provider) {
+        // Only show alert in normal browser, not in Farcaster
+        if (!isFarcaster()) {
+          alert('Please install MetaMask or another Web3 wallet');
+        } else {
+          console.error('[RiddlePay] Farcaster wallet not available');
+        }
+        return;
       }
 
-      // Always request accounts explicitly - this ensures wallet popup opens
-      // Using eth_requestAccounts instead of eth_accounts ensures user approval
-      const provider = new ethers.BrowserProvider(walletProvider as any);
+      // Request accounts explicitly - this ensures wallet popup opens
       await provider.send('eth_requestAccounts', []);
       const signer = await provider.getSigner();
       const address = await signer.getAddress();
@@ -279,7 +254,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       setProvider(provider);
       setAddress(address);
 
+      // Get current chain ID and ensure we're on Base
+      const network = await provider.getNetwork();
+      const networkChainId = Number(network.chainId);
+      setChainId(networkChainId);
+      
+      console.log('[RiddlePay] Connected wallet:', address, 'Chain:', networkChainId);
+
+      // In normal browser (not Farcaster), ensure we're on Base Mainnet
+      if (!isFarcaster() && networkChainId !== 8453) {
+        await switchToBaseMainnet();
+        // Reload to get updated chain ID
+        window.location.reload();
+        return;
+      }
+
       // Listen for account changes
+      const walletProvider = await getWalletProvider();
       if (walletProvider && typeof walletProvider.on === 'function') {
         walletProvider.on('accountsChanged', (accounts: string[]) => {
           if (accounts.length > 0) {
@@ -288,50 +279,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
             disconnect();
           }
         });
-      }
 
-      // Get current chain ID - check both methods to ensure accuracy
-      // Wait a bit for the network to stabilize after connection
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const network = await provider.getNetwork();
-      const networkChainId = Number(network.chainId);
-      
-      // Also check via eth_chainId for verification
-      const ethChainId = await walletProvider.request({ method: 'eth_chainId' });
-      const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
-      
-      console.log('Connected - chainId from network:', networkChainId, 'from eth_chainId:', parsedEthChainId);
-      
-      // Use the chainId from eth_chainId as it's more reliable, but verify both match
-      const finalChainId = parsedEthChainId || networkChainId;
-      console.log('Setting chainId to:', finalChainId);
-      setChainId(finalChainId);
-      
-      // Double-check after a short delay to ensure it's correct
-      setTimeout(async () => {
-        try {
-          const recheckChainId = await walletProvider.request({ method: 'eth_chainId' });
-          const recheckParsed = typeof recheckChainId === 'string' ? parseInt(recheckChainId, 16) : Number(recheckChainId);
-          console.log('Recheck chainId:', recheckParsed);
-          if (recheckParsed !== finalChainId) {
-            console.log('ChainId changed, updating to:', recheckParsed);
-            setChainId(recheckParsed);
-          }
-        } catch (err) {
-          console.error('Error rechecking chainId:', err);
-        }
-      }, 1000);
-
-      // Listen for chain changes
-      if (walletProvider && typeof walletProvider.on === 'function') {
+        // Listen for chain changes
         walletProvider.on('chainChanged', (chainId: string) => {
-          setChainId(parseInt(chainId, 16));
+          const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
+          console.log('[RiddlePay] Chain changed to:', parsedChainId);
+          setChainId(parsedChainId);
           window.location.reload();
         });
       }
     } catch (error: any) {
-      console.error('Error connecting wallet:', error);
+      console.error('[RiddlePay] Error connecting wallet:', error);
       // If user rejects, set disconnect state
       if (error.code === 4001) {
         localStorage.setItem('wallet_disconnected', 'true');
@@ -360,63 +318,52 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   const switchWallet = async () => {
-    const walletProvider = await getWalletProvider();
-    
-    if (!walletProvider) {
-      if (isFarcaster()) {
-        console.error('Farcaster wallet not available');
+    try {
+      const provider = await getEvmProvider();
+      
+      if (!provider) {
+        if (isFarcaster()) {
+          console.error('[RiddlePay] Farcaster wallet not available');
+          return;
+        }
+        alert('Please install MetaMask or another Web3 wallet');
         return;
       }
-      alert('Please install MetaMask or another Web3 wallet');
-      return;
-    }
 
-    try {
       // Request account selection - this will show wallet's account picker
-      // First try wallet_requestPermissions which shows account selection UI
-      try {
-        await walletProvider.request({
-          method: 'wallet_requestPermissions',
-          params: [{ eth_accounts: {} }],
-        });
-      } catch (permError: any) {
-        // If permissions already granted, wallet_requestPermissions might not show picker
-        // Fall through to eth_requestAccounts
-        if (permError.code !== 4001) {
-          console.log('Permissions request:', permError);
+      const walletProvider = await getWalletProvider();
+      if (walletProvider) {
+        try {
+          await walletProvider.request({
+            method: 'wallet_requestPermissions',
+            params: [{ eth_accounts: {} }],
+          });
+        } catch (permError: any) {
+          // If permissions already granted, wallet_requestPermissions might not show picker
+          if (permError.code !== 4001) {
+            console.log('[RiddlePay] Permissions request:', permError);
+          }
         }
       }
 
       // Request accounts - this will show account picker if multiple accounts exist
-      const provider = new ethers.BrowserProvider(walletProvider as any);
-      const accounts = await provider.send('eth_requestAccounts', []);
+      await provider.send('eth_requestAccounts', []);
+      const signer = await provider.getSigner();
+      const newAddress = await signer.getAddress();
       
-      if (accounts && accounts.length > 0) {
-        const signer = await provider.getSigner();
-        const newAddress = await signer.getAddress();
-        
-        setProvider(provider);
-        setAddress(newAddress);
+      setProvider(provider);
+      setAddress(newAddress);
 
-        // Get current chain ID - use multiple methods for accuracy
-        const network = await provider.getNetwork();
-        const providerChainId = Number(network.chainId);
-        
-        // Also check via eth_chainId (more reliable)
-        try {
-          const ethChainId = await walletProvider.request({ method: 'eth_chainId' });
-          const parsedEthChainId = typeof ethChainId === 'string' ? parseInt(ethChainId, 16) : Number(ethChainId);
-          console.log('Switch wallet - chainId from provider:', providerChainId, 'from eth_chainId:', parsedEthChainId);
-          setChainId(parsedEthChainId || providerChainId);
-        } catch (err) {
-          console.error('Error getting chainId via eth_chainId:', err);
-          setChainId(providerChainId);
-        }
-      }
+      // Get current chain ID
+      const network = await provider.getNetwork();
+      const providerChainId = Number(network.chainId);
+      setChainId(providerChainId);
+      
+      console.log('[RiddlePay] Switched wallet to:', newAddress);
     } catch (error: any) {
       // User rejected the request or no accounts available
       if (error.code !== 4001) {
-        console.error('Error switching wallet:', error);
+        console.error('[RiddlePay] Error switching wallet:', error);
         if (!isFarcaster()) {
           alert('Failed to switch wallet. Please try switching accounts directly.');
         }

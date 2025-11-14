@@ -62,6 +62,9 @@
     font-family: var(--font-family);
     overscroll-behavior-y: contain;
     touch-action: manipulation;
+    max-width: 100%;
+    overflow-x: hidden;
+    zoom: 1;
   }
   
   body {
@@ -69,6 +72,13 @@
     transition: background-color 0.3s ease, color 0.3s ease;
     overscroll-behavior-y: contain;
     -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+  
+  /* Fix for Farcaster WebView - prevent text size adjustment */
+  * {
+    -webkit-text-size-adjust: 100% !important;
   }
   
   button, a {
