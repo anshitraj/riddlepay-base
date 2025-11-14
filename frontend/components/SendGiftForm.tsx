@@ -288,16 +288,16 @@ export default function SendGiftForm() {
               value={receiver}
               onChange={(e) => setReceiver(e.target.value)}
               placeholder="0x..."
-              className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              className="flex-1 min-w-0 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required
             />
             <button
               type="button"
               onClick={() => setShowQRScanner(true)}
-              className="px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] min-w-[44px] bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 dark:hover:bg-blue-500/30 transition-all touch-manipulation flex items-center justify-center"
+              className="px-3 sm:px-4 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] min-w-[44px] sm:min-w-[44px] flex-shrink-0 bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 rounded-lg hover:bg-blue-500/20 dark:hover:bg-blue-500/30 transition-all touch-manipulation flex items-center justify-center"
               title="Scan QR Code"
             >
-              <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
             </button>
           </div>
         </div>
@@ -440,13 +440,13 @@ export default function SendGiftForm() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder={isETH ? "0.001" : "1.0"}
-              className="flex-1 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
+              className="flex-1 min-w-0 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required
             />
             <select
               value={isETH ? 'ETH' : 'USDC'}
               onChange={(e) => setIsETH(e.target.value === 'ETH')}
-              className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation flex-shrink-0"
+              className="px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 cursor-pointer touch-manipulation flex-shrink-0 max-w-[100px] sm:max-w-none"
             >
               <option value="ETH">ETH</option>
               <option value="USDC">USDC</option>

@@ -63,6 +63,28 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
     }
   }, [isOpen, Html5QrcodeLib]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      // Restore body scroll
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    
+    return () => {
+      // Cleanup: restore body scroll
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen || !Html5QrcodeLib) return;
 
@@ -90,49 +112,61 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
           throw new Error(`Failed to initialize QR scanner: ${constructorError.message}`);
         }
 
-        // Start scanning with proper config
-        await html5QrCode.start(
-          { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            aspectRatio: 1.0,
-          },
-          (decodedText: string, result: any) => {
-            if (!isMounted) return;
-            
-            // Validate if it's an Ethereum address
-            if (/^0x[a-fA-F0-9]{40}$/.test(decodedText)) {
-              html5QrCode.stop().then(() => {
-                onScan(decodedText);
-                onClose();
-              }).catch(() => {
-                onScan(decodedText);
-                onClose();
-              });
-            } else if (decodedText.startsWith('ethereum:')) {
-              // Handle ethereum: URI scheme
-              const address = decodedText.split(':')[1]?.split('?')[0];
-              if (address && /^0x[a-fA-F0-9]{40}$/.test(address)) {
+        // Start scanning with proper config and better error handling
+        try {
+          await html5QrCode.start(
+            { facingMode: 'environment' },
+            {
+              fps: 10,
+              qrbox: { width: 250, height: 250 },
+              aspectRatio: 1.0,
+            },
+            (decodedText: string, result: any) => {
+              if (!isMounted) return;
+              
+              // Validate if it's an Ethereum address
+              if (/^0x[a-fA-F0-9]{40}$/.test(decodedText)) {
                 html5QrCode.stop().then(() => {
-                  onScan(address);
+                  onScan(decodedText);
                   onClose();
                 }).catch(() => {
-                  onScan(address);
+                  onScan(decodedText);
                   onClose();
                 });
+              } else if (decodedText.startsWith('ethereum:')) {
+                // Handle ethereum: URI scheme
+                const address = decodedText.split(':')[1]?.split('?')[0];
+                if (address && /^0x[a-fA-F0-9]{40}$/.test(address)) {
+                  html5QrCode.stop().then(() => {
+                    onScan(address);
+                    onClose();
+                  }).catch(() => {
+                    onScan(address);
+                    onClose();
+                  });
+                }
+              }
+            },
+            (errorMessage: string) => {
+              // Ignore errors - they're expected during scanning
+              // Only log if it's not a common scanning error
+              if (!errorMessage.includes('NotFoundException') && 
+                  !errorMessage.includes('No MultiFormat Readers') &&
+                  !errorMessage.includes('QR code parse error')) {
+                console.debug('QR scan error (ignored):', errorMessage);
               }
             }
-          },
-          (errorMessage: string) => {
-            // Ignore errors - they're expected during scanning
-            // Only log if it's not a common scanning error
-            if (!errorMessage.includes('NotFoundException') && 
-                !errorMessage.includes('No MultiFormat Readers')) {
-              console.debug('QR scan error (ignored):', errorMessage);
-            }
+          );
+        } catch (startError: any) {
+          // Handle camera permission or initialization errors
+          if (startError.message && startError.message.includes('Permission')) {
+            throw new Error('Camera permission denied. Please allow camera access in your browser settings.');
+          } else if (startError.message && startError.message.includes('NotFound')) {
+            throw new Error('No camera found. Please ensure your device has a camera.');
+          } else {
+            throw new Error(`Camera error: ${startError.message || 'Failed to start camera'}`);
           }
-        );
+        }
       } catch (err: any) {
         console.error('QR Scanner error:', err);
         if (isMounted) {
@@ -163,12 +197,21 @@ export default function QRScanner({ isOpen, onClose, onScan }: QRScannerProps) {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overscroll-contain"
+        onClick={(e) => {
+          // Close modal when clicking backdrop
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-2xl border border-border p-6 max-w-md w-full shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-white dark:text-gray-900">Scan QR Code</h3>

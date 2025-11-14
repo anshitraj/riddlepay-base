@@ -1,24 +1,34 @@
 {
   "accountAssociation": {
-    "header": "eyJmaWQiOjE0MTkxOTAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwRGNlNWM5NTJhNDEyNDU4YjZkNDcxMDVBMzFDQzkxMzc4RUQyNGYxIn0",
-    "payload": "eyJkb21haW4iOiJ3d3cucmlkZGxlcGF5LnRlY2gifQ",
-    "signature": "IKlfZxiLHR1aKPu59Bi42hgFY4IZWCdNpOB7tM79BnQS3mTuc0afSiQdv8cxyL7/r+WQCJX+B4cVVBy0aFnR4xw="
+    "header": "",
+    "payload": "",
+    "signature": ""
   },
   "baseBuilder": {
-    "ownerAddress": "0x0CF70E448ac98689e326bd79075a96CcBcec1665"
+    "ownerAddress": ""
   },
   "miniapp": {
     "version": "1",
     "name": "RiddlePay",
-    "homeUrl": "https://www.riddlepay.tech",
-    "iconUrl": "https://www.riddlepay.tech/riddlepay-logo.svg",
-    "splashImageUrl": "https://www.riddlepay.tech/riddlepay-logo.svg",
+    "homeUrl": "https://riddlepay.tech",
+    "iconUrl": "https://riddlepay.tech/icon.png",
+    "splashImageUrl": "https://riddlepay.tech/splash.png",
     "splashBackgroundColor": "#000000",
-    "subtitle": "Crypto airdrops with riddles",
-    "description": "Send secure crypto airdrops with interactive riddles. Recipients solve riddles to unlock their rewards, making every claim fun and engaging.",
+    "subtitle": "Unlock crypto gifts",
+    "description": "Send secret crypto airdrops unlocked by riddles on Base Network. Create puzzles, set unlock times, and surprise your friends.",
+    "screenshotUrls": [
+      "https://riddlepay.tech/screenshot1.png",
+      "https://riddlepay.tech/screenshot2.png",
+      "https://riddlepay.tech/screenshot3.png"
+    ],
     "primaryCategory": "finance",
-    "tags": ["finance", "crypto", "airdrops", "gifts"],
+    "tags": ["crypto", "gifts", "airdrops", "riddles", "base"],
+    "heroImageUrl": "https://riddlepay.tech/hero.png",
     "tagline": "Unlock crypto with riddles",
-    "contractAddresses": ["0x57acfC996520417828B8693deb87C4D66814E5f9"]
+    "ogTitle": "RiddlePay",
+    "ogDescription": "Send secret crypto airdrops unlocked by riddles on Base Network.",
+    "ogImageUrl": "https://riddlepay.tech/og-image.png",
+    "webhookUrl": "",
+    "noindex": false
   }
 }

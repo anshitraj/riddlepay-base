@@ -92,7 +92,7 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B]">
+          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] overscroll-contain touch-action-pan-y">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
               {/* Stats Preview Row */}
               <motion.div

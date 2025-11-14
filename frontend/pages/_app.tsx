@@ -11,6 +11,9 @@ export default function App({ Component, pageProps }: AppProps) {
         <title>RiddlePay</title>
         <meta name="description" content="RiddlePay - Send secret crypto gifts unlocked by riddles on Base Network" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes, viewport-fit=cover" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="keywords" content="riddlepay, crypto gifts, blockchain, base network, riddles, ethereum" />
         <meta property="og:title" content="RiddlePay" />
         <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
