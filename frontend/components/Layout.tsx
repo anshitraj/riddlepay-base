@@ -11,7 +11,7 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="min-h-screen bg-baseDark dark:bg-baseDark bg-gray-50 flex pb-16 lg:pb-0">
+    <div className="min-h-screen bg-baseDark dark:bg-baseDark bg-gradient-to-b from-[#f7faff] via-[#f0f5ff] to-white dark:bg-baseDark flex pb-16 lg:pb-0">
       {/* Sidebar */}
       <Sidebar />
 

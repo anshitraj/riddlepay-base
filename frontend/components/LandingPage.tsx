@@ -527,7 +527,7 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                       <rect x="4" y="7" width="16" height="2.5" />
                       <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
                     </svg>
-                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap">
+                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
                       {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
                     </span>
                   </button>
@@ -550,7 +550,7 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                     >
                       <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
                     </svg>
-                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap">
+                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
                       {isConnecting ? 'Connecting...' : 'Login with Base'}
                     </span>
                   </button>

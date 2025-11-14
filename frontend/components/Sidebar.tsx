@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -15,7 +15,7 @@ import {
   Sparkles,
   Package
 } from 'lucide-react';
-import RiddlePayLogo from './RiddlePayLogo';
+import Image from 'next/image';
 import { useWallet } from '@/contexts/WalletContext';
 
 const navItems = [
@@ -28,9 +28,30 @@ const navItems = [
 
 export default function Sidebar() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [logoSource, setLogoSource] = useState('/WHITELOGO.png');
   const pathname = usePathname();
   const router = useRouter();
   const { disconnect } = useWallet();
+
+  // Update logo based on theme
+  useEffect(() => {
+    const updateLogo = () => {
+      const html = document.documentElement;
+      const theme = html.getAttribute('data-theme') || (html.classList.contains('dark') ? 'dark' : 'light');
+      setLogoSource(theme === 'dark' ? '/WHITELOGO.png' : '/BLACKLOGO.png');
+    };
+
+    updateLogo();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateLogo);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme', 'class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -70,7 +91,16 @@ export default function Sidebar() {
         {/* Desktop Sidebar Content */}
         <div className="p-5 border-b border-border flex-shrink-0">
           <Link href="/" prefetch={true}>
-            <RiddlePayLogo size={80} showText={false} />
+            <div className="flex-shrink-0" style={{ width: 80, height: 80 }}>
+              <Image
+                src={logoSource}
+                alt="Riddle Pay Logo"
+                width={80}
+                height={80}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
           </Link>
         </div>
 
@@ -108,7 +138,7 @@ export default function Sidebar() {
             </div>
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2.5 min-h-[44px] rounded-xl text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all border border-transparent hover:border-red-500/30 touch-manipulation active:scale-95"
+              className="w-full flex items-center gap-3 px-4 py-2 min-h-[44px] rounded-lg dark:rounded-xl bg-[#ffecec] dark:bg-transparent text-[#e03131] dark:text-red-400 border border-[#ffd6d6] dark:border-transparent hover:bg-[#ffd6d6] dark:hover:bg-red-500/20 hover:border-[#ffb3b3] dark:hover:border-red-500/30 transition-all shadow-sm dark:shadow-none touch-manipulation active:scale-95"
             >
               <LogOut className="w-5 h-5" />
               <span className="font-semibold text-sm">Log out</span>
@@ -128,7 +158,16 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="p-5 border-b border-border flex-shrink-0">
           <Link href="/" prefetch={true} onClick={() => setIsMobileOpen(false)}>
-            <RiddlePayLogo size={80} showText={false} />
+            <div className="flex-shrink-0" style={{ width: 80, height: 80 }}>
+              <Image
+                src={logoSource}
+                alt="Riddle Pay Logo"
+                width={80}
+                height={80}
+                className="w-full h-full object-contain"
+                priority
+              />
+            </div>
           </Link>
         </div>
 
@@ -165,7 +204,7 @@ export default function Sidebar() {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-2.5 min-h-[44px] rounded-xl text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all border border-transparent hover:border-red-500/30 touch-manipulation active:scale-95"
+            className="w-full flex items-center gap-3 px-4 py-2 min-h-[44px] rounded-lg dark:rounded-xl bg-[#ffecec] dark:bg-transparent text-[#e03131] dark:text-red-400 border border-[#ffd6d6] dark:border-transparent hover:bg-[#ffd6d6] dark:hover:bg-red-500/20 hover:border-[#ffb3b3] dark:hover:border-red-500/30 transition-all shadow-sm dark:shadow-none touch-manipulation active:scale-95"
           >
             <LogOut className="w-5 h-5" />
             <span className="font-semibold text-sm">Log out</span>
@@ -182,10 +221,10 @@ export default function Sidebar() {
       )}
 
       {/* Mobile-Only Fixed Bottom Logout Button */}
-      <div className="fixed bottom-20 left-0 w-full bg-[#0b0f1a] dark:bg-baseLight/95 bg-white/95 dark:bg-baseLight/95 backdrop-blur-xl border-t border-white/10 dark:border-white/10 border-gray-200 dark:border-white/10 p-3 flex justify-center md:hidden z-50">
+      <div className="fixed bottom-20 left-0 w-full bg-white/95 dark:bg-baseLight/95 backdrop-blur-xl border-t border-[#e5e7eb] dark:border-white/10 p-3 flex justify-center md:hidden z-50">
         <button
           onClick={handleLogout}
-          className="w-full max-w-sm flex items-center justify-center gap-3 px-4 py-3 min-h-[48px] rounded-xl text-red-400 hover:bg-red-500/20 hover:border-red-500/30 transition-all border border-red-500/30 bg-red-500/10 touch-manipulation active:scale-95"
+          className="w-full max-w-sm flex items-center justify-center gap-3 px-4 py-2 min-h-[48px] rounded-lg dark:rounded-xl bg-[#ffecec] dark:bg-red-500/10 text-[#e03131] dark:text-red-400 border border-[#ffd6d6] dark:border-red-500/30 hover:bg-[#ffd6d6] dark:hover:bg-red-500/20 hover:border-[#ffb3b3] dark:hover:border-red-500/30 transition-all shadow-sm dark:shadow-none touch-manipulation active:scale-95"
         >
           <LogOut className="w-5 h-5" />
           <span className="font-semibold text-sm">Log out</span>

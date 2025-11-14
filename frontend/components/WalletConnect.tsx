@@ -114,7 +114,7 @@ export default function WalletConnect() {
         {/* Shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         <FarcasterLogo className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0" />
-        <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap">Login with Farcaster</span>
+        <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">Login with Farcaster</span>
       </button>
       
       {/* Base Button - Base Official Style */}
@@ -127,7 +127,7 @@ export default function WalletConnect() {
         {/* Shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
         <BaseLogo className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0" />
-        <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap">Login with Base</span>
+        <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">Login with Base</span>
       </button>
     </div>
   );

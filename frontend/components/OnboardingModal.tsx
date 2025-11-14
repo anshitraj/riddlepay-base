@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { X, Gift, Sparkles, ArrowRight, Package, Trophy, Info } from 'lucide-react';
 import Link from 'next/link';
 import RiddlePayLogo from './RiddlePayLogo';
@@ -15,7 +14,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
 
   const steps = [
     {
-      title: '🎉 Welcome to RiddlePay',
+      title: 'Welcome to RiddlePay',
       description: 'Send fun, secure, secret airdrops on Base. Add an optional riddle that the receiver must solve to unlock the tokens.',
       showLogo: true,
     },
@@ -68,14 +67,8 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
   const currentStepData = steps[currentStep];
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-2xl border border-border p-6 sm:p-8 max-w-md w-full shadow-2xl"
-        >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-2xl border border-border p-6 sm:p-8 max-w-md w-full shadow-2xl">
           {/* Close Button */}
           <button
             onClick={handleSkip}
@@ -95,7 +88,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
             )}
 
             {/* Title */}
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-white dark:text-gray-900 capitalize">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-white dark:text-white text-[#111827] dark:text-white capitalize">
               {currentStepData.title}
             </h2>
 
@@ -107,24 +100,20 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
             ) : currentStepData.showActions ? (
               <div className="space-y-3 mt-4">
                 <Link href="/" prefetch={true} onClick={handleSkip}>
-                  <motion.button
-                    className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <button
+                    className="w-full p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl transition-all hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
                   >
                     <Gift className="w-5 h-5" />
                     <span>Create Airdrop</span>
-                  </motion.button>
+                  </button>
                 </Link>
                 <Link href="/my-gifts" prefetch={true} onClick={handleSkip}>
-                  <motion.button
+                  <button
                     className="w-full p-4 glass border border-border text-white dark:text-gray-900 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                   >
                     <Package className="w-5 h-5" />
                     <span>View My Airdrops</span>
-                  </motion.button>
+                  </button>
                 </Link>
                 <button
                   onClick={() => setCurrentStep(1)}
@@ -192,8 +181,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
-    </AnimatePresence>
   );
 }

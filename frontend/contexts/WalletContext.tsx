@@ -491,21 +491,38 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('wallet_disconnected');
       
-      const { sdk } = await import('@farcaster/miniapp-sdk');
-      const ethProvider = await sdk.wallet.getEthereumProvider();
-      
-      if (!ethProvider) {
-        alert('Farcaster wallet not available. Please open this app in Farcaster.');
+      // First check if we're actually in Farcaster app
+      const inFarcaster = await isFarcasterMiniApp();
+      if (!inFarcaster) {
+        // User is in browser, show friendly message
+        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
         return;
       }
+      
+      try {
+        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const ethProvider = await sdk.wallet.getEthereumProvider();
+        
+        if (!ethProvider) {
+          console.warn('[RiddlePay] Farcaster wallet not available');
+          alert('Farcaster wallet not available. Please open this app in Farcaster.');
+          return;
+        }
 
-      const provider = new ethers.BrowserProvider(ethProvider as any);
-      setWalletType('farcaster');
-      localStorage.setItem('wallet_type', 'farcaster');
-      await setupWalletConnection(provider, ethProvider);
+        const provider = new ethers.BrowserProvider(ethProvider as any);
+        setWalletType('farcaster');
+        localStorage.setItem('wallet_type', 'farcaster');
+        await setupWalletConnection(provider, ethProvider);
+      } catch (sdkError: any) {
+        // If SDK import fails or provider not available
+        console.warn('[RiddlePay] Farcaster SDK not available:', sdkError);
+        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+        return;
+      }
     } catch (error: any) {
       console.error('[RiddlePay] Error connecting to Farcaster:', error);
-      alert('Failed to connect to Farcaster: ' + (error.message || 'Please open this app in Farcaster'));
+      // Show user-friendly message instead of technical error
+      alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
     }
   };
 
@@ -516,7 +533,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       const anyWindow = window as any;
       if (!anyWindow.ethereum) {
-        alert('Base wallet not available. Please open this app in Base App.');
+        // Only show alert if explicitly trying to connect to Base
+        // Don't show if this is called from auto-connect or fallback
+        console.warn('[RiddlePay] Base wallet not available');
         return;
       }
 
@@ -543,7 +562,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       await setupWalletConnection(provider, anyWindow.ethereum);
     } catch (error: any) {
       console.error('[RiddlePay] Error connecting to Base:', error);
-      alert('Failed to connect to Base: ' + (error.message || 'Please open this app in Base App'));
+      // Don't show alert, just log the error
+      // User can try again if needed
     }
   };
 
