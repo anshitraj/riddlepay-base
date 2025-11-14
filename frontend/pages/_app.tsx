@@ -6,67 +6,39 @@ import Head from 'next/head';
 import { useEffect } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Call sdk.actions.ready() for Base/Farcaster mini app
+  // Call sdk.actions.ready() for Base/Farcaster mini app (per docs)
+  // https://miniapps.farcaster.xyz/docs/getting-started#making-your-app-display
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const callReady = () => {
+    let cancelled = false;
+
+    const markReady = async () => {
       try {
-        // Try different SDK locations that Base/Farcaster might use
-        const win = window as any;
-        
-        // Method 1: window.farcaster.sdk.actions.ready()
-        if (win.farcaster?.sdk?.actions?.ready) {
-          win.farcaster.sdk.actions.ready();
-          console.log('✅ Called farcaster.sdk.actions.ready()');
-          return true;
+        // Dynamically import the SDK on the client only
+        const { sdk } = await import('@farcaster/miniapp-sdk');
+
+        // Wait for our app to be painted and layout ready
+        // Then tell the Mini App host we're ready to show content
+        await sdk.actions.ready();
+
+        if (!cancelled) {
+          console.log('✅ RiddlePay mini app called sdk.actions.ready()');
         }
-        
-        // Method 2: window.sdk.actions.ready()
-        if (win.sdk?.actions?.ready) {
-          win.sdk.actions.ready();
-          console.log('✅ Called sdk.actions.ready()');
-          return true;
-        }
-        
-        // Method 3: Direct access via window.farcaster.actions.ready()
-        if (win.farcaster?.actions?.ready) {
-          win.farcaster.actions.ready();
-          console.log('✅ Called farcaster.actions.ready()');
-          return true;
-        }
-        
-        return false;
       } catch (error) {
-        console.error('Error calling SDK ready():', error);
-        return false;
+        console.error('Error calling sdk.actions.ready():', error);
       }
     };
 
-    // Try immediately
-    if (callReady()) {
-      return;
-    }
+    // Use nextTick to ensure initial render has happened
+    const id = window.requestAnimationFrame(() => {
+      void markReady();
+    });
 
-    // If SDK not ready, wait and retry multiple times
-    let retryCount = 0;
-    const maxRetries = 10;
-    
-    const retryInterval = setInterval(() => {
-      retryCount++;
-      
-      if (callReady()) {
-        clearInterval(retryInterval);
-        return;
-      }
-      
-      if (retryCount >= maxRetries) {
-        clearInterval(retryInterval);
-        console.warn('⚠️ SDK ready() not called - SDK may not be available');
-      }
-    }, 200); // Check every 200ms
-    
-    return () => clearInterval(retryInterval);
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(id);
+    };
   }, []);
 
   return (

@@ -105,7 +105,7 @@ export default function ConfirmationModal({
               {/* Content */}
               <div className="space-y-4 mb-6">
                 <div className="p-4 glass rounded-xl border border-border">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">You're about to send</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">You&apos;re about to send</p>
                   <p className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
                     {formatAmount(amount, tokenAddress)}
                   </p>
@@ -154,7 +154,7 @@ export default function ConfirmationModal({
                   disabled={loading}
                   className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-violet-500 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Processing...' : 'Proceed'}
+                  {loading ? 'Processing…' : 'Proceed'}
                 </button>
               </div>
             </motion.div>

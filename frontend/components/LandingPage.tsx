@@ -307,7 +307,7 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                   <div className="text-2xl sm:text-3xl font-bold text-blue-500 flex-shrink-0">1️⃣</div>
                   <div>
                     <h4 className="text-base sm:text-lg font-bold text-white mb-1 sm:mb-2">Create a Secret Airdrop</h4>
-                    <p className="text-sm sm:text-base text-gray-400">Enter the recipient's wallet and amount.</p>
+                    <p className="text-sm sm:text-base text-gray-400">Enter the recipient&apos;s wallet and amount.</p>
                   </div>
                 </div>
               </div>
