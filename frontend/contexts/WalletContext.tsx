@@ -24,45 +24,60 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // Helper to check if running in Farcaster
   const isFarcaster = () => {
-    if (typeof window === 'undefined') return false;
-    return (
-      window.location.href.includes('farcaster.xyz') || 
-      window.location.href.includes('warpcast.com') ||
-      !!(window as any).farcaster ||
-      !!(window as any).parent?.farcaster
-    );
+    try {
+      if (typeof window === 'undefined') return false;
+      return (
+        window.location?.href?.includes('farcaster.xyz') || 
+        window.location?.href?.includes('warpcast.com') ||
+        !!(window as any).farcaster ||
+        !!(window as any).parent?.farcaster
+      );
+    } catch (error) {
+      console.error('Error checking Farcaster environment:', error);
+      return false;
+    }
   };
 
   // Helper to get wallet provider (Farcaster SDK or window.ethereum)
   const getWalletProvider = async () => {
-    if (typeof window === 'undefined') return null;
+    try {
+      if (typeof window === 'undefined') return null;
 
-    // In Farcaster, window.ethereum should be available
-    // The SDK context doesn't directly expose wallet, but window.ethereum works
-    if (window.ethereum) {
-      return window.ethereum;
+      // In Farcaster, window.ethereum should be available
+      // The SDK context doesn't directly expose wallet, but window.ethereum works
+      if (window.ethereum) {
+        return window.ethereum;
+      }
+
+      // If in Farcaster but window.ethereum not ready yet, wait a bit
+      if (isFarcaster()) {
+        // Wait for wallet to be injected (Farcaster injects it)
+        return new Promise((resolve) => {
+          let attempts = 0;
+          const checkWallet = () => {
+            try {
+              if (window.ethereum) {
+                resolve(window.ethereum);
+              } else if (attempts < 10) {
+                attempts++;
+                setTimeout(checkWallet, 100);
+              } else {
+                resolve(null);
+              }
+            } catch (error) {
+              console.error('Error checking wallet:', error);
+              resolve(null);
+            }
+          };
+          checkWallet();
+        });
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error getting wallet provider:', error);
+      return null;
     }
-
-    // If in Farcaster but window.ethereum not ready yet, wait a bit
-    if (isFarcaster()) {
-      // Wait for wallet to be injected (Farcaster injects it)
-      return new Promise((resolve) => {
-        let attempts = 0;
-        const checkWallet = () => {
-          if (window.ethereum) {
-            resolve(window.ethereum);
-          } else if (attempts < 10) {
-            attempts++;
-            setTimeout(checkWallet, 100);
-          } else {
-            resolve(null);
-          }
-        };
-        checkWallet();
-      });
-    }
-
-    return null;
   };
 
   useEffect(() => {

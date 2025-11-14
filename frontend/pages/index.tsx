@@ -33,13 +33,18 @@ function HomeContent() {
 
   // Check if running in Farcaster
   const isFarcaster = () => {
-    if (typeof window === 'undefined') return false;
-    return (
-      window.location.href.includes('farcaster.xyz') || 
-      window.location.href.includes('warpcast.com') ||
-      !!(window as any).farcaster ||
-      !!(window as any).parent?.farcaster
-    );
+    try {
+      if (typeof window === 'undefined') return false;
+      return (
+        window.location?.href?.includes('farcaster.xyz') || 
+        window.location?.href?.includes('warpcast.com') ||
+        !!(window as any).farcaster ||
+        !!(window as any).parent?.farcaster
+      );
+    } catch (error) {
+      console.error('Error checking Farcaster environment:', error);
+      return false;
+    }
   };
 
   // Handle scroll to airdrop form when hash is present
@@ -67,24 +72,31 @@ function HomeContent() {
 
   // Auto-connect in Farcaster and check launch state
   useEffect(() => {
-    const launched = sessionStorage.getItem('dappLaunched') === 'true';
-    setHasLaunchedBefore(launched);
-    
-    // In Farcaster, try to auto-connect
-    if (isFarcaster() && !isConnected) {
-      // Wait a bit for wallet to be ready, then try to connect
-      setTimeout(() => {
-        connect().catch(err => {
-          console.log('Auto-connect in Farcaster:', err);
-        });
-      }, 500);
+    try {
+      const launched = sessionStorage.getItem('dappLaunched') === 'true';
+      setHasLaunchedBefore(launched);
+      
+      // In Farcaster, try to auto-connect
+      if (isFarcaster() && !isConnected) {
+        // Wait a bit for wallet to be ready, then try to connect
+        const timeoutId = setTimeout(() => {
+          connect().catch(err => {
+            console.log('Auto-connect in Farcaster:', err);
+          });
+        }, 500);
+        
+        return () => clearTimeout(timeoutId);
+      }
+      
+      // Show onboarding if not completed and not marked as "don't show"
+      if (isConnected && !localStorage.getItem('onboarding_completed') && !localStorage.getItem('onboarding_dont_show')) {
+        setShowOnboarding(true);
+      }
+    } catch (error) {
+      console.error('Error in useEffect:', error);
     }
-    
-    // Show onboarding if not completed and not marked as "don't show"
-    if (isConnected && !localStorage.getItem('onboarding_completed') && !localStorage.getItem('onboarding_dont_show')) {
-      setShowOnboarding(true);
-    }
-  }, [isConnected, connect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isConnected]);
 
   const handleLaunchDApp = () => {
     setHasLaunchedBefore(true);
