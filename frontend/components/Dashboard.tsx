@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { ethers } from 'ethers';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
-import { motion } from 'framer-motion';
 import { Gift, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Send, Package, Clock, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { formatAmount } from '@/utils/formatAmount';
@@ -241,283 +240,204 @@ export default function Dashboard() {
     );
   }
 
+  // Calculate portfolio value in USD
+  // Using approximate ETH price (can be updated or fetched from API)
+  const ETH_PRICE_USD = 3200; // Approximate ETH price in USD
+  const portfolioValueUSD = address 
+    ? (parseFloat(stats.userETHBalance) * ETH_PRICE_USD + parseFloat(stats.userUSDCBalance)).toFixed(2)
+    : '0.00';
+
   return (
-    <div className="space-y-2 sm:space-y-2.5 md:space-y-3 lg:space-y-4 xl:space-y-6">
-      {/* Total Balance Card */}
-      <motion.div
-        className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-border dark:border-border border-gray-200 dark:border-border overflow-hidden group"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        {/* Gradient Background Effect */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-blue-400/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div className="space-y-4">
+      {/* Your Portfolio Card */}
+      <div className="relative bg-white dark:glass rounded-xl p-4 border border-gray-200 dark:border-border overflow-hidden">
         
-        <div className="relative flex flex-col gap-2 sm:gap-3 mb-3 sm:mb-4 md:mb-6">
+        <div className="relative flex flex-col gap-3 mb-4">
           <div className="flex items-center justify-between">
-            <p className="text-[9px] sm:text-[10px] md:text-xs uppercase tracking-wider text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 font-semibold">TOTAL VALUE LOCKED</p>
+            <p className="text-xs uppercase tracking-wider text-[#6b7280] dark:text-gray-400 font-semibold">YOUR PORTFOLIO</p>
             <button
               onClick={handleRefresh}
               disabled={refreshing || loading}
-              className="p-1.5 sm:p-2 rounded-lg glass border border-border hover:border-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center"
-              title="Refresh stats"
+              className="p-2 rounded-lg bg-white dark:glass border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed min-w-[44px] min-h-[44px] flex items-center justify-center"
+              title="Refresh portfolio"
             >
-              <RefreshCw className={`w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-[#6b7280] dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
             </button>
           </div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-extrabold bg-gradient-to-r from-blue-400 via-blue-300 to-blue-400 bg-clip-text text-transparent leading-tight">
-            ${(parseFloat(stats.totalValueETH) * 3000 + parseFloat(stats.totalValueUSDC)).toFixed(2)}
+          <h2 className="text-4xl font-bold text-[#0f172a] dark:text-white leading-tight">
+            ${portfolioValueUSD}
           </h2>
-          {/* Hide stats on mobile, show on larger screens */}
-          <div className="hidden md:flex gap-6 flex-wrap">
-            <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">Today</p>
-              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />
-                +0.00%
-              </p>
+          {address && (
+            <div className="flex gap-4 text-sm">
+              <div>
+                <p className="text-xs text-[#6b7280] dark:text-gray-400 mb-1">ETH Value</p>
+                <p className="text-sm font-semibold text-[#1e293b] dark:text-white">
+                  ${(parseFloat(stats.userETHBalance) * ETH_PRICE_USD).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-[#6b7280] dark:text-gray-400 mb-1">USDC Value</p>
+                <p className="text-sm font-semibold text-[#1e293b] dark:text-white">
+                  ${parseFloat(stats.userUSDCBalance).toFixed(2)}
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">7 Days</p>
-              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />
-                +0.00%
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1">30 Days</p>
-              <p className="text-sm font-bold text-green-400 dark:text-green-400 text-green-600 dark:text-green-400 flex items-center gap-1">
-                <ArrowUpRight className="w-3 h-3" />
-                +0.00%
-              </p>
-            </div>
-          </div>
+          )}
+          {!address && (
+            <p className="text-sm text-[#6b7280] dark:text-gray-400">Connect your wallet to view your portfolio</p>
+          )}
         </div>
         
         {/* Base-Style Cards Grid */}
-        {/* Row 1: Tokens */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4">
-          <motion.div 
-            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            {/* Neon glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center justify-between mb-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500/20 to-orange-600/20 flex items-center justify-center group-hover:from-orange-500/30 group-hover:to-orange-600/30 transition-all flex-shrink-0 ring-2 ring-orange-500/10 group-hover:ring-orange-500/30">
-                <span className="text-orange-400 font-bold text-lg sm:text-xl">B</span>
+        {/* Row 1: TVL and USDC */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="relative bg-white dark:bg-[#0E152B]/30 rounded-xl p-4 border border-gray-200 dark:border-[#0066FF]/10 hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[120px] flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: 45 }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
-              >
-                <ArrowUpRight className="w-full h-full" />
-              </motion.div>
+              <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
             </div>
-            <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">ETH</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 break-all leading-tight">
-                {address ? stats.userETHBalance : '0.0000'}
+            <div className="flex-1 flex flex-col justify-end">
+              <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-1 font-medium">TVL</p>
+              <p className="text-xl font-bold text-[#1e293b] dark:text-white mb-1 break-all leading-tight">
+                ${(parseFloat(stats.totalValueETH) * ETH_PRICE_USD + parseFloat(stats.totalValueUSDC)).toFixed(2)}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Your Base ETH balance</p>
-              <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
+              <p className="text-xs text-[#6b7280] dark:text-gray-500 mb-1">Total Value Locked</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
-          </motion.div>
+          </div>
           
-          <motion.div 
-            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center justify-between mb-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0 ring-2 ring-blue-500/10 group-hover:ring-blue-500/30">
-                <span className="text-blue-400 font-bold text-lg sm:text-xl">U</span>
+          <div className="relative bg-white dark:bg-[#0E152B]/30 rounded-xl p-4 border border-gray-200 dark:border-[#0066FF]/10 hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[120px] flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-blue-600 dark:text-blue-400 font-bold text-lg">U</span>
               </div>
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: 45 }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
-              >
-                <ArrowUpRight className="w-full h-full" />
-              </motion.div>
+              <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
             </div>
-            <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">USDC</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 break-all leading-tight">
+            <div className="flex-1 flex flex-col justify-end">
+              <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-1 font-medium">USDC</p>
+              <p className="text-xl font-bold text-[#1e293b] dark:text-white mb-1 break-all leading-tight">
                 {address ? stats.userUSDCBalance : '0.00'}
               </p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Your stablecoins balance</p>
-              <p className="text-xs sm:text-sm text-green-400 font-semibold flex items-center gap-1">
+              <p className="text-xs text-[#6b7280] dark:text-gray-500 mb-1">Your stablecoins balance</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-semibold flex items-center gap-1">
                 <ArrowUpRight className="w-3 h-3" />
                 +0.00%
               </p>
             </div>
-          </motion.div>
+          </div>
         </div>
 
         {/* Row 2: Airdrops */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-4 mt-4 sm:mt-5 md:mt-4">
-          <motion.div 
-            className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center justify-between mb-3">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-600/20 flex items-center justify-center group-hover:from-blue-500/30 group-hover:to-blue-600/30 transition-all flex-shrink-0 ring-2 ring-blue-500/10 group-hover:ring-blue-500/30">
-                <Gift className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
+        <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="relative bg-white dark:bg-[#0E152B]/30 rounded-xl p-4 border border-gray-200 dark:border-[#0066FF]/10 hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[120px] flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Gift className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <motion.div
-                whileHover={{ scale: 1.2, rotate: 45 }}
-                className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
-              >
-                <ArrowUpRight className="w-full h-full" />
-              </motion.div>
+              <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
             </div>
-            <div className="relative flex-1 flex flex-col justify-end">
-              <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">Total Airdrops</p>
-              <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 leading-tight">{stats.totalGifts}</p>
-              <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Active drops</p>
-              <p className="text-xs sm:text-sm text-green-400 font-semibold">Active</p>
+            <div className="flex-1 flex flex-col justify-end">
+              <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-1 font-medium">Total Airdrops</p>
+              <p className="text-xl font-bold text-[#1e293b] dark:text-white mb-1 leading-tight">{stats.totalGifts}</p>
+              <p className="text-xs text-[#6b7280] dark:text-gray-500 mb-1">Active drops</p>
+              <p className="text-sm text-green-600 dark:text-green-400 font-semibold">Active</p>
             </div>
-          </motion.div>
+          </div>
 
           {address && (
           <Link href="/my-gifts" prefetch={true} className="block">
-            <motion.div 
-              className="relative bg-[#0E152B]/30 dark:bg-[#0E152B]/30 bg-white/90 dark:bg-[#0E152B]/30 backdrop-blur-xl rounded-[20px] sm:rounded-[22px] p-3 sm:p-4 md:p-5 border border-[#0066FF]/10 dark:border-[#0066FF]/10 border-gray-200 dark:border-[#0066FF]/10 hover:border-[#0066FF]/30 dark:hover:border-[#0066FF]/30 transition-all duration-300 hover:shadow-lg hover:shadow-[#0066FF]/20 group cursor-pointer touch-manipulation min-h-[120px] sm:min-h-[140px] flex flex-col justify-between overflow-hidden"
-              whileHover={{ scale: 1.02, y: -4 }}
-              whileTap={{ scale: 0.98 }}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.25 }}
-            >
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative flex items-center justify-between mb-3">
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 flex items-center justify-center group-hover:from-yellow-500/30 group-hover:to-yellow-600/30 transition-all flex-shrink-0 ring-2 ring-yellow-500/10 group-hover:ring-yellow-500/30">
-                    <Users className="w-6 h-6 sm:w-7 sm:h-7 text-yellow-400" />
+            <div className="relative bg-white dark:bg-[#0E152B]/30 rounded-xl p-4 border border-gray-200 dark:border-[#0066FF]/10 hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[120px] flex flex-col justify-between">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFECC7] dark:bg-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                   </div>
-                  <motion.div
-                    whileHover={{ scale: 1.2, rotate: 45 }}
-                    className="w-5 h-5 sm:w-6 sm:h-6 text-green-400 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity"
-                  >
-                    <ArrowUpRight className="w-full h-full" />
-                  </motion.div>
+                  <ArrowUpRight className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
                 </div>
-                <div className="relative flex-1 flex flex-col justify-end">
-                  <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 mb-1 font-medium">Your Airdrops</p>
-                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white dark:text-white text-gray-900 mb-1 leading-tight">
+                <div className="flex-1 flex flex-col justify-end">
+                  <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-1 font-medium">Your Airdrops</p>
+                  <p className="text-xl font-bold text-[#1e293b] dark:text-white mb-1 leading-tight">
                     {stats.userGiftsSent + stats.userGiftsReceived}
                   </p>
-                  <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-500 mb-1">Sent + Received</p>
-                  <p className="text-xs sm:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">
+                  <p className="text-xs text-[#6b7280] dark:text-gray-500 mb-1">Sent + Received</p>
+                  <p className="text-sm text-[#6b7280] dark:text-gray-400 leading-tight">
                     {stats.userGiftsSent} sent • {stats.userGiftsReceived} received
                   </p>
                 </div>
-              </motion.div>
+              </div>
             </Link>
           )}
         </div>
-      </motion.div>
+      </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-2.5 md:gap-3 lg:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Link href="/#create-airdrop-form" prefetch={true}>
-          <motion.div
-            className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
-              <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Send className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
+          <div className="relative bg-white dark:glass rounded-xl p-4 border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[80px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
+                <h3 className="text-base font-bold text-[#0f172a] dark:text-white mb-0.5">
                   Send Airdrop
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">Create a new airdrop</p>
+                <p className="text-xs text-[#6b7280] dark:text-gray-400 leading-tight">Create a new airdrop</p>
               </div>
-              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
-          </motion.div>
+          </div>
         </Link>
 
         <Link href="/bulk-giveaway" prefetch={true}>
-          <motion.div
-            className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
-              <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg sm:rounded-xl shadow-lg shadow-blue-500/30 group-hover:shadow-blue-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Package className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
+          <div className="relative bg-white dark:glass rounded-xl p-4 border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[80px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5">
+                <h3 className="text-base font-bold text-[#0f172a] dark:text-white mb-0.5">
                   Bulk Airdrop
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">Send to multiple winners</p>
+                <p className="text-xs text-[#6b7280] dark:text-gray-400 leading-tight">Send to multiple winners</p>
               </div>
-              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-blue-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
-          </motion.div>
+          </div>
         </Link>
 
         <Link href="/my-gifts" prefetch={true}>
-          <motion.div
-            className="relative glass rounded-lg sm:rounded-xl md:rounded-2xl p-2.5 sm:p-3 md:p-4 lg:p-5 border border-border hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden touch-manipulation min-h-[72px] sm:min-h-[80px] md:min-h-[100px]"
-            whileHover={{ scale: 1.02, y: -4 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div className="relative flex items-center gap-2 sm:gap-2.5 md:gap-3">
-              <div className="p-2 sm:p-2.5 md:p-3 bg-gradient-to-br from-green-500 to-green-600 rounded-lg sm:rounded-xl shadow-lg shadow-green-500/30 group-hover:shadow-green-500/50 transition-all group-hover:scale-110 flex-shrink-0">
-                <Clock className="w-4 h-4 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5 lg:w-6 lg:h-6 text-white dark:text-white" />
+          <div className="relative bg-white dark:glass rounded-xl p-4 border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer min-h-[80px]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-[#E8FAF4] dark:bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-green-400 transition-colors mb-0.5">
+                <h3 className="text-base font-bold text-[#0f172a] dark:text-white mb-0.5">
                   My Airdrops
                 </h3>
-                <p className="text-[9px] sm:text-[10px] md:text-xs text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 leading-tight">View all your airdrops</p>
+                <p className="text-xs text-[#6b7280] dark:text-gray-400 leading-tight">View all your airdrops</p>
               </div>
-              <ArrowUpRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-gray-400 group-hover:text-green-400 transition-colors opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 group-hover:-translate-y-1 transition-all flex-shrink-0" />
             </div>
-          </motion.div>
+          </div>
         </Link>
       </div>
 
       {/* Recent Gifts */}
       {address && recentGifts.length > 0 && (
-        <motion.div
-          className="glass rounded-2xl p-6 border border-border dark:border-border border-gray-200 dark:border-border"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-blue-500/20 to-blue-400/20 rounded-lg">
-                <TrendingUp className="w-5 h-5 text-blue-400" />
+        <div className="bg-white dark:glass rounded-xl p-4 border border-gray-200 dark:border-border">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-[#0f172a] dark:text-white flex items-center gap-2">
+              <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               Recent Airdrops
             </h3>
-            <Link href="/my-gifts" prefetch={true} className="text-sm text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 group">
+            <Link href="/my-gifts" prefetch={true} className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1">
               View all
-              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+              <ArrowUpRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="space-y-3">
@@ -525,75 +445,64 @@ export default function Dashboard() {
               const { gift, id } = item;
               return (
                 <Link key={idx} href={`/claim?giftId=${id}`} prefetch={true}>
-                  <motion.div 
-                    className="glass rounded-lg sm:rounded-xl p-2.5 sm:p-3 md:p-4 border border-border dark:border-border border-gray-200 dark:border-border hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all cursor-pointer group touch-manipulation"
-                    whileHover={{ scale: 1.01, x: 4 }}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
-                  >
-                    <div className="flex items-center justify-between gap-2 sm:gap-3">
-                      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
-                        <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center transition-all group-hover:scale-110 flex-shrink-0 ${
+                  <div className="bg-white dark:glass rounded-lg p-3 border border-gray-200 dark:border-border hover:bg-gray-50 dark:hover:bg-[#0E152B]/40 transition-colors duration-75 cursor-pointer">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           gift.riddle && gift.riddle.trim() 
-                            ? 'bg-gradient-to-br from-blue-500/20 to-blue-600/20 group-hover:from-blue-500/30 group-hover:to-blue-600/30' 
-                            : 'bg-gradient-to-br from-green-500/20 to-green-600/20 group-hover:from-green-500/30 group-hover:to-green-600/30'
+                            ? 'bg-[#E4ECFF] dark:bg-blue-500/20' 
+                            : 'bg-[#E8FAF4] dark:bg-green-500/20'
                         }`}>
                           {gift.riddle && gift.riddle.trim() ? (
-                            <span className="text-lg sm:text-xl md:text-2xl">🎯</span>
+                            <span className="text-xl">🎯</span>
                           ) : (
-                            <span className="text-lg sm:text-xl md:text-2xl">🎁</span>
+                            <span className="text-xl">🎁</span>
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm md:text-base font-bold text-white dark:text-white text-gray-900 dark:text-gray-900 group-hover:text-blue-400 transition-colors mb-0.5 truncate">
+                          <p className="text-sm font-bold text-[#0f172a] dark:text-white mb-0.5 truncate">
                             {gift.riddle && gift.riddle.trim() ? 'Riddle Airdrop' : 'Direct Airdrop'}
                           </p>
-                          <p className="text-[10px] sm:text-xs md:text-sm text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 truncate">
+                          <p className="text-xs text-[#6b7280] dark:text-gray-400 truncate">
                             {formatAmount(gift.amount, gift.tokenAddress)}
                             {gift.claimed && ' • Claimed'}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                        <span className="text-[9px] sm:text-xs text-gray-500 hidden sm:inline">
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="text-xs text-[#6b7280] dark:text-gray-500 hidden sm:inline">
                           {new Date(Number(gift.createdAt) * 1000).toLocaleDateString()}
                         </span>
-                        <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-all group-hover:translate-x-1 group-hover:-translate-y-1" />
+                        <ArrowUpRight className="w-4 h-4 text-[#6b7280] dark:text-gray-400" />
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 </Link>
               );
             })}
           </div>
-        </motion.div>
+        </div>
       )}
 
       {/* Powered by Base Footer */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6 }}
-        className="mt-4 sm:mt-6 md:mt-8 pt-3 sm:pt-4 md:pt-6 border-t border-border"
-      >
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <span className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Powered by</span>
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-border">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-[#6b7280] dark:text-gray-400 text-xs">Powered by</span>
             {/* Base Logo - Blue square with rounded corners */}
-            <div className="w-6 h-6 sm:w-7 sm:h-7 bg-[#0052FF] rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-5 sm:h-5">
+            <div className="w-6 h-6 bg-[#0052FF] rounded-lg flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="20" height="20" rx="4" fill="#0052FF"/>
               </svg>
             </div>
-            <span className="text-white dark:text-white text-gray-900 dark:text-gray-900 font-semibold text-sm sm:text-base">Base</span>
+            <span className="text-[#0f172a] dark:text-white font-semibold text-sm">Base</span>
           </div>
-          <span className="hidden sm:inline text-gray-600 dark:text-gray-500 text-gray-600 dark:text-gray-500">—</span>
-          <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 text-gray-600 dark:text-gray-400 text-center">
+          <span className="hidden sm:inline text-[#6b7280] dark:text-gray-500">—</span>
+          <p className="text-xs text-[#6b7280] dark:text-gray-400 text-center">
             Secure, low-cost Ethereum L2 blockchain
           </p>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

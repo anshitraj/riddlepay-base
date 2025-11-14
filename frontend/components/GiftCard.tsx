@@ -4,7 +4,6 @@ import { Gift } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { useContract } from '@/hooks/useContract';
 import { Clock, Gift as GiftIcon, User, CheckCircle, Share2, AlertCircle, RotateCcw } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import ShareGift from './ShareGift';
 import { formatAmount } from '@/utils/formatAmount';
@@ -101,103 +100,114 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
   const isReceiver = address?.toLowerCase() === gift.receiver.toLowerCase();
   const isSender = address?.toLowerCase() === gift.sender.toLowerCase();
 
+  // Get status badge styling
+  const getStatusBadge = () => {
+    if (refunded) {
+      return (
+        <span className="text-xs px-3 py-1 rounded-full border border-purple-200 text-purple-700 bg-purple-50 dark:bg-purple-500/20 dark:text-purple-400 dark:border-purple-500/30">
+          Refunded
+        </span>
+      );
+    }
+    if (gift.claimed) {
+      return (
+        <span className="text-xs px-3 py-1 rounded-full border border-green-200 text-green-600 bg-green-50 dark:bg-green-500/20 dark:text-green-400 dark:border-green-500/30">
+          Claimed
+        </span>
+      );
+    }
+    if (expired) {
+      return (
+        <span className="text-xs px-3 py-1 rounded-full border border-red-200 text-red-600 bg-red-50 dark:bg-red-500/20 dark:text-red-400 dark:border-red-500/30">
+          Expired
+        </span>
+      );
+    }
+    return (
+      <span className="text-xs px-3 py-1 rounded-full border border-yellow-200 text-yellow-700 bg-yellow-50 dark:bg-yellow-500/20 dark:text-yellow-400 dark:border-yellow-500/30">
+        Pending
+      </span>
+    );
+  };
+
+  const shortAddress = isReceiver
+    ? `${gift.sender.slice(0, 6)}...${gift.sender.slice(-4)}`
+    : `${gift.receiver.slice(0, 6)}...${gift.receiver.slice(-4)}`;
+
   return (
-    <motion.div 
-      className="bg-baseLight/50 dark:bg-baseLight/50 bg-white/90 dark:bg-baseLight/50 rounded-2xl p-4 sm:p-6 border border-blue-500/20 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20 group"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      whileHover={{ scale: 1.02 }}
-    >
-      <div className="flex items-start justify-between mb-4 sm:mb-5">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-base-gradient flex items-center justify-center shadow-lg shadow-blue-500/30">
-            <GiftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+    <div className="bg-white dark:bg-baseLight/50 border border-gray-200 dark:border-blue-500/20 rounded-xl shadow-sm p-4 mb-4">
+      {/* Top row - Badge and Title */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-[#E4ECFF] dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xl">
+            🎁
           </div>
-          <span className="text-xs sm:text-sm font-semibold dark:text-white text-white text-gray-900 dark:text-white">Airdrop #{giftId}</span>
+          <div className="font-semibold text-[#1e293b] dark:text-white">Airdrop #{giftId}</div>
         </div>
-        {refunded ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-purple-500/50">
-            <CheckCircle className="w-4 h-4 text-purple-500" />
-            <span className="text-xs font-semibold text-purple-500 dark:text-purple-500 text-purple-600 dark:text-purple-400">Refunded</span>
-          </div>
-        ) : gift.claimed ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-green-500/50">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-xs font-semibold text-green-500 dark:text-green-500 text-green-600 dark:text-green-400">Claimed</span>
-          </div>
-        ) : expired ? (
-          <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-red-500/50">
-            <AlertCircle className="w-4 h-4 text-red-500" />
-            <span className="text-xs font-semibold text-red-500 dark:text-red-500 text-red-600 dark:text-red-400">Expired</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 px-3 py-1.5 glass rounded-lg border border-yellow-500/50">
-            <Clock className="w-4 h-4 text-yellow-500 animate-pulse" />
-            <span className="text-xs font-semibold text-yellow-500 dark:text-yellow-500 text-yellow-600 dark:text-yellow-400">Pending</span>
-          </div>
-        )}
+        {getStatusBadge()}
       </div>
 
-      <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-5">
-        <div className="flex items-center gap-2 text-xs sm:text-sm">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg glass flex items-center justify-center flex-shrink-0">
-            <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
-          </div>
-          <span className="dark:text-gray-400 text-gray-400 text-gray-600 dark:text-gray-400 break-words">
-            {isReceiver ? 'From' : 'To'}:{' '}
-            <span className="dark:text-white text-white text-gray-900 dark:text-white font-mono font-semibold">
-              {isReceiver
-                ? `${gift.sender.slice(0, 6)}...${gift.sender.slice(-4)}`
-                : `${gift.receiver.slice(0, 6)}...${gift.receiver.slice(-4)}`}
-            </span>
-          </span>
-        </div>
-
-        {gift.riddle && gift.riddle.trim() && (
-          <div className="p-3 sm:p-4 glass rounded-xl border border-border dark:border-border border-gray-200 dark:border-border">
-            <p className="dark:text-white text-white text-gray-900 dark:text-white text-xs sm:text-sm leading-relaxed break-words">
-              <span className="font-bold text-blue-500">❓ Riddle:</span> {gift.riddle}
-            </p>
-          </div>
-        )}
-
-        {gift.unlockTime && Number(gift.unlockTime) > Math.floor(Date.now() / 1000) && (
-          <div className="mt-3 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-            <p className="text-xs text-yellow-500 dark:text-yellow-500 text-yellow-600 dark:text-yellow-400 font-semibold">
-              🔒 Unlocks: {new Date(Number(gift.unlockTime) * 1000).toLocaleString()}
-            </p>
-          </div>
-        )}
-
-        <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
-          <span className="text-xl sm:text-2xl font-extrabold bg-base-gradient bg-clip-text text-transparent">
-            {formatAmount(gift.amount, gift.tokenAddress)}
-          </span>
-          <span className="text-xs dark:text-gray-400 text-gray-400 text-gray-600 dark:text-gray-400 font-medium">
-            {formatDate(gift.createdAt)}
-          </span>
-        </div>
+      {/* Receiver Address */}
+      <div className="text-sm text-[#6b7280] dark:text-gray-400 flex items-center gap-2 mb-2">
+        <span>👤</span>
+        <span>{isReceiver ? 'From' : 'To'}: {shortAddress}</span>
       </div>
 
-      <div className="flex gap-2 sm:gap-3 mt-4 flex-wrap">
-        {!gift.claimed && isReceiver && onClaim && !expired && (
-          <motion.button
-            onClick={onClaim}
-            className="flex-1 py-3 min-h-[44px] bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 active:scale-95 text-sm touch-manipulation"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+      {/* Riddle Box */}
+      {gift.riddle && gift.riddle.trim() && (
+        <div className="bg-[#f8f9ff] dark:bg-[#0E152B]/30 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-[#374151] dark:text-gray-300 mb-3">
+          <span className="font-medium text-red-500 dark:text-red-400">Riddle:</span> {gift.riddle}
+        </div>
+      )}
+
+      {/* Unlock Time */}
+      {gift.unlockTime && Number(gift.unlockTime) > Math.floor(Date.now() / 1000) && (
+        <div className="bg-yellow-50 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/30 rounded-lg p-3 mb-3">
+          <p className="text-xs text-yellow-700 dark:text-yellow-400 font-semibold">
+            🔒 Unlocks: {new Date(Number(gift.unlockTime) * 1000).toLocaleString()}
+          </p>
+        </div>
+      )}
+
+      {/* Amount - Main Highlight */}
+      <div className="text-lg font-bold text-blue-600 dark:text-blue-400 mb-3">
+        {formatAmount(gift.amount, gift.tokenAddress)}
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-100 dark:border-gray-700 my-3"></div>
+
+      {/* Footer - Date and Share */}
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-[#9ca3af] dark:text-gray-500">{formatDate(gift.createdAt)}</span>
+        {isSender && !expired && !refunded && (
+          <button
+            onClick={() => setShowShare(true)}
+            className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 text-[#6b7280] dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-[#0E152B]/40 transition-colors duration-75"
+            title="Share airdrop"
           >
-                  🎁 Claim Airdrop
-          </motion.button>
+            <Share2 className="w-4 h-4" />
+          </button>
         )}
-        {isSender && expired && !gift.claimed && !refunded && (
-          <motion.button
+      </div>
+
+      {/* Action Buttons */}
+      {!gift.claimed && isReceiver && onClaim && !expired && (
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+          <button
+            onClick={onClaim}
+            className="w-full py-3 min-h-[44px] bg-[#eef2ff] dark:bg-base-gradient text-[#4f6ef7] dark:text-white font-semibold rounded-xl border border-[#dce2ff] dark:border-transparent hover:bg-[#e4e8ff] dark:hover:opacity-90 transition-colors duration-75 text-sm touch-manipulation"
+          >
+            🎁 Claim Airdrop
+          </button>
+        </div>
+      )}
+      {isSender && expired && !gift.claimed && !refunded && (
+        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+          <button
             onClick={handleRefund}
             disabled={refunding || loading}
-            className="flex-1 py-3 min-h-[44px] bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-xl transition-all duration-300 active:scale-95 text-sm touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            whileHover={{ scale: refunding || loading ? 1 : 1.05 }}
-            whileTap={{ scale: refunding || loading ? 1 : 0.95 }}
+            className="w-full py-3 min-h-[44px] bg-[#ffecec] dark:bg-gradient-to-r dark:from-red-600 dark:to-red-500 text-[#e03131] dark:text-white font-semibold rounded-lg dark:rounded-xl border border-[#ffd6d6] dark:border-transparent hover:bg-[#ffd6d6] dark:hover:opacity-90 transition-colors duration-75 text-sm touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm dark:shadow-none"
           >
             {refunding ? (
               <>
@@ -210,31 +220,14 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
                 <span>Refund Airdrop</span>
               </>
             )}
-          </motion.button>
-        )}
-        {refunded && (
-          <div className="flex-1 py-3 min-h-[44px] bg-gradient-to-r from-purple-600 to-purple-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 text-sm">
-            <CheckCircle className="w-4 h-4" />
-            <span>Refunded</span>
-          </div>
-        )}
-        {isSender && !expired && !refunded && (
-          <motion.button
-            onClick={() => setShowShare(true)}
-            className="px-4 py-3 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 dark:text-white text-white text-gray-900 dark:text-white transition-all duration-300 active:scale-95 text-sm flex items-center justify-center gap-2 touch-manipulation"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Share2 className="w-4 h-4" />
-            <span className="hidden sm:inline">Share</span>
-          </motion.button>
-        )}
-      </div>
+          </button>
+        </div>
+      )}
 
       {showShare && (
         <ShareGift giftId={giftId} onClose={() => setShowShare(false)} />
       )}
-    </motion.div>
+    </div>
   );
 }
 

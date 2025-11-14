@@ -81,13 +81,8 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
     }
   };
 
-  // Auto-show dashboard when wallet connects (only if dialog is not open)
-  React.useEffect(() => {
-    if (isConnected && !showLoginDialog) {
-      onLaunchDApp();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isConnected, showLoginDialog]);
+  // Don't auto-show dashboard - let user manually click connect buttons
+  // The handleLoginWithFarcaster and handleLoginWithBase functions will handle redirect
 
   // Auto-play slider
   useEffect(() => {

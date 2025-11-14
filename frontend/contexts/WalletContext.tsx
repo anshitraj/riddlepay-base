@@ -2,6 +2,12 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { ethers } from 'ethers';
+import dynamic from 'next/dynamic';
+
+// Dynamically import WalletErrorModal to avoid SSR issues
+const WalletErrorModal = dynamic(() => import('@/components/WalletErrorModal'), {
+  ssr: false,
+});
 
 interface WalletContextType {
   address: string | null;
@@ -16,6 +22,9 @@ interface WalletContextType {
   ensureBaseSepolia: () => Promise<void>;
   ensureBaseMainnet: () => Promise<void>;
   chainId: number | null;
+  connectionError: string | null;
+  showErrorModal: boolean;
+  setShowErrorModal: (show: boolean) => void;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -25,6 +34,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [provider, setProvider] = useState<ethers.BrowserProvider | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [walletType, setWalletType] = useState<'farcaster' | 'base' | 'browser' | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [showErrorModal, setShowErrorModal] = useState(false);
 
   // Helper to check if running in Base Mini App
   const isBaseMiniApp = (): boolean => {
@@ -225,11 +236,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
         // Only check for existing connection if we don't have a stored disconnect state
         const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
-        const inMiniApp = await isMiniApp();
         
-        // In Mini App (Base App/Farcaster), always try to auto-connect
-        // In normal browser, only auto-connect if not explicitly disconnected
-        if (wasDisconnected && !inMiniApp) return;
+        // Don't auto-connect on initial load - let user manually connect via landing page
+        // Only auto-connect if user has explicitly connected before and hasn't disconnected
+        if (wasDisconnected) return;
+        
+        // Check if this is the first load - if so, skip auto-connect
+        const hasLoadedBefore = sessionStorage.getItem('app_loaded') === 'true';
+        if (!hasLoadedBefore) {
+          // Mark that app has loaded, but don't auto-connect on first load
+          sessionStorage.setItem('app_loaded', 'true');
+          return;
+        }
 
         // Check for existing accounts with error handling
         let accounts: string[] = [];
@@ -416,7 +434,12 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Request accounts explicitly with error handling
       let accounts: string[] = [];
       try {
-        accounts = await provider.send('eth_requestAccounts', []) as string[];
+        const response = await provider.send('eth_requestAccounts', []);
+        // Handle undefined or invalid response
+        if (!response || !Array.isArray(response)) {
+          throw new Error('Invalid response from wallet provider');
+        }
+        accounts = response as string[];
       } catch (error: any) {
         // Handle user rejection or connection errors
         if (error.code === 4001) {
@@ -424,9 +447,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           localStorage.setItem('wallet_disconnected', 'true');
           throw new Error('Connection rejected by user');
         }
+        // Handle undefined response errors
+        if (error.message?.includes('response is undefined') || error.message?.includes('can\'t access property')) {
+          console.error('[RiddlePay] Wallet provider returned undefined response');
+          const errorMsg = 'Wallet connection failed. Please try connecting with Farcaster or Base.';
+          setConnectionError(errorMsg);
+          setShowErrorModal(true);
+          throw new Error(errorMsg);
+        }
         // Handle other errors
         console.error('[RiddlePay] Error requesting accounts:', error);
-        throw new Error(`Failed to connect: ${error.message || 'Unknown error'}`);
+        const errorMsg = error.message || 'Unknown error occurred';
+        setConnectionError(errorMsg);
+        setShowErrorModal(true);
+        throw new Error(`Failed to connect: ${errorMsg}`);
       }
 
       if (!accounts || accounts.length === 0) {
@@ -574,7 +608,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       const anyWindow = window as any;
       if (!anyWindow.ethereum) {
-        alert('Please install MetaMask or another Web3 wallet');
+        setConnectionError('No wallet provider found. Please connect with Farcaster or Base.');
+        setShowErrorModal(true);
         return;
       }
 
@@ -603,8 +638,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       console.error('[RiddlePay] Error connecting browser wallet:', error);
       if (error.code === 4001) {
         localStorage.setItem('wallet_disconnected', 'true');
+        return; // User rejected, don't show error modal
       }
-      alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+      const errorMsg = error.message || 'Unknown error occurred';
+      setConnectionError(errorMsg);
+      setShowErrorModal(true);
     }
   };
 
@@ -617,7 +655,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const provider = await getEvmProvider();
       
       if (!provider) {
-        alert('Please install MetaMask or another Web3 wallet');
+        setConnectionError('No wallet provider found. Please connect with Farcaster or Base.');
+        setShowErrorModal(true);
         return;
       }
 
@@ -709,8 +748,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       console.error('[RiddlePay] Error connecting wallet:', error);
       if (error.code === 4001) {
         localStorage.setItem('wallet_disconnected', 'true');
+        return; // User rejected, don't show error modal
       }
-      alert('Failed to connect wallet: ' + (error.message || 'Unknown error'));
+      const errorMsg = error.message || 'Unknown error occurred';
+      setConnectionError(errorMsg);
+      setShowErrorModal(true);
     }
   };
 
@@ -840,9 +882,20 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         ensureBaseSepolia,
         ensureBaseMainnet,
         chainId,
+        connectionError,
+        showErrorModal,
+        setShowErrorModal,
       }}
     >
       {children}
+      <WalletErrorModal
+        isOpen={showErrorModal}
+        onClose={() => {
+          setShowErrorModal(false);
+          setConnectionError(null);
+        }}
+        error={connectionError || undefined}
+      />
     </WalletContext.Provider>
   );
 }

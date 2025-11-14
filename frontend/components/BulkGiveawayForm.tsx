@@ -3,11 +3,37 @@
 import { useState } from 'react';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Plus, X, Users, AlertCircle, Upload, FileText } from 'lucide-react';
 import Papa from 'papaparse';
 import { addXP, getUserXP } from '@/utils/xpSystem';
+
+// Farcaster Logo SVG Component
+const FarcasterLogo = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <rect x="4" y="9" width="3.5" height="9" />
+    <rect x="16.5" y="9" width="3.5" height="9" />
+    <rect x="4" y="7" width="16" height="2.5" />
+    <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
+  </svg>
+);
+
+// Base Logo SVG Component
+const BaseLogo = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+  </svg>
+);
 
 interface Recipient {
   address: string;
@@ -15,7 +41,8 @@ interface Recipient {
 }
 
 export default function BulkGiveawayForm() {
-  const { address, ensureBaseMainnet } = useWallet();
+  const { address, ensureBaseMainnet, connectFarcaster, connectBase } = useWallet();
+  const [isConnecting, setIsConnecting] = useState(false);
   const { createBulkGifts, loading, error, approving } = useContract();
   
   const [recipients, setRecipients] = useState<Recipient[]>([
@@ -254,27 +281,65 @@ export default function BulkGiveawayForm() {
     }, 0);
   };
 
+  const handleLoginWithFarcaster = async () => {
+    setIsConnecting(true);
+    try {
+      await connectFarcaster();
+    } catch (err) {
+      console.error('Failed to connect to Farcaster:', err);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
+  const handleLoginWithBase = async () => {
+    setIsConnecting(true);
+    try {
+      await connectBase();
+    } catch (err) {
+      console.error('Failed to connect to Base:', err);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   if (!address) {
     return (
-      <motion.div 
-        className="bg-baseLight/50 rounded-2xl p-12 text-center border border-blue-500/20 shadow-lg"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-      >
+      <div className="bg-white dark:bg-baseLight/50 rounded-xl p-8 sm:p-12 text-center border border-gray-200 dark:border-blue-500/20 shadow-sm">
         <div className="text-5xl mb-4">🔒</div>
-        <p className="dark:text-gray-300 text-gray-700 text-lg">Please connect your wallet to create bulk giveaways</p>
-      </motion.div>
+        <p className="text-[#1e293b] dark:text-gray-300 text-lg mb-6">Please connect your wallet to create bulk giveaways</p>
+        
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
+          <button
+            onClick={handleLoginWithFarcaster}
+            disabled={isConnecting}
+            className="w-full sm:w-auto group relative flex-shrink-0 min-w-[160px] px-6 py-3 min-h-[56px] bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(147,51,234,0.4)] touch-manipulation text-sm flex flex-row items-center justify-center gap-3 shadow-lg shadow-purple-500/30 border border-purple-400/20 hover:border-purple-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/30 to-purple-600/30 blur-xl -z-10"></div>
+            <FarcasterLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
+            <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+              {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
+            </span>
+          </button>
+
+          <button
+            onClick={handleLoginWithBase}
+            disabled={isConnecting}
+            className="w-full sm:w-auto group relative flex-shrink-0 min-w-[160px] px-6 py-3 min-h-[56px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
+            <BaseLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
+            <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+              {isConnecting ? 'Connecting...' : 'Login with Base'}
+            </span>
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="bg-baseLight/50 rounded-2xl p-4 sm:p-6 md:p-8 lg:p-10 border border-blue-500/20 shadow-lg backdrop-blur-xl"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="bg-white dark:bg-baseLight/50 rounded-xl p-4 border border-gray-200 dark:border-blue-500/20 shadow-sm mb-24 lg:mb-6">
       <div className="flex items-center gap-2 sm:gap-3 mb-6 sm:mb-8">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500 flex items-center justify-center text-xl sm:text-2xl shadow-lg shadow-blue-500/30">
           <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
@@ -355,7 +420,7 @@ export default function BulkGiveawayForm() {
               Recipients ({recipients.length}/100)
             </label>
             <div className="flex gap-2">
-              <label className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation cursor-pointer hover:bg-blue-500/10">
+              <label className="px-3 sm:px-4 py-2 min-h-[44px] bg-white dark:glass rounded-xl border border-gray-200 dark:border-blue-500/20 text-[#0f172a] dark:text-white text-sm font-medium transition-colors duration-75 flex items-center gap-2 touch-manipulation cursor-pointer hover:bg-gray-50 dark:hover:bg-blue-500/10">
                 <Upload className="w-4 h-4" />
                 <span className="hidden sm:inline">Upload CSV</span>
                 <span className="sm:hidden">CSV</span>
@@ -369,7 +434,7 @@ export default function BulkGiveawayForm() {
               <button
                 type="button"
                 onClick={addRecipient}
-                className="px-3 sm:px-4 py-2 min-h-[44px] glass rounded-xl border border-blue-500/20 dark:text-white text-gray-900 text-sm font-medium active:scale-95 transition-all flex items-center gap-2 touch-manipulation"
+                className="px-3 sm:px-4 py-2 min-h-[44px] bg-white dark:glass rounded-xl border border-gray-200 dark:border-blue-500/20 text-[#0f172a] dark:text-white text-sm font-medium transition-colors duration-75 flex items-center gap-2 touch-manipulation hover:bg-gray-50 dark:hover:bg-blue-500/10"
               >
                 <Plus className="w-4 h-4" />
                 <span className="hidden sm:inline">Add Recipient</span>
@@ -386,11 +451,9 @@ export default function BulkGiveawayForm() {
           
           <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
             {recipients.map((recipient, index) => (
-              <motion.div
+              <div
                 key={index}
-                className="flex gap-3 items-start p-4 glass rounded-xl border border-border"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                className="flex gap-3 items-start p-4 bg-white dark:glass rounded-xl border border-gray-200 dark:border-border"
               >
                 <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input
@@ -398,7 +461,7 @@ export default function BulkGiveawayForm() {
                     value={recipient.address}
                     onChange={(e) => updateRecipient(index, 'address', e.target.value)}
                     placeholder="0x..."
-                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all touch-manipulation"
+                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base bg-white dark:glass rounded-lg border border-gray-200 dark:border-border text-[#1e293b] dark:text-white placeholder-[#9ca3af] dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all touch-manipulation"
                     required
                   />
                   <input
@@ -407,7 +470,7 @@ export default function BulkGiveawayForm() {
                     value={recipient.amount}
                     onChange={(e) => updateRecipient(index, 'amount', e.target.value)}
                     placeholder={isETH ? "0.01 ETH" : "10 USDC"}
-                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base glass rounded-lg dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all touch-manipulation"
+                    className="w-full px-3 sm:px-4 py-2.5 min-h-[44px] text-base bg-white dark:glass rounded-lg border border-gray-200 dark:border-border text-[#1e293b] dark:text-white placeholder-[#9ca3af] dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all touch-manipulation"
                     required
                   />
                 </div>
@@ -415,18 +478,18 @@ export default function BulkGiveawayForm() {
                   <button
                     type="button"
                     onClick={() => removeRecipient(index)}
-                    className="p-2 min-w-[44px] min-h-[44px] glass rounded-lg border border-red-500/20 text-red-500 hover:bg-red-500/10 active:scale-95 transition-all touch-manipulation flex items-center justify-center"
+                    className="p-2 min-w-[44px] min-h-[44px] bg-white dark:glass rounded-lg border border-gray-200 dark:border-red-500/20 text-red-600 dark:text-red-500 hover:bg-gray-50 dark:hover:bg-red-500/10 transition-colors duration-75 touch-manipulation flex items-center justify-center"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
           
-          <div className="mt-4 p-4 glass rounded-xl border border-blue-500/20">
-            <p className="text-sm dark:text-gray-400 text-gray-600 mb-1">Total Amount:</p>
-            <p className="text-2xl font-bold bg-base-gradient bg-clip-text text-transparent">
+          <div className="mt-4 p-4 bg-white dark:glass rounded-xl border border-gray-200 dark:border-blue-500/20">
+            <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-1">Total Amount:</p>
+            <p className="text-2xl font-bold text-[#1e293b] dark:text-white">
               {calculateTotal().toFixed(isETH ? 6 : 2)} {isETH ? 'ETH' : 'USDC'}
             </p>
           </div>
@@ -443,7 +506,7 @@ export default function BulkGiveawayForm() {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Congratulations! You've won our giveaway..."
             rows={3}
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 resize-none touch-manipulation"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 text-base bg-white dark:glass rounded-xl border border-gray-200 dark:border-border text-[#1e293b] dark:text-white placeholder-[#9ca3af] dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-75 resize-none touch-manipulation"
           />
         </div>
 
@@ -457,7 +520,7 @@ export default function BulkGiveawayForm() {
             type="date"
             value={unlockTime}
             onChange={(e) => setUnlockTime(e.target.value)}
-            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
+            className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:glass rounded-xl border border-gray-200 dark:border-border text-[#1e293b] dark:text-white placeholder-[#9ca3af] dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-75 touch-manipulation"
           />
         </div>
 
@@ -471,7 +534,7 @@ export default function BulkGiveawayForm() {
             <select
               value={expirationTime}
               onChange={(e) => setExpirationTime(e.target.value)}
-              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 cursor-pointer touch-manipulation"
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:glass rounded-xl border border-gray-200 dark:border-border text-[#1e293b] dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-75 cursor-pointer touch-manipulation"
             >
               <option value="24hours">24 Hours</option>
               <option value="7days">7 Days</option>
@@ -486,7 +549,7 @@ export default function BulkGiveawayForm() {
                   onChange={(e) => setCustomExpirationHours(e.target.value)}
                   placeholder="Enter hours (e.g., 48 for 2 days)"
                   min="1"
-                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base bg-white dark:glass rounded-xl border border-gray-200 dark:border-border text-[#1e293b] dark:text-white placeholder-[#9ca3af] dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all duration-75 touch-manipulation"
                 />
                 {customExpirationHours && (
                   <p className="mt-2 text-xs dark:text-gray-400 text-gray-600">
@@ -507,19 +570,17 @@ export default function BulkGiveawayForm() {
           </div>
         </div>
 
-        <motion.button
+        <button
           type="submit"
           disabled={loading || approving || recipients.length === 0}
-          className="w-full py-4 min-h-[52px] bg-base-gradient text-white font-bold rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-base sm:text-lg touch-manipulation"
-          whileHover={{ scale: loading || approving ? 1 : 1.02 }}
-          whileTap={{ scale: loading || approving ? 1 : 0.98 }}
+          className="w-full py-4 min-h-[52px] bg-[#eef2ff] dark:bg-base-gradient text-[#4f6ef7] dark:text-white font-semibold rounded-xl border border-[#dce2ff] dark:border-transparent hover:bg-[#e4e8ff] dark:hover:opacity-90 transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed text-base touch-manipulation shadow-sm dark:shadow-md mb-6"
         >
           {loading || approving
             ? '✨ Creating Airdrops...'
             : `🎁 Create ${recipients.filter(r => r.address.trim() && r.amount.trim()).length} Airdrops`}
-        </motion.button>
+        </button>
       </form>
-    </motion.div>
+    </div>
   );
 }
 

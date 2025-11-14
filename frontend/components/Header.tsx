@@ -93,7 +93,7 @@ export default function Header() {
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
-    <header className="sticky top-0 z-30 bg-white dark:bg-gradient-to-b dark:from-[#0A0F1F] dark:to-[#0E152B] backdrop-blur-lg dark:backdrop-blur-xl border-b border-[#e5e7eb] dark:border-blue-500/10 shadow-sm">
+    <header className="sticky top-0 z-30 bg-white dark:bg-gradient-to-b dark:from-[#0A0F1F] dark:to-[#0E152B] border-b border-[#e5e7eb] dark:border-blue-500/10 shadow-sm">
       {/* Mobile Search Bar */}
       <AnimatePresence>
         {showMobileSearch && (
@@ -110,7 +110,7 @@ export default function Header() {
         )}
       </AnimatePresence>
       
-      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+      <div className="flex items-center gap-2 sm:gap-3 md:gap-4 p-3 sm:p-4 overflow-visible">
         {/* Left: RiddlePay Branding (Mobile) / Create Button (Desktop) */}
         <div className="flex-shrink-0">
           {/* Mobile: RiddlePay Branding with Logo - moved right to avoid hamburger menu */}
@@ -147,13 +147,13 @@ export default function Header() {
         </div>
 
         {/* Right: Actions */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-1.5 sm:gap-2 flex-shrink-0 ml-auto min-w-0 overflow-visible">
           {/* Refresh Button */}
           <button
             onClick={() => {
               window.location.reload();
             }}
-            className="p-2 rounded-lg shadow-sm bg-white dark:bg-blue-500/10 border border-[#e5e7eb] dark:border-blue-500/20 hover:bg-gray-50 dark:hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center group"
+            className="p-2 rounded-lg shadow-sm bg-white dark:bg-blue-500/10 border border-[#e5e7eb] dark:border-blue-500/20 hover:bg-gray-50 dark:hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center group flex-shrink-0"
             aria-label="Refresh"
             title="Refresh page"
           >
@@ -163,7 +163,7 @@ export default function Header() {
           {/* Search - Mobile */}
           <button
             onClick={() => setShowMobileSearch(!showMobileSearch)}
-            className="md:hidden p-2 rounded-lg shadow-sm bg-white dark:bg-blue-500/10 border border-[#e5e7eb] dark:border-blue-500/20 hover:bg-gray-50 dark:hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="md:hidden p-2 rounded-lg shadow-sm bg-white dark:bg-blue-500/10 border border-[#e5e7eb] dark:border-blue-500/20 hover:bg-gray-50 dark:hover:bg-blue-500/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
             aria-label="Search"
           >
             <Search className="w-4 h-4 sm:w-5 sm:h-5 text-[#111827] dark:text-blue-400" />
@@ -226,7 +226,7 @@ export default function Header() {
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="absolute right-0 mt-2 w-64 bg-[#0E152B]/95 dark:bg-[#0E152B]/95 bg-white/95 dark:bg-[#0E152B]/95 backdrop-blur-xl rounded-2xl border border-blue-500/20 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 shadow-2xl z-50 overflow-hidden"
+                    className="absolute right-0 mt-2 w-64 bg-white dark:bg-[#0E152B]/95 rounded-xl border border-gray-200 dark:border-blue-500/20 shadow-lg z-50 overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <div className="p-3 border-b border-blue-500/10 dark:border-blue-500/10 border-gray-200 dark:border-blue-500/10">
@@ -281,11 +281,15 @@ export default function Header() {
               </AnimatePresence>
             </div>
           ) : (
-            <WalletConnect />
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-shrink overflow-visible">
+              <WalletConnect />
+            </div>
           )}
 
           {/* Theme Toggle */}
-          <ThemeToggle />
+          <div className="flex-shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
     </header>

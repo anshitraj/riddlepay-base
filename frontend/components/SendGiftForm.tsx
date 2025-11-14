@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useContract } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
-import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { Gift, MapPin, HelpCircle, Lock, MessageSquare, Clock, Coins, AlertCircle, Camera } from 'lucide-react';
 import ConfirmationModal from './ConfirmationModal';
@@ -247,25 +246,15 @@ export default function SendGiftForm() {
 
   if (!address) {
     return (
-      <motion.div 
-        className="bg-white dark:bg-baseLight/50 rounded-2xl p-12 text-center border border-gray-200 dark:border-blue-500/20 shadow-lg"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400 dark:text-gray-400" />
-        <p className="text-gray-700 dark:text-gray-300 text-lg">Please connect your wallet to send a gift</p>
-      </motion.div>
+      <div className="bg-white dark:bg-baseLight/50 rounded-xl p-12 text-center border border-gray-200 dark:border-blue-500/20 shadow-sm">
+        <Lock className="w-12 h-12 mx-auto mb-4 text-[#6b7280] dark:text-gray-400" />
+        <p className="text-[#1e293b] dark:text-gray-300 text-lg">Please connect your wallet to send a gift</p>
+      </div>
     );
   }
 
   return (
-    <motion.div 
-      className="bg-white dark:bg-baseLight/50 bg-white dark:bg-baseLight/50 rounded-lg sm:rounded-xl md:rounded-2xl p-2 sm:p-2.5 md:p-3 lg:p-4 xl:p-6 border border-gray-200 dark:border-blue-500/20 border-gray-200 dark:border-blue-500/20 shadow-lg dark:shadow-lg backdrop-blur-xl w-full"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className="bg-[#f5f3f0] dark:bg-baseLight/50 rounded-xl p-4 border border-gray-300 dark:border-blue-500/20 shadow-sm w-full">
       <div className="mb-3 sm:mb-4 md:mb-6 lg:mb-8">
         <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 mb-1.5 sm:mb-2">
           <div className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 lg:w-10 lg:h-10 rounded-lg sm:rounded-xl bg-gradient-to-r from-blue-500 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/30 flex-shrink-0">
@@ -324,7 +313,7 @@ export default function SendGiftForm() {
               type="text"
               value={receiver}
               onChange={(e) => setReceiver(e.target.value)}
-              placeholder="0x..."
+              placeholder="Enter the address"
               className="flex-1 min-w-0 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required
             />
@@ -476,7 +465,7 @@ export default function SendGiftForm() {
               step="0.000001"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder={isETH ? "0.001" : "1.0"}
+              placeholder="Enter the amount"
               className="flex-1 min-w-0 px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-3.5 min-h-[44px] text-sm sm:text-base bg-white dark:bg-baseLight/30 border border-gray-300 dark:border-border text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 dark:focus:border-blue-500/50 hover:border-blue-400 dark:hover:border-blue-500/30 transition-all duration-200 touch-manipulation"
               required
             />
@@ -491,13 +480,11 @@ export default function SendGiftForm() {
           </div>
         </div>
 
-        <div className="pt-3 sm:pt-4 md:pt-6">
-          <motion.button
+        <div className="pt-4">
+          <button
             type="submit"
             disabled={loading || approving}
-            className="w-full py-3 sm:py-4 md:py-5 min-h-[52px] sm:min-h-[56px] bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 text-white font-semibold rounded-lg sm:rounded-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] text-sm sm:text-base md:text-lg touch-manipulation shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-            whileHover={{ scale: loading || approving ? 1 : 1.02 }}
-            whileTap={{ scale: loading || approving ? 1 : 0.98 }}
+            className="w-full py-3 min-h-[52px] bg-[#eef2ff] dark:bg-gradient-to-r dark:from-blue-500 dark:to-indigo-500 text-[#4f6ef7] dark:text-white font-semibold rounded-xl border border-[#dce2ff] dark:border-transparent hover:bg-[#e4e8ff] dark:hover:opacity-90 transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed text-base touch-manipulation shadow-sm dark:shadow-md flex items-center justify-center gap-2"
           >
             {approving ? (
               <>
@@ -515,7 +502,7 @@ export default function SendGiftForm() {
                 <span>Send Airdrop Securely</span>
               </>
             )}
-          </motion.button>
+          </button>
         </div>
       </form>
 
@@ -561,7 +548,7 @@ export default function SendGiftForm() {
         isVisible={showSuccessAnimation}
         onComplete={() => setShowSuccessAnimation(false)}
       />
-    </motion.div>
+    </div>
   );
 }
 

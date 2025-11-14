@@ -53,6 +53,10 @@
 }
 
 /* CRITICAL: Override Mini App (Farcaster/Base) injected styles - but respect theme */
+html, body {
+  forced-color-adjust: none !important;
+}
+
 html[data-theme='dark'], html[data-theme='dark'] body {
   background-color: #000000 !important;
   color: #ffffff !important;
@@ -61,7 +65,7 @@ html[data-theme='dark'], html[data-theme='dark'] body {
 }
 
 html[data-theme='light'], html[data-theme='light'] body {
-  background-color: #f8f9fa !important;
+  background-color: #f5f3f0 !important;
   color: #1a1a1a !important;
   forced-color-adjust: none !important;
   -webkit-appearance: none !important;
@@ -209,12 +213,9 @@ html[data-theme='dark'] body::before {
 /* Light Theme */
 html[data-theme='light'] body {
   color: #1a1a1a !important;
-  background: #f8f9fa !important;
+  background: #f5f3f0 !important;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.05) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.03) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.05) 0px, transparent 50%) !important;
+    linear-gradient(to bottom, #f5f3f0 0%, #f0ede8 50%, #faf8f5 100%) !important;
   min-height: 100vh;
   position: relative;
 }
@@ -233,13 +234,13 @@ html[data-theme='light'] body {
   z-index: 0;
 }
 
-/* Smooth theme transitions */
+/* Fast theme transitions */
 * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: background-color 0.075s ease, color 0.075s ease, border-color 0.075s ease;
 }
 
 body {
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.075s ease, color 0.075s ease;
   font-family: var(--font-family);
 }
 
@@ -250,23 +251,21 @@ body {
   
   .glass {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.075s ease, border-color 0.075s ease;
   }
   
   [data-theme='light'] .glass {
-    background: rgba(255, 255, 255, 0.85);
-    border-color: rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.1);
   }
   
   .glass-strong {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(20px);
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition: background-color 0.075s ease, border-color 0.075s ease;
   }
   
   [data-theme='light'] .glass-strong {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 1);
     border-color: rgba(0, 0, 0, 0.1);
   }
   
@@ -283,12 +282,8 @@ body {
   html[data-theme='light'] .bg-baseDark,
   html[data-theme='light'] div.bg-baseDark,
   html[data-theme='light'] .min-h-screen.bg-baseDark {
-    background: #f8f9fa !important;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.03) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(0, 82, 255, 0.05) 0px, transparent 50%) !important;
+    background: #f5f3f0 !important;
+    background-image: linear-gradient(to bottom, #f5f3f0 0%, #f0ede8 50%, #faf8f5 100%) !important;
   }
   
   /* Ensure dark theme background is properly set */
