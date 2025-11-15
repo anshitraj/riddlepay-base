@@ -113,17 +113,17 @@ export default function App({ Component, pageProps }: AppProps) {
           <meta property="og:title" content="RiddlePay" />
           <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
           <meta property="og:type" content="website" />
-          <meta property="og:url" content="https://www.riddlepay.tech" />
-          <meta property="og:image" content="https://www.riddlepay.tech/og-image.png" />
+          <meta property="og:url" content="https://riddlepay.tech" />
+          <meta property="og:image" content="https://riddlepay.tech/og-image.png" />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:title" content="RiddlePay" />
           <meta name="twitter:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
-          <meta name="twitter:image" content="https://www.riddlepay.tech/og-image.png" />
+          <meta name="twitter:image" content="https://riddlepay.tech/og-image.png" />
           {/* Farcaster/Base Mini App embed metadata */}
           <meta name="fc:frame" content="vNext" />
-          <link rel="icon" type="image/png" href="https://www.riddlepay.tech/icon.png" />
+          <link rel="icon" type="image/png" href="https://riddlepay.tech/icon.png" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <link rel="alternate icon" href="/favicon.svg" />
         </Head>

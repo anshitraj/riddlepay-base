@@ -81,27 +81,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Helper to check if running in Farcaster Mini App (optimized with cached SDK)
-  // Also returns true for Base Mini App since Base supports Farcaster SDK
+  // Helper to check if running in Farcaster Mini App (NOT Base)
+  // Base and Farcaster are separate - this should only return true for actual Farcaster
   const isFarcasterMiniApp = async (): Promise<boolean> => {
     try {
       if (typeof window === 'undefined') return false;
       
-      // Check if we're in Base Mini App - Base also supports Farcaster SDK
-      if (isBaseMiniApp()) {
-        // In Base, try to check if Farcaster SDK is available
-        try {
-          const { sdk } = await getFarcasterSDK();
-          const ethProvider = await sdk.wallet.getEthereumProvider();
-          if (ethProvider) return true;
-        } catch (err) {
-          // Even if SDK check fails, Base Mini App might still support it
-          // Return true if we're in Base context
-          return true;
-        }
-      }
-      
-      // Quick URL check for Farcaster-specific contexts
+      // Quick URL check for Farcaster-specific contexts (NOT Base)
       const urlCheck = (
         window.location?.href?.includes('farcaster.xyz') || 
         window.location?.href?.includes('warpcast.com') ||
@@ -574,7 +560,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Connect to Farcaster Mini App (with loading state and debouncing)
+  // Connect to Farcaster Mini App (ONLY for Farcaster, NOT Base)
   const connectFarcaster = async () => {
     // Prevent multiple simultaneous connection attempts
     if (connectingRef.current || isConnecting) {
@@ -588,29 +574,23 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('wallet_disconnected');
       
-      // Check if we're in Base Mini App or Farcaster Mini App
-      // Base Mini Apps also support Farcaster SDK, so allow Farcaster login in Base
-      const isBase = isBaseMiniApp();
+      // Check if we're in Farcaster Mini App (NOT Base)
       const isFarcasterContext = await isFarcasterMiniApp();
       
-      // Allow Farcaster login if in Base Mini App OR Farcaster Mini App
-      if (!isBase && !isFarcasterContext) {
-        // User is in regular browser (not in Base or Farcaster Mini App)
-        alert('Farcaster login is only available in Base App or Farcaster. Please open this app in Base App or Farcaster to use Farcaster login.');
+      // Only allow Farcaster login if in actual Farcaster Mini App
+      if (!isFarcasterContext) {
+        // User is NOT in Farcaster - show message
+        alert('Farcaster login is only available in Farcaster app. Please open this app in Farcaster (Warpcast) to use Farcaster login.');
         return;
       }
       
-      // Use cached SDK - works in both Base and Farcaster Mini Apps
+      // Use Farcaster SDK - ONLY for Farcaster Mini App
       const { sdk } = await getFarcasterSDK();
       const ethProvider = await sdk.wallet.getEthereumProvider();
       
       if (!ethProvider) {
         console.warn('[RiddlePay] Farcaster wallet not available');
-        if (isBase) {
-          alert('Farcaster wallet not available. Please ensure you are using Base App with Farcaster integration.');
-        } else {
-          alert('Farcaster wallet not available. Please open this app in Farcaster.');
-        }
+        alert('Farcaster wallet not available. Please ensure you are in Farcaster app.');
         return;
       }
 
@@ -620,15 +600,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       await setupWalletConnection(provider, ethProvider);
     } catch (error: any) {
       console.error('[RiddlePay] Error connecting to Farcaster:', error);
-      // Show user-friendly message instead of technical error
+      // Show user-friendly message
       if (error.code !== 4001) { // Don't show alert if user rejected
-        const isBase = isBaseMiniApp();
-        if (isBase) {
-          // In Base, show more specific message
-          console.log('[RiddlePay] Farcaster login failed in Base Mini App');
-        } else {
-          alert('Farcaster login is only available in Base App or Farcaster. Please open this app in Base App or Farcaster to use Farcaster login.');
-        }
+        alert('Farcaster login failed. Please ensure you are in Farcaster app (Warpcast) and try again.');
       }
     } finally {
       connectingRef.current = false;

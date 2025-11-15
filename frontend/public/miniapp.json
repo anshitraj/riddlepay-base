@@ -1,24 +1,24 @@
 {
   "version": "1",
   "name": "RiddlePay",
-  "homeUrl": "https://www.riddlepay.tech",
-  "iconUrl": "https://www.riddlepay.tech/icon.png",
-  "splashImageUrl": "https://www.riddlepay.tech/splash.png",
+  "homeUrl": "https://riddlepay.tech",
+  "iconUrl": "https://riddlepay.tech/icon.png",
+  "splashImageUrl": "https://riddlepay.tech/splash.png",
   "splashBackgroundColor": "#000000",
   "subtitle": "Unlock crypto gifts with riddles",
   "description": "Send secret crypto gifts unlocked by riddles on Base Network.",
   "screenshotUrls": [
-    "https://www.riddlepay.tech/screenshot1.png",
-    "https://www.riddlepay.tech/screenshot2.png",
-    "https://www.riddlepay.tech/screenshot3.png"
+    "https://riddlepay.tech/screenshot1.png",
+    "https://riddlepay.tech/screenshot2.png",
+    "https://riddlepay.tech/screenshot3.png"
   ],
   "primaryCategory": "finance",
   "tags": ["crypto", "gifts", "airdrops", "riddles", "base"],
-  "heroImageUrl": "https://www.riddlepay.tech/hero.png",
+  "heroImageUrl": "https://riddlepay.tech/hero.png",
   "tagline": "Unlock crypto with riddles",
   "ogTitle": "RiddlePay",
   "ogDescription": "Send secret crypto gifts unlocked by riddles on Base Network.",
-  "ogImageUrl": "https://www.riddlepay.tech/og-image.png",
+  "ogImageUrl": "https://riddlepay.tech/og-image.png",
   "noindex": false
 }
 

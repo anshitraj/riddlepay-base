@@ -52,30 +52,6 @@
         }
       ]
     }
-  ],
-  "redirects": [
-    {
-      "source": "/.well-known/farcaster.json",
-      "destination": "https://www.riddlepay.tech/.well-known/farcaster.json",
-      "permanent": true,
-      "has": [
-        {
-          "type": "host",
-          "value": "riddlepay.tech"
-        }
-      ]
-    },
-    {
-      "source": "/miniapp.json",
-      "destination": "https://www.riddlepay.tech/miniapp.json",
-      "permanent": true,
-      "has": [
-        {
-          "type": "host",
-          "value": "riddlepay.tech"
-        }
-      ]
-    }
   ]
 }
 

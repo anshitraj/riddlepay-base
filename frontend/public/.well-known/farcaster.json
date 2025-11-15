@@ -1,8 +1,8 @@
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjE0MTkxOTAsInR5cGUiOiJjdXN0b2R5Iiwia2V5IjoiMHgwRGNlNWM5NTJhNDEyNDU4YjZkNDcxMDVBMzFDQzkxMzc4RUQyNGYxIn0",
-    "payload": "eyJkb21haW4iOiJ3d3cucmlkZGxlcGF5LnRlY2gifQ",
-    "signature": "IKlfZxiLHR1aKPu59Bi42hgFY4IZWCdNpOB7tM79BnQS3mTuc0afSiQdv8cxyL7/r+WQCJX+B4cVVBy0aFnR4xw="
+    "payload": "eyJkb21haW4iOiJyaWRkbGVwYXkudGVjaCJ9",
+    "signature": "KrQtX5onFuTP8uZ2acIOmA+f2JzIBtFVisYiErPBjkZoxr6Vgx/ijrEiGzujQR2FbhPQiqddOOXAnybTtK9l1hw="
   },
   "baseBuilder": {
     "ownerAddress": "0x390877aF8EDE681C938B4Ca6025594e07e6C99A4"
@@ -10,27 +10,27 @@
   "miniapp": {
     "version": "1",
     "name": "RiddlePay",
-    "homeUrl": "https://www.riddlepay.tech",
-    "iconUrl": "https://www.riddlepay.tech/icon.png",
-    "imageUrl": "https://www.riddlepay.tech/og-image.png",
-    "splashImageUrl": "https://www.riddlepay.tech/splash.png",
+    "homeUrl": "https://riddlepay.tech",
+    "iconUrl": "https://riddlepay.tech/icon.png",
+    "imageUrl": "https://riddlepay.tech/og-image.png",
+    "splashImageUrl": "https://riddlepay.tech/splash.png",
     "splashBackgroundColor": "#000000",
     "subtitle": "Unlock crypto gifts",
     "description": "Send secret crypto airdrops unlocked by riddles on Base Network. Create puzzles, set unlock times, and surprise your friends.",
     "screenshotUrls": [
-      "https://www.riddlepay.tech/screenshot1.png",
-      "https://www.riddlepay.tech/screenshot2.png",
-      "https://www.riddlepay.tech/screenshot3.png"
+      "https://riddlepay.tech/screenshot1.png",
+      "https://riddlepay.tech/screenshot2.png",
+      "https://riddlepay.tech/screenshot3.png"
     ],
     "primaryCategory": "finance",
     "tags": ["crypto", "gifts", "airdrops", "riddles", "base"],
-    "heroImageUrl": "https://www.riddlepay.tech/hero.png",
+    "heroImageUrl": "https://riddlepay.tech/hero.png",
     "tagline": "Unlock crypto with riddles",
     "ogTitle": "RiddlePay",
     "ogDescription": "Send secret crypto airdrops unlocked by riddles on Base Network.",
-    "ogImageUrl": "https://www.riddlepay.tech/og-image.png",
+    "ogImageUrl": "https://riddlepay.tech/og-image.png",
     "buttonTitle": "Try RiddlePay",
-    "castShareUrl": "https://www.riddlepay.tech",
+    "castShareUrl": "https://riddlepay.tech",
     "noindex": false
   }
 }
