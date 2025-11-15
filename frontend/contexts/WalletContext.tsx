@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { ethers } from 'ethers';
 import dynamic from 'next/dynamic';
 
@@ -8,6 +8,22 @@ import dynamic from 'next/dynamic';
 const WalletErrorModal = dynamic(() => import('@/components/WalletErrorModal'), {
   ssr: false,
 });
+
+// Cache for Farcaster SDK to avoid multiple imports
+let farcasterSDKCache: any = null;
+let farcasterSDKPromise: Promise<any> | null = null;
+
+const getFarcasterSDK = async () => {
+  if (farcasterSDKCache) return farcasterSDKCache;
+  if (farcasterSDKPromise) return farcasterSDKPromise;
+  
+  farcasterSDKPromise = import('@farcaster/miniapp-sdk').then(module => {
+    farcasterSDKCache = module;
+    return module;
+  });
+  
+  return farcasterSDKPromise;
+};
 
 interface WalletContextType {
   address: string | null;
@@ -19,6 +35,7 @@ interface WalletContextType {
   disconnect: () => void;
   switchWallet: () => Promise<void>;
   isConnected: boolean;
+  isConnecting: boolean;
   ensureBaseSepolia: () => Promise<void>;
   ensureBaseMainnet: () => Promise<void>;
   chainId: number | null;
@@ -36,6 +53,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const [walletType, setWalletType] = useState<'farcaster' | 'base' | 'browser' | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const initWalletRef = useRef(false);
+  const connectingRef = useRef(false);
 
   // Helper to check if running in Base Mini App
   const isBaseMiniApp = (): boolean => {
@@ -54,27 +74,32 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Helper to check if running in Farcaster Mini App
+  // Helper to check if running in Farcaster Mini App (optimized with cached SDK)
   const isFarcasterMiniApp = async (): Promise<boolean> => {
     try {
       if (typeof window === 'undefined') return false;
       
-      // Try to detect via SDK first (most reliable)
-      try {
-        const { sdk } = await import('@farcaster/miniapp-sdk');
-        const ethProvider = await sdk.wallet.getEthereumProvider();
-        if (ethProvider) return true;
-      } catch (err) {
-        // SDK not available, continue with URL detection
-      }
-      
-      // Fallback: Check URLs
-      return (
+      // Quick URL check first (synchronous, fast)
+      const urlCheck = (
         window.location?.href?.includes('farcaster.xyz') || 
         window.location?.href?.includes('warpcast.com') ||
         !!(window as any).farcaster ||
         !!(window as any).parent?.farcaster
       );
+      
+      if (!urlCheck) return false;
+      
+      // Only import SDK if URL suggests we're in Farcaster
+      try {
+        const { sdk } = await getFarcasterSDK();
+        const ethProvider = await sdk.wallet.getEthereumProvider();
+        if (ethProvider) return true;
+      } catch (err) {
+        // SDK not available, but URL check passed, so return true
+        return urlCheck;
+      }
+      
+      return false;
     } catch (error) {
       console.error('[RiddlePay] Error checking Farcaster Mini App:', error);
       return false;
@@ -112,7 +137,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       if (storedWalletType === 'farcaster') {
         try {
-          const { sdk } = await import('@farcaster/miniapp-sdk');
+          const { sdk } = await getFarcasterSDK();
           const ethProvider = await sdk.wallet.getEthereumProvider();
           if (ethProvider) {
             console.log('[RiddlePay] Using stored Farcaster wallet provider');
@@ -134,7 +159,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Auto-detect if no stored type (for initial connection)
       // 1️⃣ Try Farcaster Mini App wallet first
       try {
-        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const { sdk } = await getFarcasterSDK();
         const ethProvider = await sdk.wallet.getEthereumProvider();
         
         if (ethProvider) {
@@ -202,7 +227,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       // Auto-detect if no stored type (for initial connection)
       // 1️⃣ Try Farcaster Mini App wallet first
       try {
-        const { sdk } = await import('@farcaster/miniapp-sdk');
+        const { sdk } = await getFarcasterSDK();
         const ethProvider = await sdk.wallet.getEthereumProvider();
         
         if (ethProvider) {
@@ -228,12 +253,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // Prevent multiple initialization runs
+    if (initWalletRef.current) return;
+    initWalletRef.current = true;
+
     // Auto-connect wallet if available
     const initWallet = async () => {
       try {
-        const provider = await getEvmProvider();
-        if (!provider) return;
-
         // Only check for existing connection if we don't have a stored disconnect state
         const wasDisconnected = localStorage.getItem('wallet_disconnected') === 'true';
         
@@ -249,6 +275,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        const provider = await getEvmProvider();
+        if (!provider) return;
+
         // Check for existing accounts with error handling
         let accounts: string[] = [];
         try {
@@ -260,33 +289,35 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
         
         if (accounts && accounts.length > 0) {
-          setProvider(provider);
-          setAddress(accounts[0]);
-          
-          // Get current chain ID
+          // Batch state updates to prevent flickering
           const network = await provider.getNetwork();
           const networkChainId = Number(network.chainId);
-          setChainId(networkChainId);
           
           // Restore wallet type from localStorage if available
           const storedWalletType = localStorage.getItem('wallet_type') as 'farcaster' | 'base' | 'browser' | null;
-          if (storedWalletType) {
-            setWalletType(storedWalletType);
-          } else {
-            // Auto-detect wallet type
+          let detectedWalletType = storedWalletType;
+          
+          if (!detectedWalletType) {
+            // Auto-detect wallet type (but don't await if not needed)
             if (await isFarcasterMiniApp()) {
-              setWalletType('farcaster');
+              detectedWalletType = 'farcaster';
               localStorage.setItem('wallet_type', 'farcaster');
             } else if (isBaseMiniApp()) {
-              setWalletType('base');
+              detectedWalletType = 'base';
               localStorage.setItem('wallet_type', 'base');
             } else {
-              setWalletType('browser');
+              detectedWalletType = 'browser';
               localStorage.setItem('wallet_type', 'browser');
             }
           }
           
-          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId, 'Type:', storedWalletType || 'auto-detected');
+          // Set all state at once to prevent flickering
+          setWalletType(detectedWalletType);
+          setProvider(provider);
+          setAddress(accounts[0]);
+          setChainId(networkChainId);
+          
+          console.log('[RiddlePay] Auto-connected wallet:', accounts[0], 'Chain:', networkChainId, 'Type:', detectedWalletType || 'auto-detected');
           
           // Setup listeners only once
           const walletProvider = await getWalletProvider();
@@ -320,6 +351,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('[RiddlePay] Error initializing wallet:', error);
+        initWalletRef.current = false; // Allow retry on error
       }
     };
 
@@ -520,48 +552,71 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Connect to Farcaster Mini App
+  // Connect to Farcaster Mini App (with loading state and debouncing)
   const connectFarcaster = async () => {
+    // Prevent multiple simultaneous connection attempts
+    if (connectingRef.current || isConnecting) {
+      console.log('[RiddlePay] Connection already in progress, ignoring duplicate request');
+      return;
+    }
+
+    connectingRef.current = true;
+    setIsConnecting(true);
+
     try {
       localStorage.removeItem('wallet_disconnected');
       
-      // First check if we're actually in Farcaster app
-      const inFarcaster = await isFarcasterMiniApp();
-      if (!inFarcaster) {
+      // Quick URL check first (synchronous, fast)
+      const urlCheck = (
+        window.location?.href?.includes('farcaster.xyz') || 
+        window.location?.href?.includes('warpcast.com') ||
+        !!(window as any).farcaster ||
+        !!(window as any).parent?.farcaster
+      );
+
+      if (!urlCheck) {
         // User is in browser, show friendly message
         alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
         return;
       }
       
-      try {
-        const { sdk } = await import('@farcaster/miniapp-sdk');
-        const ethProvider = await sdk.wallet.getEthereumProvider();
-        
-        if (!ethProvider) {
-          console.warn('[RiddlePay] Farcaster wallet not available');
-          alert('Farcaster wallet not available. Please open this app in Farcaster.');
-          return;
-        }
-
-        const provider = new ethers.BrowserProvider(ethProvider as any);
-        setWalletType('farcaster');
-        localStorage.setItem('wallet_type', 'farcaster');
-        await setupWalletConnection(provider, ethProvider);
-      } catch (sdkError: any) {
-        // If SDK import fails or provider not available
-        console.warn('[RiddlePay] Farcaster SDK not available:', sdkError);
-        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+      // Use cached SDK (already loaded if URL check passed)
+      const { sdk } = await getFarcasterSDK();
+      const ethProvider = await sdk.wallet.getEthereumProvider();
+      
+      if (!ethProvider) {
+        console.warn('[RiddlePay] Farcaster wallet not available');
+        alert('Farcaster wallet not available. Please open this app in Farcaster.');
         return;
       }
+
+      const provider = new ethers.BrowserProvider(ethProvider as any);
+      setWalletType('farcaster');
+      localStorage.setItem('wallet_type', 'farcaster');
+      await setupWalletConnection(provider, ethProvider);
     } catch (error: any) {
       console.error('[RiddlePay] Error connecting to Farcaster:', error);
       // Show user-friendly message instead of technical error
-      alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+      if (error.code !== 4001) { // Don't show alert if user rejected
+        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+      }
+    } finally {
+      connectingRef.current = false;
+      setIsConnecting(false);
     }
   };
 
-  // Connect to Base Mini App
+  // Connect to Base Mini App (with loading state and debouncing)
   const connectBase = async () => {
+    // Prevent multiple simultaneous connection attempts
+    if (connectingRef.current || isConnecting) {
+      console.log('[RiddlePay] Connection already in progress, ignoring duplicate request');
+      return;
+    }
+
+    connectingRef.current = true;
+    setIsConnecting(true);
+
     try {
       localStorage.removeItem('wallet_disconnected');
       
@@ -598,6 +653,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       console.error('[RiddlePay] Error connecting to Base:', error);
       // Don't show alert, just log the error
       // User can try again if needed
+    } finally {
+      connectingRef.current = false;
+      setIsConnecting(false);
     }
   };
 
@@ -737,11 +795,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         });
 
         // Listen for chain changes
-        walletProvider.on('chainChanged', (chainId: string) => {
+        walletProvider.on('chainChanged', async (chainId: string) => {
           const parsedChainId = typeof chainId === 'string' ? parseInt(chainId, 16) : Number(chainId);
           console.log('[RiddlePay] Chain changed to:', parsedChainId);
           setChainId(parsedChainId);
-          window.location.reload();
+          // Update provider to reflect new chain without page reload
+          try {
+            const newProvider = new ethers.BrowserProvider(walletProvider as any);
+            setProvider(newProvider);
+          } catch (error) {
+            console.error('[RiddlePay] Error updating provider after chain change:', error);
+          }
         });
       }
     } catch (error: any) {
@@ -859,6 +923,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     setProvider(null);
     setChainId(null);
     setWalletType(null);
+    setIsConnecting(false);
+    connectingRef.current = false;
     
     // Mark as explicitly disconnected - this prevents auto-reconnection
     localStorage.setItem('wallet_disconnected', 'true');
@@ -879,6 +945,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         disconnect,
         switchWallet,
         isConnected: !!address,
+        isConnecting,
         ensureBaseSepolia,
         ensureBaseMainnet,
         chainId,

@@ -41,8 +41,7 @@ interface Recipient {
 }
 
 export default function BulkGiveawayForm() {
-  const { address, ensureBaseMainnet, connectFarcaster, connectBase } = useWallet();
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { address, ensureBaseMainnet, connectFarcaster, connectBase, isConnecting } = useWallet();
   const { createBulkGifts, loading, error, approving } = useContract();
   
   const [recipients, setRecipients] = useState<Recipient[]>([
@@ -282,24 +281,18 @@ export default function BulkGiveawayForm() {
   };
 
   const handleLoginWithFarcaster = async () => {
-    setIsConnecting(true);
     try {
       await connectFarcaster();
     } catch (err) {
       console.error('Failed to connect to Farcaster:', err);
-    } finally {
-      setIsConnecting(false);
     }
   };
 
   const handleLoginWithBase = async () => {
-    setIsConnecting(true);
     try {
       await connectBase();
     } catch (err) {
       console.error('Failed to connect to Base:', err);
-    } finally {
-      setIsConnecting(false);
     }
   };
 

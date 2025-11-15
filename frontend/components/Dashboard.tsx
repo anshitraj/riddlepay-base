@@ -157,32 +157,45 @@ export default function Dashboard() {
         const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS?.toLowerCase() || '';
         const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
         
-        // Limit to first 500 gifts to avoid timeout
-        const maxGifts = Math.min(totalGiftsNum, 500);
-        for (let i = 0; i < maxGifts; i++) {
-          try {
-            const gift = await getGift(i);
-            // Only count unclaimed gifts (claimed gifts are no longer locked)
-            if (!gift.claimed) {
-              const tokenAddress = gift.tokenAddress?.toLowerCase() || '';
-              const amount = BigInt(gift.amount || '0');
-              
-              if (tokenAddress === ZERO_ADDRESS || tokenAddress === '') {
-                // ETH gift
-                manualETH += amount;
-              } else if (tokenAddress === USDC_ADDRESS) {
-                // USDC gift
-                manualUSDC += amount;
+        // Reduced limit and optimized fetching for faster load
+        const maxGifts = Math.min(totalGiftsNum, 100); // Reduced from 500 to 100 for faster loading
+        // Batch fetch gifts in parallel for better performance
+        const batchSize = 10;
+        for (let i = 0; i < maxGifts; i += batchSize) {
+          const batch = Array.from({ length: Math.min(batchSize, maxGifts - i) }, (_, idx) => i + idx);
+          const giftPromises = batch.map(async (giftId) => {
+            try {
+              const gift = await getGift(giftId);
+              // Only count unclaimed gifts (claimed gifts are no longer locked)
+              if (!gift.claimed) {
+                const tokenAddress = gift.tokenAddress?.toLowerCase() || '';
+                const amount = BigInt(gift.amount || '0');
+                
+                if (tokenAddress === ZERO_ADDRESS || tokenAddress === '') {
+                  // ETH gift
+                  return { type: 'ETH', amount };
+                } else if (tokenAddress === USDC_ADDRESS) {
+                  // USDC gift
+                  return { type: 'USDC', amount };
+                }
+              }
+              return null;
+            } catch (err) {
+              // Gift might not exist, skip it
+              return null;
+            }
+          });
+          
+          const results = await Promise.all(giftPromises);
+          results.forEach(result => {
+            if (result) {
+              if (result.type === 'ETH') {
+                manualETH += result.amount;
+              } else if (result.type === 'USDC') {
+                manualUSDC += result.amount;
               }
             }
-            // Small delay every 10 gifts to avoid rate limiting
-            if (i > 0 && i % 10 === 0) {
-              await new Promise(resolve => setTimeout(resolve, 50));
-            }
-          } catch (err) {
-            // Gift might not exist, skip it
-            continue;
-          }
+          });
         }
         
         // Convert from wei/units to readable format
@@ -213,10 +226,15 @@ export default function Dashboard() {
   }, [address, provider, getGiftCount, getTotalValueLocked, getGiftsForUser, getGift]);
 
   useEffect(() => {
+    // Load stats immediately
     loadStats();
     
-    // Refresh stats every 30 seconds
-    const interval = setInterval(() => loadStats(false), 30000);
+    // Refresh stats every 30 seconds (only if component is still mounted)
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        loadStats(false);
+      }
+    }, 30000);
     
     return () => clearInterval(interval);
   }, [loadStats]);

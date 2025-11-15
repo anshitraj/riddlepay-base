@@ -4,11 +4,29 @@ import { useState, useEffect } from 'react';
 import { WalletProvider, useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract, Gift } from '@/hooks/useContract';
-import GiftCard from '@/components/GiftCard';
-import ClaimGift from '@/components/ClaimGift';
+import dynamic from 'next/dynamic';
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import { RefreshCw } from 'lucide-react';
+
+// Dynamically import heavy components
+const GiftCard = dynamic(() => import('@/components/GiftCard'), {
+  loading: () => (
+    <div className="glass rounded-2xl p-6 border border-border animate-pulse">
+      <div className="h-32 bg-gray-700/30 rounded mb-4"></div>
+      <div className="h-6 bg-gray-700/30 rounded w-3/4"></div>
+    </div>
+  ),
+});
+
+const ClaimGift = dynamic(() => import('@/components/ClaimGift'), {
+  loading: () => (
+    <div className="glass rounded-2xl p-6 border border-border animate-pulse">
+      <div className="h-8 bg-gray-700/30 rounded w-1/2 mb-4"></div>
+      <div className="h-24 bg-gray-700/30 rounded"></div>
+    </div>
+  ),
+});
 
 function MyGiftsContent() {
   const { address, connect } = useWallet();
@@ -32,9 +50,9 @@ function MyGiftsContent() {
       setLoading(true);
       
       try {
-        // Add timeout to prevent hanging
+        // Add timeout to prevent hanging (reduced timeout for faster failure)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 30000)
+          setTimeout(() => reject(new Error('Request timeout')), 15000) // Reduced from 30s to 15s
         );
         
         const giftIdsPromise = getGiftsForUser(address);
@@ -51,26 +69,37 @@ function MyGiftsContent() {
         // Limit to first 50 gifts to prevent hanging on large lists
         const limitedIds = giftIds.slice(0, 50);
         
-        const giftPromises = limitedIds.map(async (id) => {
-          try {
-            const gift = await Promise.race([
-              getGift(id),
-              new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Gift fetch timeout')), 10000)
-              )
-            ]) as Gift;
-            
-            if (cancelled) return null;
-            return { id, gift };
-          } catch (err) {
-            console.warn(`Failed to load gift ${id}:`, err);
-            return null;
-          }
-        });
+        // Batch fetch gifts in parallel for better performance
+        const batchSize = 10;
+        const giftsData: Array<{ id: number; gift: Gift }> = [];
         
-        const giftsData = (await Promise.all(giftPromises)).filter(
-          (item): item is { id: number; gift: Gift } => item !== null
-        );
+        for (let i = 0; i < limitedIds.length; i += batchSize) {
+          if (cancelled) return;
+          
+          const batch = limitedIds.slice(i, i + batchSize);
+          const giftPromises = batch.map(async (id) => {
+            try {
+              const gift = await Promise.race([
+                getGift(id),
+                new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('Gift fetch timeout')), 5000) // Reduced from 10s to 5s
+                )
+              ]) as Gift;
+              
+              if (cancelled) return null;
+              return { id, gift };
+            } catch (err) {
+              console.warn(`Failed to load gift ${id}:`, err);
+              return null;
+            }
+          });
+          
+          const batchResults = (await Promise.all(giftPromises)).filter(
+            (item): item is { id: number; gift: Gift } => item !== null
+          );
+          
+          giftsData.push(...batchResults);
+        }
         
         if (cancelled) return;
         

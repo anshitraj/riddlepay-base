@@ -33,11 +33,10 @@ const riddleExamples = [
 ];
 
 export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
-  const { isConnected, connectFarcaster, connectBase } = useWallet();
+  const { isConnected, connectFarcaster, connectBase, isConnecting } = useWallet();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
 
   const handleLaunchDApp = async () => {
     if (!isConnected) {
@@ -50,34 +49,28 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
   };
 
   const handleLoginWithFarcaster = async () => {
-    setIsConnecting(true);
     try {
       await connectFarcaster();
       // Small delay to ensure wallet connection is processed
       setTimeout(() => {
         setShowLoginDialog(false);
-        setIsConnecting(false);
         onLaunchDApp();
       }, 500);
     } catch (error) {
       console.error('Failed to connect to Farcaster:', error);
-      setIsConnecting(false);
     }
   };
 
   const handleLoginWithBase = async () => {
-    setIsConnecting(true);
     try {
       await connectBase();
       // Small delay to ensure wallet connection is processed
       setTimeout(() => {
         setShowLoginDialog(false);
-        setIsConnecting(false);
         onLaunchDApp();
       }, 500);
     } catch (error) {
       console.error('Failed to connect to Base:', error);
-      setIsConnecting(false);
     }
   };
 

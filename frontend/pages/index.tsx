@@ -5,18 +5,43 @@ import { WalletProvider, useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
-import Dashboard from '@/components/Dashboard';
-import SendGiftForm from '@/components/SendGiftForm';
+import dynamic from 'next/dynamic';
 import LandingPage from '@/components/LandingPage';
 import OnboardingModal from '@/components/OnboardingModal';
 import BottomNav from '@/components/BottomNav';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useStatsPreview } from '@/hooks/useStatsPreview';
-import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 
+// Dynamically import heavy components to reduce initial bundle size
+const Dashboard = dynamic(() => import('@/components/Dashboard'), {
+  loading: () => (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="glass rounded-2xl p-6 border border-border animate-pulse">
+            <div className="h-8 bg-gray-700/30 rounded w-1/2 mb-4"></div>
+            <div className="h-12 bg-gray-700/30 rounded"></div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+  ssr: false,
+});
+
+const SendGiftForm = dynamic(() => import('@/components/SendGiftForm'), {
+  loading: () => (
+    <div className="glass rounded-2xl p-6 border border-border animate-pulse">
+      <div className="h-8 bg-gray-700/30 rounded w-1/2 mb-4"></div>
+      <div className="h-32 bg-gray-700/30 rounded"></div>
+    </div>
+  ),
+});
+
 function HomeContent() {
-  const { isConnected, connect } = useWallet();
+  const { isConnected, connect, address } = useWallet();
+  const [isStable, setIsStable] = useState(false);
   
   // Enable notifications when user is connected
   useNotifications();
@@ -70,6 +95,14 @@ function HomeContent() {
     return () => window.removeEventListener('hashchange', handleHashScroll);
   }, []);
 
+  // Stabilize connection state to prevent flickering (optimized for faster loading)
+  useEffect(() => {
+    // Use microtask for immediate execution without blocking
+    Promise.resolve().then(() => {
+      setIsStable(true);
+    });
+  }, [address]);
+
   // Check launch state and show onboarding
   useEffect(() => {
     try {
@@ -86,14 +119,19 @@ function HomeContent() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
+  // Use stable connection state to prevent flickering
+  // Only show landing page if we're stable AND not connected
+  // If not stable yet, show landing page (prevents flash of dashboard)
+  const stableIsConnected = isStable && isConnected;
+
   const handleLaunchDApp = () => {
     setHasLaunchedBefore(true);
     sessionStorage.setItem('dappLaunched', 'true');
   };
 
-  // Show landing page if wallet is not connected
+  // Show landing page if wallet is not connected (use stable state to prevent flickering)
   // Always show landing page first, let user explore and then connect manually
-  if (!isConnected) {
+  if (!stableIsConnected) {
     return <LandingPage onLaunchDApp={handleLaunchDApp} />;
   }
 
@@ -114,12 +152,7 @@ function HomeContent() {
           <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-50 to-gray-100 dark:from-[#0A0F1F] dark:to-[#0E152B] overscroll-contain touch-action-pan-y">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
               {/* Stats Preview Row */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-[#0E152B]/30 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#0066FF]/10"
-              >
+              <div className="bg-[#0E152B]/30 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#0066FF]/10">
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
@@ -162,18 +195,15 @@ function HomeContent() {
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Dashboard Stats */}
               <Dashboard />
 
               {/* Send Gift Form */}
-              <motion.div
+              <div
                 id="create-airdrop-form"
                 className="bg-[#0E152B]/50 backdrop-blur-xl rounded-2xl sm:rounded-3xl p-4 sm:p-5 md:p-6 lg:p-8 border border-[#0066FF]/10 shadow-xl w-full"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
               >
                 <div className="mb-4 sm:mb-5 md:mb-6">
                   <div className="mb-2 sm:mb-3">
@@ -188,14 +218,10 @@ function HomeContent() {
                   <div className="h-px bg-gradient-to-r from-transparent via-[#0066FF]/30 to-transparent mt-3 sm:mt-4"></div>
                 </div>
                 <SendGiftForm />
-              </motion.div>
+              </div>
 
               {/* How To Use Mini Card */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
+              <div>
                 <button
                   onClick={handleShowOnboarding}
                   className="w-full bg-[#0E152B]/50 backdrop-blur-xl rounded-2xl p-4 sm:p-5 border border-[#0066FF]/10 hover:border-[#0066FF]/30 transition-all group"
@@ -215,7 +241,7 @@ function HomeContent() {
                     <ArrowUpRight className="w-5 h-5 text-blue-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all" />
                   </div>
                 </button>
-              </motion.div>
+              </div>
             </div>
           </main>
         </div>

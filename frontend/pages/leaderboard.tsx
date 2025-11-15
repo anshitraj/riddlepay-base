@@ -49,13 +49,9 @@ function LeaderboardContent() {
       }
     };
 
-    // Add a small delay to ensure contract is initialized
-    const timer = setTimeout(() => {
-      loadLeaderboard();
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [getLeaderboard]);
+    // Load immediately without delay for faster rendering
+    loadLeaderboard();
+  }, [getLeaderboard, address]);
 
   const getRankEmoji = (index: number) => {
     if (index === 0) return '🥇';

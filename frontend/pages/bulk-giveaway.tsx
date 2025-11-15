@@ -1,9 +1,19 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { WalletProvider } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
-import BulkGiveawayForm from '@/components/BulkGiveawayForm';
 import Layout from '@/components/Layout';
+
+// Dynamically import heavy form component
+const BulkGiveawayForm = dynamic(() => import('@/components/BulkGiveawayForm'), {
+  loading: () => (
+    <div className="glass rounded-2xl p-6 border border-border animate-pulse">
+      <div className="h-8 bg-gray-700/30 rounded w-1/2 mb-4"></div>
+      <div className="h-64 bg-gray-700/30 rounded"></div>
+    </div>
+  ),
+});
 
 export default function BulkGiveaway() {
   return (

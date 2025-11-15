@@ -20,7 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
 
     const markReady = async () => {
       try {
-        // Dynamically import the SDK on the client only
+        // Dynamically import the SDK on the client only (lazy load for faster initial render)
         const { sdk } = await import('@farcaster/miniapp-sdk');
 
         // Wait for our app to be painted and layout ready
@@ -36,14 +36,13 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     };
 
-    // Use nextTick to ensure initial render has happened
-    const id = window.requestAnimationFrame(() => {
+    // Use microtask for immediate execution without blocking render
+    Promise.resolve().then(() => {
       void markReady();
     });
 
     return () => {
       cancelled = true;
-      window.cancelAnimationFrame(id);
     };
   }, []);
 
@@ -61,9 +60,6 @@ export default function App({ Component, pageProps }: AppProps) {
           <meta property="og:title" content="RiddlePay" />
           <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
           <meta property="og:type" content="website" />
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <link rel="alternate icon" href="/favicon.svg" />
         </Head>
