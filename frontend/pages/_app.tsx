@@ -29,10 +29,12 @@ export default function App({ Component, pageProps }: AppProps) {
         const currentDomain = window.location.hostname;
         if (!cancelled && retryCount === 0) {
           console.log(`[RiddlePay] Current domain: ${currentDomain}`);
-          console.log(`[RiddlePay] Expected domain: www.riddlepay.tech`);
+          console.log(`[RiddlePay] Expected domain: riddlepay.tech`);
+          console.log(`[RiddlePay] User agent: ${navigator.userAgent}`);
+          console.log(`[RiddlePay] Checking for Base/Farcaster context...`);
         }
 
-        // Import Farcaster Mini App SDK (Base uses this)
+        // Import Farcaster Mini App SDK (Base App uses this SDK too)
         const { sdk } = await import('@farcaster/miniapp-sdk');
 
         // Check if SDK and actions are available
@@ -40,14 +42,16 @@ export default function App({ Component, pageProps }: AppProps) {
           throw new Error('SDK actions.ready is not available');
         }
 
-        // IMPORTANT: Call ready() - MUST be awaited for Base Mini Apps
+        // IMPORTANT: Call ready() - MUST be awaited for Base/Farcaster Mini Apps
         // This tells the host app that UI is ready and splash screen can be hidden
+        // Base App requires this call to hide the splash screen
         await sdk.actions.ready();
         readyCalled = true;
 
         if (!cancelled) {
           console.log('✅ RiddlePay Mini App called sdk.actions.ready() successfully');
           console.log(`✅ Domain: ${currentDomain}`);
+          console.log(`✅ Splash screen should now be hidden`);
         }
       } catch (error: any) {
         // Log detailed error for debugging
@@ -57,18 +61,20 @@ export default function App({ Component, pageProps }: AppProps) {
             message: error?.message,
             stack: error?.stack,
             domain: window.location.hostname,
-            href: window.location.href
+            href: window.location.href,
+            userAgent: navigator.userAgent
           });
         }
 
-        // Retry up to 3 times if SDK not ready yet
-        if (retryCount < 3 && !cancelled) {
-          console.log(`[RiddlePay] Retrying sdk.actions.ready() (attempt ${retryCount + 1}/3)...`);
+        // Retry up to 5 times if SDK not ready yet (Base App might need more time)
+        if (retryCount < 5 && !cancelled) {
+          const delay = 300 * (retryCount + 1); // 300ms, 600ms, 900ms, 1200ms, 1500ms
+          console.log(`[RiddlePay] Retrying sdk.actions.ready() (attempt ${retryCount + 1}/5) in ${delay}ms...`);
           setTimeout(() => {
             if (!cancelled && !readyCalled) {
               void markReady(retryCount + 1);
             }
-          }, 500 * (retryCount + 1)); // Exponential backoff: 500ms, 1000ms, 1500ms
+          }, delay);
         } else if (!cancelled) {
           // Not running as a Mini App (standalone browser) - this is okay
           console.log('[RiddlePay] Running in standalone mode (not as Mini App):', error?.message || error);
@@ -76,10 +82,19 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     };
 
-    // Try calling ready() immediately
+    // Try calling ready() immediately (for fast-loading apps)
     void markReady();
 
-    // Also try after page is fully loaded (fallback)
+    // Also try after DOM is ready (Base App might need this)
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        if (!readyCalled && !cancelled) {
+          void markReady();
+        }
+      });
+    }
+
+    // Also try after page is fully loaded (fallback for Base App)
     const handleLoad = () => {
       if (!readyCalled && !cancelled) {
         void markReady();
@@ -87,11 +102,23 @@ export default function App({ Component, pageProps }: AppProps) {
     };
 
     if (document.readyState === 'complete') {
-      // Page already loaded, try immediately
-      setTimeout(() => void markReady(), 0);
+      // Page already loaded, try immediately with a small delay for Base App
+      setTimeout(() => {
+        if (!readyCalled && !cancelled) {
+          void markReady();
+        }
+      }, 100);
     } else {
       window.addEventListener('load', handleLoad);
     }
+
+    // Additional fallback: Try after a short delay (Base App might need this)
+    setTimeout(() => {
+      if (!readyCalled && !cancelled) {
+        console.log('[RiddlePay] Fallback: Attempting sdk.actions.ready() after delay...');
+        void markReady();
+      }
+    }, 500);
 
     return () => {
       cancelled = true;
