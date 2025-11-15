@@ -28,6 +28,51 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/miniapp.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/.well-known/farcaster.json",
+      "destination": "https://www.riddlepay.tech/.well-known/farcaster.json",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "riddlepay.tech"
+        }
+      ]
+    },
+    {
+      "source": "/miniapp.json",
+      "destination": "https://www.riddlepay.tech/miniapp.json",
+      "permanent": true,
+      "has": [
+        {
+          "type": "host",
+          "value": "riddlepay.tech"
         }
       ]
     }
