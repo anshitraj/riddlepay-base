@@ -20,6 +20,28 @@ export default function App({ Component, pageProps }: AppProps) {
     let cancelled = false;
     let readyCalled = false;
 
+    // Detect if we're in Base App or Base preview
+    const detectBaseContext = () => {
+      if (typeof window === 'undefined') return false;
+      const anyWindow = window as any;
+      const href = window.location.href;
+      const hostname = window.location.hostname;
+      
+      // Check for Base App indicators
+      const isBaseApp = (
+        hostname.includes('base.dev') ||
+        hostname.includes('base.org') ||
+        href.includes('base.dev/preview') ||
+        !!(anyWindow.base) ||
+        !!(anyWindow.coinbaseWalletSDK) ||
+        !!(anyWindow.ethereum?.isCoinbaseWallet) ||
+        navigator.userAgent.includes('Base') ||
+        (window.parent !== window && (window.parent as any).base)
+      );
+      
+      return isBaseApp;
+    };
+
     const markReady = async (retryCount = 0) => {
       // Prevent multiple calls
       if (readyCalled || cancelled) return;
@@ -27,10 +49,12 @@ export default function App({ Component, pageProps }: AppProps) {
       try {
         // Log current domain for debugging
         const currentDomain = window.location.hostname;
+        const isBase = detectBaseContext();
         if (!cancelled && retryCount === 0) {
           console.log(`[RiddlePay] Current domain: ${currentDomain}`);
           console.log(`[RiddlePay] Expected domain: riddlepay.tech`);
           console.log(`[RiddlePay] User agent: ${navigator.userAgent}`);
+          console.log(`[RiddlePay] Is Base context: ${isBase}`);
           console.log(`[RiddlePay] Checking for Base/Farcaster context...`);
         }
 
@@ -51,6 +75,7 @@ export default function App({ Component, pageProps }: AppProps) {
         if (!cancelled) {
           console.log('✅ RiddlePay Mini App called sdk.actions.ready() successfully');
           console.log(`✅ Domain: ${currentDomain}`);
+          console.log(`✅ Is Base context: ${isBase}`);
           console.log(`✅ Splash screen should now be hidden`);
         }
       } catch (error: any) {
@@ -62,14 +87,16 @@ export default function App({ Component, pageProps }: AppProps) {
             stack: error?.stack,
             domain: window.location.hostname,
             href: window.location.href,
-            userAgent: navigator.userAgent
+            userAgent: navigator.userAgent,
+            isBase: detectBaseContext(),
+            sdkAvailable: typeof window !== 'undefined' && !!(window as any).farcaster
           });
         }
 
-        // Retry up to 5 times if SDK not ready yet (Base App might need more time)
-        if (retryCount < 5 && !cancelled) {
-          const delay = 300 * (retryCount + 1); // 300ms, 600ms, 900ms, 1200ms, 1500ms
-          console.log(`[RiddlePay] Retrying sdk.actions.ready() (attempt ${retryCount + 1}/5) in ${delay}ms...`);
+        // Retry up to 8 times if SDK not ready yet (Base App preview might need more time)
+        if (retryCount < 8 && !cancelled) {
+          const delay = 250 * (retryCount + 1); // 250ms, 500ms, 750ms, 1000ms, 1250ms, 1500ms, 1750ms, 2000ms
+          console.log(`[RiddlePay] Retrying sdk.actions.ready() (attempt ${retryCount + 1}/8) in ${delay}ms...`);
           setTimeout(() => {
             if (!cancelled && !readyCalled) {
               void markReady(retryCount + 1);
@@ -82,21 +109,34 @@ export default function App({ Component, pageProps }: AppProps) {
       }
     };
 
-    // Try calling ready() immediately (for fast-loading apps)
+    // Multiple strategies to ensure ready() is called for Base App
+    // Base App preview might need the SDK to be available before calling ready()
+    
+    // Strategy 1: Try immediately (for fast-loading apps)
     void markReady();
 
-    // Also try after DOM is ready (Base App might need this)
+    // Strategy 2: Try after DOM is ready (Base App might need this)
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
         if (!readyCalled && !cancelled) {
+          console.log('[RiddlePay] DOMContentLoaded: Attempting sdk.actions.ready()...');
           void markReady();
         }
       });
+    } else {
+      // DOM already ready, try with small delay
+      setTimeout(() => {
+        if (!readyCalled && !cancelled) {
+          console.log('[RiddlePay] DOM already ready: Attempting sdk.actions.ready()...');
+          void markReady();
+        }
+      }, 50);
     }
 
-    // Also try after page is fully loaded (fallback for Base App)
+    // Strategy 3: Try after page is fully loaded (fallback for Base App)
     const handleLoad = () => {
       if (!readyCalled && !cancelled) {
+        console.log('[RiddlePay] Window load event: Attempting sdk.actions.ready()...');
         void markReady();
       }
     };
@@ -105,6 +145,7 @@ export default function App({ Component, pageProps }: AppProps) {
       // Page already loaded, try immediately with a small delay for Base App
       setTimeout(() => {
         if (!readyCalled && !cancelled) {
+          console.log('[RiddlePay] Page complete: Attempting sdk.actions.ready()...');
           void markReady();
         }
       }, 100);
@@ -112,13 +153,25 @@ export default function App({ Component, pageProps }: AppProps) {
       window.addEventListener('load', handleLoad);
     }
 
-    // Additional fallback: Try after a short delay (Base App might need this)
-    setTimeout(() => {
-      if (!readyCalled && !cancelled) {
-        console.log('[RiddlePay] Fallback: Attempting sdk.actions.ready() after delay...');
-        void markReady();
-      }
-    }, 500);
+    // Strategy 4: Additional fallbacks with increasing delays (Base App preview needs this)
+    [200, 500, 1000, 2000].forEach((delay) => {
+      setTimeout(() => {
+        if (!readyCalled && !cancelled) {
+          console.log(`[RiddlePay] Fallback (${delay}ms): Attempting sdk.actions.ready()...`);
+          void markReady();
+        }
+      }, delay);
+    });
+
+    // Strategy 5: Use requestAnimationFrame for Base App (ensures UI is rendered)
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (!readyCalled && !cancelled) {
+          console.log('[RiddlePay] requestAnimationFrame: Attempting sdk.actions.ready()...');
+          void markReady();
+        }
+      }, 100);
+    });
 
     return () => {
       cancelled = true;
@@ -148,8 +201,25 @@ export default function App({ Component, pageProps }: AppProps) {
           <meta name="twitter:title" content="RiddlePay" />
           <meta name="twitter:description" content="Send secret crypto gifts unlocked by riddles on Base Network" />
           <meta name="twitter:image" content="https://riddlepay.tech/og-image.png" />
-          {/* Farcaster/Base Mini App embed metadata */}
+          {/* Farcaster/Base Mini App embed metadata - REQUIRED for Base App display */}
           <meta name="fc:frame" content="vNext" />
+          <meta
+            name="fc:miniapp"
+            content={JSON.stringify({
+              version: 'next',
+              imageUrl: 'https://riddlepay.tech/og-image.png',
+              button: {
+                title: 'Launch RiddlePay',
+                action: {
+                  type: 'launch_miniapp',
+                  name: 'RiddlePay',
+                  url: 'https://riddlepay.tech',
+                  splashImageUrl: 'https://riddlepay.tech/splash.png',
+                  splashBackgroundColor: '#000000',
+                },
+              },
+            })}
+          />
           <link rel="icon" type="image/png" href="https://riddlepay.tech/icon.png" />
           <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
           <link rel="alternate icon" href="/favicon.svg" />
