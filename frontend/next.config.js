@@ -1,27 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
   eslint: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+
   typescript: {
-    // Warning: This allows production builds to successfully complete even if
-    // your project has type errors.
-    ignoreBuildErrors: true, // Allow build to succeed even with type errors for deployment
+    ignoreBuildErrors: true,
   },
-  // Enable compression
+
   compress: true,
-  // Optimize images
+
+  // ❗ IMPORTANT: Disable Next.js image optimization
+  // This prevents PNG → AVIF/WEBP conversion that breaks Farcaster/Base
   images: {
-    formats: ['image/avif', 'image/webp'],
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    unoptimized: true,
   },
-  // Optimize production builds
+
   swcMinify: true,
-  // Reduce bundle size by splitting chunks
+
   webpack: (config, { isServer, dev }) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,
@@ -29,48 +27,48 @@ const nextConfig = {
       net: false,
       tls: false,
     };
-    
-    // Fix for html5-qrcode SSR issues - mark as external for SSR
+
+    // Fix html5-qrcode SSR issues
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push('html5-qrcode');
     }
-    
-    // Optimize bundle splitting in production
+
+    // Optimized chunk splitting
     if (!dev && !isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
+          chunks: "all",
           cacheGroups: {
             default: false,
             vendors: false,
-            // Vendor chunk for large libraries
+
             vendor: {
-              name: 'vendor',
-              chunks: 'all',
+              name: "vendor",
+              chunks: "all",
               test: /node_modules/,
               priority: 20,
             },
-            // Separate chunk for ethers (large library)
+
             ethers: {
-              name: 'ethers',
+              name: "ethers",
               test: /[\\/]node_modules[\\/]ethers[\\/]/,
-              chunks: 'all',
+              chunks: "all",
               priority: 30,
             },
-            // Separate chunk for framer-motion
+
             framerMotion: {
-              name: 'framer-motion',
+              name: "framer-motion",
               test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
-              chunks: 'all',
+              chunks: "all",
               priority: 25,
             },
-            // Common chunk for shared code
+
             common: {
-              name: 'common',
+              name: "common",
               minChunks: 2,
-              chunks: 'all',
+              chunks: "all",
               priority: 10,
               reuseExistingChunk: true,
             },
@@ -78,35 +76,36 @@ const nextConfig = {
         },
       };
     }
-    
+
     return config;
   },
+
+  // ❗ REQUIRED HEADERS FOR FARCASTER + BASE
   async headers() {
     return [
+      // Allow Farcaster to fetch your JSON manifest
       {
         source: '/.well-known/:path*',
         headers: [
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
-          {
-            key: 'Content-Type',
-            value: 'application/json',
-          },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Content-Type', value: 'application/json' },
         ],
       },
+
+      // ❗ CRITICAL: Serve OG image strictly as PNG
+      {
+        source: '/og-image.png',
+        headers: [
+          { key: 'Content-Type', value: 'image/png' },
+        ],
+      },
+
+      // Allow mini-app iframe embedding & remove X-Frame-Options issue
       {
         source: '/:path*',
         headers: [
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on',
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'ALLOWALL',
-          },
+          { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          { key: 'X-Frame-Options', value: 'ALLOWALL' },
           {
             key: 'Content-Security-Policy',
             value: "frame-ancestors *;",
@@ -118,4 +117,3 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
-
