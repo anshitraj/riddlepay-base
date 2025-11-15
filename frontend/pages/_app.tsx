@@ -7,8 +7,9 @@ import { useEffect } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 export default function App({ Component, pageProps }: AppProps) {
-  // Call sdk.actions.ready() for Base/Farcaster mini app (per docs)
-  // https://miniapps.farcaster.xyz/docs/getting-started#making-your-app-display
+  // Call sdk.actions.ready() for Base/Farcaster Mini App (REQUIRED)
+  // This tells Base App that the UI is ready and splash screen can be hidden
+  // Base Mini Apps use the Farcaster SDK
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -20,29 +21,33 @@ export default function App({ Component, pageProps }: AppProps) {
 
     const markReady = async () => {
       try {
-        // Dynamically import the SDK on the client only (lazy load for faster initial render)
+        // Import Farcaster Mini App SDK (Base uses this)
         const { sdk } = await import('@farcaster/miniapp-sdk');
 
-        // Wait for our app to be painted and layout ready
-        // Then tell the Mini App host we're ready to show content
-        await sdk.actions.ready();
+        // IMPORTANT: Call ready() after UI is fully rendered
+        // This MUST be called for Base Mini Apps to hide the splash screen
+        sdk.actions.ready();
 
         if (!cancelled) {
-          console.log('✅ RiddlePay mini app called sdk.actions.ready()');
+          console.log('✅ RiddlePay Mini App called sdk.actions.ready()');
         }
       } catch (error) {
-        // Not a Farcaster Mini App, that's okay
-        console.log('[RiddlePay] Not running as Farcaster Mini App');
+        // Not running as a Mini App (standalone browser) - this is okay
+        if (!cancelled) {
+          console.log('[RiddlePay] Running in standalone mode (not as Mini App)');
+        }
       }
     };
 
-    // Use microtask for immediate execution without blocking render
-    Promise.resolve().then(() => {
+    // Call ready() after component mounts and DOM is painted
+    // Use setTimeout to ensure React has finished rendering
+    const timeoutId = setTimeout(() => {
       void markReady();
-    });
+    }, 100);
 
     return () => {
       cancelled = true;
+      clearTimeout(timeoutId);
     };
   }, []);
 

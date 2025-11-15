@@ -62,11 +62,18 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       if (typeof window === 'undefined') return false;
       const anyWindow = window as any;
+      
+      // Check for Base-specific indicators
       return (
         !!(anyWindow.coinbaseWalletSDK) ||
+        !!(anyWindow.base) ||
         navigator.userAgent?.includes('BaseApp') ||
+        navigator.userAgent?.includes('Base') ||
         window.location?.href?.includes('base.org') ||
-        window.location?.href?.includes('base.build')
+        window.location?.href?.includes('base.build') ||
+        window.location?.href?.includes('base.xyz') ||
+        // Check if running in iframe (common for Mini Apps)
+        (window.self !== window.top && document.referrer?.includes('base'))
       );
     } catch (error) {
       console.error('[RiddlePay] Error checking Base Mini App:', error);
@@ -75,11 +82,26 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   };
 
   // Helper to check if running in Farcaster Mini App (optimized with cached SDK)
+  // Also returns true for Base Mini App since Base supports Farcaster SDK
   const isFarcasterMiniApp = async (): Promise<boolean> => {
     try {
       if (typeof window === 'undefined') return false;
       
-      // Quick URL check first (synchronous, fast)
+      // Check if we're in Base Mini App - Base also supports Farcaster SDK
+      if (isBaseMiniApp()) {
+        // In Base, try to check if Farcaster SDK is available
+        try {
+          const { sdk } = await getFarcasterSDK();
+          const ethProvider = await sdk.wallet.getEthereumProvider();
+          if (ethProvider) return true;
+        } catch (err) {
+          // Even if SDK check fails, Base Mini App might still support it
+          // Return true if we're in Base context
+          return true;
+        }
+      }
+      
+      // Quick URL check for Farcaster-specific contexts
       const urlCheck = (
         window.location?.href?.includes('farcaster.xyz') || 
         window.location?.href?.includes('warpcast.com') ||
@@ -89,7 +111,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       
       if (!urlCheck) return false;
       
-      // Only import SDK if URL suggests we're in Farcaster
+      // Import SDK if URL suggests we're in Farcaster
       try {
         const { sdk } = await getFarcasterSDK();
         const ethProvider = await sdk.wallet.getEthereumProvider();
@@ -566,27 +588,29 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('wallet_disconnected');
       
-      // Quick URL check first (synchronous, fast)
-      const urlCheck = (
-        window.location?.href?.includes('farcaster.xyz') || 
-        window.location?.href?.includes('warpcast.com') ||
-        !!(window as any).farcaster ||
-        !!(window as any).parent?.farcaster
-      );
-
-      if (!urlCheck) {
-        // User is in browser, show friendly message
-        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+      // Check if we're in Base Mini App or Farcaster Mini App
+      // Base Mini Apps also support Farcaster SDK, so allow Farcaster login in Base
+      const isBase = isBaseMiniApp();
+      const isFarcasterContext = await isFarcasterMiniApp();
+      
+      // Allow Farcaster login if in Base Mini App OR Farcaster Mini App
+      if (!isBase && !isFarcasterContext) {
+        // User is in regular browser (not in Base or Farcaster Mini App)
+        alert('Farcaster login is only available in Base App or Farcaster. Please open this app in Base App or Farcaster to use Farcaster login.');
         return;
       }
       
-      // Use cached SDK (already loaded if URL check passed)
+      // Use cached SDK - works in both Base and Farcaster Mini Apps
       const { sdk } = await getFarcasterSDK();
       const ethProvider = await sdk.wallet.getEthereumProvider();
       
       if (!ethProvider) {
         console.warn('[RiddlePay] Farcaster wallet not available');
-        alert('Farcaster wallet not available. Please open this app in Farcaster.');
+        if (isBase) {
+          alert('Farcaster wallet not available. Please ensure you are using Base App with Farcaster integration.');
+        } else {
+          alert('Farcaster wallet not available. Please open this app in Farcaster.');
+        }
         return;
       }
 
@@ -598,7 +622,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       console.error('[RiddlePay] Error connecting to Farcaster:', error);
       // Show user-friendly message instead of technical error
       if (error.code !== 4001) { // Don't show alert if user rejected
-        alert('You are on browser. Please connect with Base or open this app in Farcaster to use Farcaster login.');
+        const isBase = isBaseMiniApp();
+        if (isBase) {
+          // In Base, show more specific message
+          console.log('[RiddlePay] Farcaster login failed in Base Mini App');
+        } else {
+          alert('Farcaster login is only available in Base App or Farcaster. Please open this app in Base App or Farcaster to use Farcaster login.');
+        }
       }
     } finally {
       connectingRef.current = false;
