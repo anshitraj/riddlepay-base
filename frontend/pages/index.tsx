@@ -12,6 +12,7 @@ import BottomNav from '@/components/BottomNav';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useStatsPreview } from '@/hooks/useStatsPreview';
 import { ArrowUpRight } from 'lucide-react';
+import AddToFarcasterBanner from '@/components/AddToFarcasterBanner';
 
 // Dynamically import heavy components to reduce initial bundle size
 const Dashboard = dynamic(() => import('@/components/Dashboard'), {
@@ -151,6 +152,9 @@ function HomeContent() {
           {/* Content */}
           <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-50 to-gray-100 dark:from-[#0A0F1F] dark:to-[#0E152B] overscroll-contain touch-action-pan-y">
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
+              {/* Add to Farcaster Banner */}
+              <AddToFarcasterBanner />
+
               {/* Stats Preview Row */}
               <div className="bg-[#0E152B]/30 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#0066FF]/10">
                 <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 md:gap-8">

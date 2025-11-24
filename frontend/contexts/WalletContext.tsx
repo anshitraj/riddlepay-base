@@ -129,6 +129,8 @@ interface WalletContextType {
   isConnected: boolean;
   isConnecting: boolean;
   connect: () => Promise<void>;
+  connectFarcaster: () => Promise<void>;
+  connectMetaMask: () => Promise<void>;
   disconnect: () => void;
   ensureBaseMainnet: () => Promise<void>;
   isInMiniApp: boolean;
@@ -148,72 +150,90 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const hasAutoConnectedRef = useRef(false);
 
   /////////////////////////////////////////////////////////////
-  // UNIFIED CONNECT FUNCTION - Auto-detects environment
+  // CONNECT FARCASTER
   /////////////////////////////////////////////////////////////
-  const connect = async () => {
+  const connectFarcaster = async () => {
     if (connectingRef.current) return;
     connectingRef.current = true;
     setIsConnecting(true);
 
     try {
       const ethersLib = await loadEthers();
-      // Use async detection for more reliable results
-      const inMiniApp = await isInMiniApp();
+      const { sdk } = await loadFarcasterSDK();
+      await sdk.actions.ready();
 
-      if (inMiniApp) {
-        // In Farcaster/Base mini app - use Farcaster SDK
-        try {
-          const { sdk } = await loadFarcasterSDK();
-          await sdk.actions.ready();
-
-          const ethProvider = await sdk.wallet.getEthereumProvider();
-          if (!ethProvider) {
-            throw new Error('Farcaster signer unavailable. Open inside Warpcast or Base app.');
-          }
-
-          const evm = new ethersLib.BrowserProvider(ethProvider);
-          const accounts = await evm.send('eth_requestAccounts', []);
-          const signer = await evm.getSigner();
-
-          const addr = await signer.getAddress();
-          setAddress(addr);
-          setProvider(evm);
-
-          const net = await evm.getNetwork();
-          setChainId(Number(net.chainId));
-
-          localStorage.setItem('wallet_type', 'farcaster');
-        } catch (err: any) {
-          console.error('Farcaster Connect Error:', err);
-          throw new Error('Farcaster login failed. Open inside Warpcast or Base app.');
-        }
-      } else {
-        // In browser - use MetaMask/window.ethereum
-        const anyWindow = window as any;
-        if (!anyWindow.ethereum) {
-          throw new Error('No wallet detected. Please install MetaMask.');
-        }
-
-        const evm = new ethersLib.BrowserProvider(anyWindow.ethereum);
-        const accounts = await evm.send('eth_requestAccounts', []);
-        const signer = await evm.getSigner();
-
-        const addr = await signer.getAddress();
-        setAddress(addr);
-        setProvider(evm);
-
-        const net = await evm.getNetwork();
-        setChainId(Number(net.chainId));
-
-        localStorage.setItem('wallet_type', 'metamask');
+      const ethProvider = await sdk.wallet.getEthereumProvider();
+      if (!ethProvider) {
+        throw new Error('Farcaster signer unavailable. Open inside Warpcast or Base app.');
       }
+
+      const evm = new ethersLib.BrowserProvider(ethProvider);
+      const accounts = await evm.send('eth_requestAccounts', []);
+      const signer = await evm.getSigner();
+
+      const addr = await signer.getAddress();
+      setAddress(addr);
+      setProvider(evm);
+
+      const net = await evm.getNetwork();
+      setChainId(Number(net.chainId));
+
+      localStorage.setItem('wallet_type', 'farcaster');
     } catch (err: any) {
-      console.error('Connect Error:', err);
-      setError(err.message || 'Connection failed');
+      console.error('Farcaster Connect Error:', err);
+      setError(err.message || 'Farcaster login failed. Open inside Warpcast or Base app.');
     }
 
     connectingRef.current = false;
     setIsConnecting(false);
+  };
+
+  /////////////////////////////////////////////////////////////
+  // CONNECT METAMASK/BASE
+  /////////////////////////////////////////////////////////////
+  const connectMetaMask = async () => {
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+    setIsConnecting(true);
+
+    try {
+      const ethersLib = await loadEthers();
+      const anyWindow = window as any;
+      if (!anyWindow.ethereum) {
+        throw new Error('No wallet detected. Please install MetaMask or open inside Base App.');
+      }
+
+      const evm = new ethersLib.BrowserProvider(anyWindow.ethereum);
+      const accounts = await evm.send('eth_requestAccounts', []);
+      const signer = await evm.getSigner();
+
+      const addr = await signer.getAddress();
+      setAddress(addr);
+      setProvider(evm);
+
+      const net = await evm.getNetwork();
+      setChainId(Number(net.chainId));
+
+      localStorage.setItem('wallet_type', 'metamask');
+    } catch (err: any) {
+      console.error('MetaMask Connect Error:', err);
+      setError(err.message || 'Connection failed. Please install MetaMask.');
+    }
+
+    connectingRef.current = false;
+    setIsConnecting(false);
+  };
+
+  /////////////////////////////////////////////////////////////
+  // UNIFIED CONNECT FUNCTION - Auto-detects environment (for backward compatibility)
+  /////////////////////////////////////////////////////////////
+  const connect = async () => {
+    const inMiniApp = await isInMiniApp();
+    if (inMiniApp) {
+      await connectFarcaster();
+    } else {
+      await connectMetaMask();
+    }
   };
 
   /////////////////////////////////////////////////////////////
@@ -259,14 +279,14 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       if (!hasAutoConnectedRef.current && !address) {
         const saved = localStorage.getItem('wallet_type');
         
-        // If in Farcaster/Base mini app, always try to auto-connect
+        // If in Farcaster/Base mini app, always try to auto-connect with Farcaster
         // (Farcaster provides wallet automatically, so we should connect)
         if (inMiniApp) {
           hasAutoConnectedRef.current = true;
           console.log('🚀 Auto-connecting in Farcaster...');
           // Small delay to ensure SDK is ready
           setTimeout(() => {
-            connect().catch((err) => {
+            connectFarcaster().catch((err) => {
               console.error('❌ Auto-connect in Farcaster failed:', err);
               // If auto-connect fails, user can still manually connect
             });
@@ -278,7 +298,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           console.log('🔄 Auto-connecting with saved wallet type:', saved);
           // Small delay to ensure SDK is ready
           setTimeout(() => {
-            connect().catch(console.error);
+            if (saved === 'farcaster') {
+              connectFarcaster().catch(console.error);
+            } else {
+              connectMetaMask().catch(console.error);
+            }
           }, 500);
         }
       }
@@ -297,6 +321,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         isConnected: !!address,
         isConnecting,
         connect,
+        connectFarcaster,
+        connectMetaMask,
         disconnect,
         ensureBaseMainnet,
         isInMiniApp: isInMiniAppEnv,

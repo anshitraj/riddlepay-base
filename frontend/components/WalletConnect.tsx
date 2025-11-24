@@ -32,7 +32,8 @@ const BaseLogo = ({ className }: { className?: string }) => (
 export default function WalletConnect() {
   const {
     address,
-    connect,
+    connectFarcaster,
+    connectMetaMask,
     disconnect,
     isConnected,
     isConnecting,
@@ -99,26 +100,30 @@ export default function WalletConnect() {
 
 
   // -------------------------------
-  // SINGLE LOGIN BUTTON (Environment-aware)
+  // DUAL LOGIN BUTTONS (Farcaster + MetaMask/Base)
   // -------------------------------
 
   return (
-    <button
-      onClick={connect}
-      disabled={isConnecting}
-      className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
-    >
-      {isInMiniApp ? (
-        <>
-          <FarcasterLogo className="w-5 h-5 inline-block mr-2" />
-          {isConnecting ? "Connecting..." : "Login with Farcaster"}
-        </>
-      ) : (
-        <>
-          <BaseLogo className="w-5 h-5 inline-block mr-2" />
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
-        </>
-      )}
-    </button>
+    <div className="flex flex-row items-center gap-2 sm:gap-3">
+      {/* Farcaster Login Button */}
+      <button
+        onClick={connectFarcaster}
+        disabled={isConnecting}
+        className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl shadow-lg border border-purple-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
+      >
+        <FarcasterLogo className="w-5 h-5 inline-block mr-2" />
+        {isConnecting ? "Connecting..." : "Farcaster"}
+      </button>
+
+      {/* MetaMask/Base Login Button */}
+      <button
+        onClick={connectMetaMask}
+        disabled={isConnecting}
+        className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
+      >
+        <BaseLogo className="w-5 h-5 inline-block mr-2" />
+        {isConnecting ? "Connecting..." : "MetaMask"}
+      </button>
+    </div>
   );
 }

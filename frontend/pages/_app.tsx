@@ -7,7 +7,6 @@ import { Toaster } from "react-hot-toast";
 import Head from "next/head";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import AddMiniAppPrompt from "@/components/AddMiniAppPrompt";
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
@@ -65,7 +64,6 @@ export default function App({ Component, pageProps }: AppProps) {
           />
 
           <Component {...pageProps} />
-          <AddMiniAppPrompt />
         </WalletProvider>
       </ThemeProvider>
     </ErrorBoundary>
