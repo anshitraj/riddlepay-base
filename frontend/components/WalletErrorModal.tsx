@@ -11,30 +11,14 @@ interface WalletErrorModalProps {
 }
 
 export default function WalletErrorModal({ isOpen, onClose, error }: WalletErrorModalProps) {
-  const { connectFarcaster, connectBase } = useWallet();
-  const [isConnecting, setIsConnecting] = useState(false);
+  const { connect, isConnecting, isInMiniApp } = useWallet();
 
-  const handleLoginWithFarcaster = async () => {
-    setIsConnecting(true);
+  const handleLogin = async () => {
     try {
-      await connectFarcaster();
+      await connect();
       onClose();
     } catch (err) {
-      console.error('Failed to connect to Farcaster:', err);
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const handleLoginWithBase = async () => {
-    setIsConnecting(true);
-    try {
-      await connectBase();
-      onClose();
-    } catch (err) {
-      console.error('Failed to connect to Base:', err);
-    } finally {
-      setIsConnecting(false);
+      console.error('Failed to connect:', err);
     }
   };
 
@@ -66,35 +50,35 @@ export default function WalletErrorModal({ isOpen, onClose, error }: WalletError
 
         <div className="mb-6">
           <p className="text-sm text-[#6b7280] dark:text-gray-400 mb-4">
-            Choose your preferred wallet to connect:
+            {isInMiniApp 
+              ? 'Connect your Farcaster wallet to continue'
+              : 'Connect your wallet to continue'}
           </p>
           
-          <div className="space-y-3">
-            <button
-              onClick={handleLoginWithFarcaster}
-              disabled={isConnecting}
-              className="w-full p-4 min-h-[60px] bg-[#8A63D2] hover:bg-[#7a53c2] text-white font-semibold rounded-xl transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-[#8A63D2]/30 shadow-sm"
-            >
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <rect x="4" y="9" width="3.5" height="9" />
-                <rect x="16.5" y="9" width="3.5" height="9" />
-                <rect x="4" y="7" width="16" height="2.5" />
-                <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
-              </svg>
-              <span>{isConnecting ? 'Connecting...' : 'Login with Farcaster'}</span>
-            </button>
-
-            <button
-              onClick={handleLoginWithBase}
-              disabled={isConnecting}
-              className="w-full p-4 min-h-[60px] bg-[#0052FF] hover:bg-[#0042cc] text-white font-semibold rounded-xl transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-[#0052FF]/30 shadow-sm"
-            >
-              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
-              </svg>
-              <span>{isConnecting ? 'Connecting...' : 'Login with Base'}</span>
-            </button>
-          </div>
+          <button
+            onClick={handleLogin}
+            disabled={isConnecting}
+            className="w-full p-4 min-h-[60px] bg-gradient-to-br from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-semibold rounded-xl transition-colors duration-75 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 border border-blue-400/30 shadow-sm"
+          >
+            {isInMiniApp ? (
+              <>
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="4" y="9" width="3.5" height="9" />
+                  <rect x="16.5" y="9" width="3.5" height="9" />
+                  <rect x="4" y="7" width="16" height="2.5" />
+                  <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
+                </svg>
+                <span>{isConnecting ? 'Connecting...' : 'Login with Farcaster'}</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+                </svg>
+                <span>{isConnecting ? 'Connecting...' : 'Connect Wallet'}</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

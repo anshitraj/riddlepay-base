@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WalletProvider, useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract, Gift } from '@/hooks/useContract';
 import ClaimGift from '@/components/ClaimGift';
@@ -85,7 +85,7 @@ function ClaimContent() {
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mb-4"></div>
-            <p className="text-gray-400 dark:text-gray-600 text-lg">Loading airdrop...</p>
+            <p className="text-gray-400 text-lg">Loading airdrop...</p>
           </div>
         </div>
       </Layout>
@@ -100,9 +100,9 @@ function ClaimContent() {
             <span className="text-6xl">⚠️</span>
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white dark:text-gray-900 mb-3">Unable to Load Airdrop</h2>
-            <p className="text-red-500 dark:text-red-400 mb-6 text-lg">{error || 'Airdrop not found'}</p>
-            <p className="text-gray-400 dark:text-gray-600 text-sm">
+            <h2 className="text-2xl font-bold text-white mb-3">Unable to Load Airdrop</h2>
+            <p className="text-red-500 mb-6 text-lg">{error || 'Airdrop not found'}</p>
+            <p className="text-gray-400 text-sm">
               This might be due to a network issue or the airdrop may not exist.
             </p>
           </div>
@@ -124,11 +124,9 @@ function ClaimContent() {
 
 export default function Claim() {
   return (
-    <WalletProvider>
-      <SearchProviderWrapper>
-        <ClaimContent />
-      </SearchProviderWrapper>
-    </WalletProvider>
+    <SearchProviderWrapper>
+      <ClaimContent />
+    </SearchProviderWrapper>
   );
 }
 

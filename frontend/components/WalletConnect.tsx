@@ -33,14 +33,12 @@ export default function WalletConnect() {
   const {
     address,
     connect,
-    connectFarcaster,
-    connectBase,
     disconnect,
-    switchWallet,
     isConnected,
     isConnecting,
     chainId,
-    ensureBaseMainnet
+    ensureBaseMainnet,
+    isInMiniApp
   } = useWallet();
 
   const isBaseMainnet = chainId === 8453;
@@ -79,14 +77,6 @@ export default function WalletConnect() {
 
         {/* Buttons */}
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-
-          <button
-            onClick={switchWallet}
-            className="px-4 py-3 min-h-[48px] glass rounded-xl border border-border text-sm font-medium flex items-center justify-center gap-2"
-          >
-            🔄 Switch Wallet
-          </button>
-
           {!isBaseMainnet && (
             <button
               onClick={ensureBaseMainnet}
@@ -102,7 +92,6 @@ export default function WalletConnect() {
           >
             ✕ Disconnect
           </button>
-
         </div>
       </div>
     );
@@ -110,32 +99,26 @@ export default function WalletConnect() {
 
 
   // -------------------------------
-  // LOGIN BUTTONS (UPDATED)
+  // SINGLE LOGIN BUTTON (Environment-aware)
   // -------------------------------
 
   return (
-    <div className="flex flex-row items-center gap-3">
-
-      {/* Farcaster Login */}
-      <button
-        onClick={connectFarcaster}
-        disabled={isConnecting}
-        className="group relative min-w-[120px] px-4 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg border border-purple-400/20 disabled:opacity-50"
-      >
-        <FarcasterLogo className="w-5 h-5 inline-block mr-2" />
-        {isConnecting ? "Connecting..." : "Farcaster"}
-      </button>
-
-      {/* Base Login */}
-      <button
-        onClick={connectBase}
-        disabled={isConnecting}
-        className="group relative min-w-[120px] px-4 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50"
-      >
-        <BaseLogo className="w-5 h-5 inline-block mr-2" />
-        {isConnecting ? "Connecting..." : "Base"}
-      </button>
-
-    </div>
+    <button
+      onClick={connect}
+      disabled={isConnecting}
+      className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
+    >
+      {isInMiniApp ? (
+        <>
+          <FarcasterLogo className="w-5 h-5 inline-block mr-2" />
+          {isConnecting ? "Connecting..." : "Login with Farcaster"}
+        </>
+      ) : (
+        <>
+          <BaseLogo className="w-5 h-5 inline-block mr-2" />
+          {isConnecting ? "Connecting..." : "Connect Wallet"}
+        </>
+      )}
+    </button>
   );
 }

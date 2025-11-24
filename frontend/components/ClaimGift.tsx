@@ -163,7 +163,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
           <h3 className="text-3xl font-bold bg-base-gradient bg-clip-text text-transparent mb-3">
             Airdrop Claimed!
           </h3>
-          <p className="dark:text-white text-gray-900 mb-6 text-lg">You successfully unlocked the airdrop!</p>
+          <p className="text-white mb-6 text-lg">You successfully unlocked the airdrop!</p>
           
           {gift.message && gift.message.trim() && (
             <motion.div 
@@ -175,7 +175,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
               <h4 className="text-lg font-semibold text-blue-500 mb-2">
                 💌 Message from {gift.sender.slice(0, 6)}...{gift.sender.slice(-4)}:
               </h4>
-              <p className="dark:text-gray-200 text-gray-800 leading-relaxed">{gift.message}</p>
+              <p className="text-gray-200 leading-relaxed">{gift.message}</p>
             </motion.div>
           )}
           
@@ -199,7 +199,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="glass-strong rounded-2xl p-8 text-center border border-border">
         <div className="text-5xl mb-4">🔓</div>
-        <p className="dark:text-white text-gray-900 text-lg">This airdrop has already been claimed</p>
+        <p className="text-white text-lg">This airdrop has already been claimed</p>
       </div>
     );
   }
@@ -210,8 +210,8 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-yellow-500/50 shadow-lg">
         <div className="text-5xl mb-4">🔒</div>
-        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold mb-2">This airdrop is time-locked</p>
-        <p className="dark:text-gray-300 text-gray-700 text-sm">
+        <p className="text-yellow-400 text-lg font-semibold mb-2">This airdrop is time-locked</p>
+        <p className="text-gray-300 text-sm">
           Unlocks at: {unlockDate.toLocaleString()}
         </p>
       </div>
@@ -222,7 +222,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-yellow-500/50 shadow-lg">
         <div className="text-5xl mb-4">⏰</div>
-        <p className="text-yellow-500 dark:text-yellow-400 text-lg font-semibold">This airdrop has expired (7 days)</p>
+        <p className="text-yellow-400 text-lg font-semibold">This airdrop has expired (7 days)</p>
       </div>
     );
   }
@@ -231,7 +231,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
     return (
       <div className="bg-baseLight/50 rounded-2xl p-8 text-center border border-border shadow-lg">
         <div className="text-5xl mb-4">🚫</div>
-        <p className="dark:text-white text-gray-900 text-lg">This airdrop is not for you</p>
+        <p className="text-white text-lg">This airdrop is not for you</p>
       </div>
     );
   }
@@ -253,7 +253,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       </div>
       
       <div className="mb-4 sm:mb-6 p-4 sm:p-5 glass rounded-xl border border-border">
-        <p className="dark:text-white text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg break-words">
+        <p className="text-white mb-2 sm:mb-3 text-base sm:text-lg break-words">
           {gift.riddle && gift.riddle.trim() ? (
             <>
               <span className="font-bold text-blue-500">❓ Riddle:</span> {gift.riddle}
@@ -263,7 +263,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
           )}
         </p>
         <p className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent break-words">
-          <span className="font-semibold dark:text-gray-400 text-gray-600">💰 Amount:</span> {formatAmount(gift.amount, gift.tokenAddress)}
+          <span className="font-semibold text-gray-400">💰 Amount:</span> {formatAmount(gift.amount, gift.tokenAddress)}
         </p>
       </div>
 
@@ -271,7 +271,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
         <div className="mb-6 p-5 bg-red-500/10 border border-red-500/50 rounded-xl backdrop-blur-sm">
           <div className="flex items-center gap-3">
             <span className="text-2xl">⚠️</span>
-            <p className="text-red-500 dark:text-red-400">{error}</p>
+            <p className="text-red-400">{error}</p>
           </div>
         </div>
       )}
@@ -279,7 +279,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
       <form onSubmit={handleClaim} className="space-y-4 sm:space-y-6">
         {gift.riddle && gift.riddle.trim() && (
           <div>
-            <label className="block text-sm font-semibold dark:text-white text-gray-900 mb-2 sm:mb-3 flex items-center gap-2">
+            <label className="block text-sm font-semibold text-white mb-2 sm:mb-3 flex items-center gap-2">
               <span className="text-blue-500">💡</span>
               Your Answer
             </label>
@@ -288,7 +288,7 @@ export default function ClaimGift({ giftId, gift, onClaimSuccess }: ClaimGiftPro
               value={guess}
               onChange={(e) => setGuess(e.target.value)}
               placeholder="Enter your guess..."
-              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl dark:text-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
+              className="w-full px-4 sm:px-5 py-3 sm:py-3.5 min-h-[44px] text-base glass rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all duration-200 touch-manipulation"
               required
             />
           </div>

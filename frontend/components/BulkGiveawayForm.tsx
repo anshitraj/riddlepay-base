@@ -41,7 +41,7 @@ interface Recipient {
 }
 
 export default function BulkGiveawayForm() {
-  const { address, ensureBaseMainnet, connectFarcaster, connectBase, isConnecting } = useWallet();
+  const { address, ensureBaseMainnet, connect, isConnecting, isInMiniApp } = useWallet();
   const { createBulkGifts, loading, error, approving } = useContract();
   
   const [recipients, setRecipients] = useState<Recipient[]>([
@@ -280,19 +280,11 @@ export default function BulkGiveawayForm() {
     }, 0);
   };
 
-  const handleLoginWithFarcaster = async () => {
+  const handleLogin = async () => {
     try {
-      await connectFarcaster();
+      await connect();
     } catch (err) {
-      console.error('Failed to connect to Farcaster:', err);
-    }
-  };
-
-  const handleLoginWithBase = async () => {
-    try {
-      await connectBase();
-    } catch (err) {
-      console.error('Failed to connect to Base:', err);
+      console.error('Failed to connect:', err);
     }
   };
 
@@ -302,31 +294,28 @@ export default function BulkGiveawayForm() {
         <div className="text-5xl mb-4">🔒</div>
         <p className="text-[#1e293b] dark:text-gray-300 text-lg mb-6">Please connect your wallet to create bulk giveaways</p>
         
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto">
-          <button
-            onClick={handleLoginWithFarcaster}
-            disabled={isConnecting}
-            className="w-full sm:w-auto group relative flex-shrink-0 min-w-[160px] px-6 py-3 min-h-[56px] bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(147,51,234,0.4)] touch-manipulation text-sm flex flex-row items-center justify-center gap-3 shadow-lg shadow-purple-500/30 border border-purple-400/20 hover:border-purple-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/30 to-purple-600/30 blur-xl -z-10"></div>
-            <FarcasterLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
-            <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-              {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
-            </span>
-          </button>
-
-          <button
-            onClick={handleLoginWithBase}
-            disabled={isConnecting}
-            className="w-full sm:w-auto group relative flex-shrink-0 min-w-[160px] px-6 py-3 min-h-[56px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
-            <BaseLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
-            <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-              {isConnecting ? 'Connecting...' : 'Login with Base'}
-            </span>
-          </button>
-        </div>
+        <button
+          onClick={handleLogin}
+          disabled={isConnecting}
+          className="group relative w-full sm:w-auto max-w-md mx-auto min-w-[200px] px-6 py-3 min-h-[56px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
+          {isInMiniApp ? (
+            <>
+              <FarcasterLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
+              <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+                {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
+              </span>
+            </>
+          ) : (
+            <>
+              <BaseLogo className="w-5 h-5 relative z-10 text-white flex-shrink-0" />
+              <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+                {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+              </span>
+            </>
+          )}
+        </button>
       </div>
     );
   }

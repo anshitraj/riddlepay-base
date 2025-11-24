@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WalletProvider, useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import Sidebar from '@/components/Sidebar';
 import Header from '@/components/Header';
@@ -255,11 +255,9 @@ function HomeContent() {
 
 export default function Home() {
   return (
-    <WalletProvider>
-      <SearchProviderWrapper>
-        <HomeContent />
-      </SearchProviderWrapper>
-    </WalletProvider>
+    <SearchProviderWrapper>
+      <HomeContent />
+    </SearchProviderWrapper>
   );
 }
 

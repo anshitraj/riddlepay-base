@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WalletProvider, useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract } from '@/hooks/useContract';
 import Layout from '@/components/Layout';
@@ -250,11 +250,9 @@ function LeaderboardContent() {
 
 export default function Leaderboard() {
   return (
-    <WalletProvider>
-      <SearchProviderWrapper>
-        <LeaderboardContent />
-      </SearchProviderWrapper>
-    </WalletProvider>
+    <SearchProviderWrapper>
+      <LeaderboardContent />
+    </SearchProviderWrapper>
   );
 }
 

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { User, LogOut, Copy, ExternalLink, Settings, Search, Send, RefreshCw } from 'lucide-react';
 import WalletConnect from './WalletConnect';
-import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
 import { useWallet } from '@/contexts/WalletContext';
 import { useFarcasterUser } from '@/hooks/useFarcasterUser';
@@ -285,11 +284,6 @@ export default function Header() {
               <WalletConnect />
             </div>
           )}
-
-          {/* Theme Toggle */}
-          <div className="flex-shrink-0">
-            <ThemeToggle />
-          </div>
         </div>
       </div>
     </header>

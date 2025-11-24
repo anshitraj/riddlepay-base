@@ -43,14 +43,6 @@
   --color-border: rgba(255, 255, 255, 0.1);
 }
 
-/* Light Theme Color Overrides */
-[data-theme='light'] {
-  --color-background: #f8f9fa;
-  --color-surface: rgba(255, 255, 255, 0.95);
-  --color-text-primary: #1a1a1a;
-  --color-text-secondary: #4b5563;
-  --color-border: rgba(0, 0, 0, 0.1);
-}
 
 /* CRITICAL: Override Mini App (Farcaster/Base) injected styles - but respect theme */
 html, body {
@@ -64,20 +56,11 @@ html[data-theme='dark'], html[data-theme='dark'] body {
   -webkit-appearance: none !important;
 }
 
-html[data-theme='light'], html[data-theme='light'] body {
-  background-color: #f5f3f0 !important;
-  color: #1a1a1a !important;
-  forced-color-adjust: none !important;
-  -webkit-appearance: none !important;
-}
 
 :root {
   color-scheme: dark;
 }
 
-[data-theme='light'] {
-  color-scheme: light;
-}
 
 /* Mobile optimizations */
 @layer base {
@@ -179,9 +162,6 @@ html[data-theme='light'], html[data-theme='light'] body {
   --foreground-rgb: 255, 255, 255;
 }
 
-[data-theme='light'] {
-  --foreground-rgb: 26, 26, 26;
-}
 
 /* Dark Theme (Default) - Base Blue Theme */
 html[data-theme='dark'] body {
@@ -210,29 +190,6 @@ html[data-theme='dark'] body::before {
   z-index: 0;
 }
 
-/* Light Theme */
-html[data-theme='light'] body {
-  color: #1a1a1a !important;
-  background: #f5f3f0 !important;
-  background-image: 
-    linear-gradient(to bottom, #f5f3f0 0%, #f0ede8 50%, #faf8f5 100%) !important;
-  min-height: 100vh;
-  position: relative;
-}
-
-[data-theme='light'] body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.02) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
 
 /* Fast theme transitions */
 * {
@@ -254,37 +211,19 @@ body {
     transition: background-color 0.075s ease, border-color 0.075s ease;
   }
   
-  [data-theme='light'] .glass {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
   
   .glass-strong {
     background: rgba(255, 255, 255, 0.08);
     transition: background-color 0.075s ease, border-color 0.075s ease;
   }
   
-  [data-theme='light'] .glass-strong {
-    background: rgba(255, 255, 255, 1);
-    border-color: rgba(0, 0, 0, 0.1);
-  }
   
   .border-border {
     border-color: rgba(255, 255, 255, 0.1);
     transition: border-color 0.3s ease;
   }
   
-  [data-theme='light'] .border-border {
-    border-color: rgba(0, 0, 0, 0.1);
-  }
   
-  /* Theme-aware background colors - use higher specificity */
-  html[data-theme='light'] .bg-baseDark,
-  html[data-theme='light'] div.bg-baseDark,
-  html[data-theme='light'] .min-h-screen.bg-baseDark {
-    background: #f5f3f0 !important;
-    background-image: linear-gradient(to bottom, #f5f3f0 0%, #f0ede8 50%, #faf8f5 100%) !important;
-  }
   
   /* Ensure dark theme background is properly set */
   html[data-theme='dark'] .bg-baseDark,
@@ -298,10 +237,6 @@ body {
       radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.08) 0px, transparent 50%) !important;
   }
   
-  [data-theme='light'] .bg-baseLight\/50,
-  [data-theme='light'] .bg-baseLight\/30 {
-    background: rgba(255, 255, 255, 0.9) !important;
-  }
   
   /* Dark theme - ensure baseLight backgrounds are dark (black with slight transparency) */
   [data-theme='dark'] .bg-baseLight\/50 {
@@ -324,44 +259,6 @@ body {
     background: rgba(10, 10, 10, 0.95) !important;
   }
   
-  /* Theme-aware text colors - override Tailwind classes with higher specificity */
-  html[data-theme='light'] .text-white,
-  html[data-theme='light'] h1.text-white,
-  html[data-theme='light'] h2.text-white,
-  html[data-theme='light'] h3.text-white,
-  html[data-theme='light'] h4.text-white,
-  html[data-theme='light'] p.text-white,
-  html[data-theme='light'] span.text-white,
-  html[data-theme='light'] div.text-white,
-  html[data-theme='light'] a.text-white,
-  html[data-theme='light'] button.text-white,
-  html[data-theme='light'] .text-white.dark\:text-white {
-    color: #1a1a1a !important;
-  }
-  
-  /* But keep white text on colored backgrounds in light mode */
-  html[data-theme='light'] button.bg-gradient-to-br .text-white,
-  html[data-theme='light'] .bg-gradient-to-br .text-white {
-    color: #ffffff !important;
-  }
-  
-  html[data-theme='light'] .text-gray-300,
-  html[data-theme='light'] .text-gray-400,
-  html[data-theme='light'] .text-gray-500 {
-    color: #4b5563 !important;
-  }
-  
-  html[data-theme='light'] .text-gray-600 {
-    color: #374151 !important;
-  }
-  
-  html[data-theme='light'] .text-gray-700 {
-    color: #1f2937 !important;
-  }
-  
-  html[data-theme='light'] .text-gray-900 {
-    color: #111827 !important;
-  }
   
   /* Ensure dark theme text stays white */
   html[data-theme='dark'] .text-white {
@@ -376,51 +273,6 @@ body {
     color: #9ca3af !important;
   }
   
-  /* Fix text colors inside glass/card components for light theme */
-  html[data-theme='light'] .glass h1,
-  html[data-theme='light'] .glass h2,
-  html[data-theme='light'] .glass h3,
-  html[data-theme='light'] .glass h4,
-  html[data-theme='light'] .glass p,
-  html[data-theme='light'] .glass span,
-  html[data-theme='light'] .glass div,
-  html[data-theme='light'] .bg-baseLight\/50 h1,
-  html[data-theme='light'] .bg-baseLight\/50 h2,
-  html[data-theme='light'] .bg-baseLight\/50 h3,
-  html[data-theme='light'] .bg-baseLight\/50 h4,
-  html[data-theme='light'] .bg-baseLight\/50 p,
-  html[data-theme='light'] .bg-baseLight\/50 span,
-  html[data-theme='light'] .bg-baseLight\/50 div,
-  html[data-theme='light'] .bg-white\/90 h1,
-  html[data-theme='light'] .bg-white\/90 h2,
-  html[data-theme='light'] .bg-white\/90 h3,
-  html[data-theme='light'] .bg-white\/90 h4,
-  html[data-theme='light'] .bg-white\/90 p,
-  html[data-theme='light'] .bg-white\/90 span,
-  html[data-theme='light'] .bg-white\/90 div {
-    color: #1a1a1a !important;
-  }
-  
-  /* Fix icon colors in light theme - icons should stay their color but be visible */
-  html[data-theme='light'] svg.text-white {
-    color: #1a1a1a !important;
-  }
-  
-  /* Ensure links and buttons are visible in light theme */
-  html[data-theme='light'] a.text-white,
-  html[data-theme='light'] button.text-white {
-    color: #1a1a1a !important;
-  }
-  
-  /* Theme-aware border colors */
-  [data-theme='light'] .border-blue-500\/20 {
-    border-color: rgba(0, 82, 255, 0.2) !important;
-  }
-  
-  /* Ensure icons and other elements are visible in light theme */
-  [data-theme='light'] svg {
-    color: inherit;
-  }
   
   .gradient-border {
     position: relative;
@@ -465,9 +317,6 @@ body {
   background: #1a1a1a;
 }
 
-[data-theme='light'] ::-webkit-scrollbar-track {
-  background: #e5e5e5;
-}
 
 ::-webkit-scrollbar-thumb {
   background: #0052FF;

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { WalletProvider, useWallet } from '@/contexts/WalletContext';
+import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract, Gift } from '@/hooks/useContract';
 import dynamic from 'next/dynamic';
@@ -211,10 +211,10 @@ function MyGiftsContent() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white dark:text-gray-900 mb-1 sm:mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">
               My Airdrops
             </h1>
-            <p className="text-gray-400 dark:text-gray-600 text-xs sm:text-sm">View and manage your secret airdrops</p>
+            <p className="text-gray-400 text-xs sm:text-sm">View and manage your secret airdrops</p>
           </div>
           <button
             onClick={refreshGifts}
@@ -263,11 +263,9 @@ function MyGiftsContent() {
 
 export default function MyGifts() {
   return (
-    <WalletProvider>
-      <SearchProviderWrapper>
-        <MyGiftsContent />
-      </SearchProviderWrapper>
-    </WalletProvider>
+    <SearchProviderWrapper>
+      <MyGiftsContent />
+    </SearchProviderWrapper>
   );
 }
 

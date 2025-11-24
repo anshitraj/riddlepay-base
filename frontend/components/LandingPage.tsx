@@ -33,7 +33,7 @@ const riddleExamples = [
 ];
 
 export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
-  const { isConnected, connectFarcaster, connectBase, isConnecting } = useWallet();
+  const { isConnected, connect, isConnecting, isInMiniApp } = useWallet();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -48,29 +48,16 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
     }
   };
 
-  const handleLoginWithFarcaster = async () => {
+  const handleLogin = async () => {
     try {
-      await connectFarcaster();
+      await connect();
       // Small delay to ensure wallet connection is processed
       setTimeout(() => {
         setShowLoginDialog(false);
         onLaunchDApp();
       }, 500);
     } catch (error) {
-      console.error('Failed to connect to Farcaster:', error);
-    }
-  };
-
-  const handleLoginWithBase = async () => {
-    try {
-      await connectBase();
-      // Small delay to ensure wallet connection is processed
-      setTimeout(() => {
-        setShowLoginDialog(false);
-        onLaunchDApp();
-      }, 500);
-    } catch (error) {
-      console.error('Failed to connect to Base:', error);
+      console.error('Failed to connect:', error);
     }
   };
 
@@ -493,56 +480,48 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                   Select how you want to connect to Riddle Pay
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  {/* Farcaster Button - Base Official Style */}
-                  <button
-                    onClick={handleLoginWithFarcaster}
-                    disabled={isConnecting}
-                    className="group relative flex-1 px-6 py-3 min-h-[60px] sm:min-h-[70px] bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.03] hover:shadow-[0_4px_20px_rgba(147,51,234,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-lg shadow-purple-500/30 border border-purple-400/20 hover:border-purple-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {/* Light glow behind button */}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/30 to-purple-600/30 blur-xl -z-10"></div>
-                    {/* Shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
-                    >
-                      <rect x="4" y="9" width="3.5" height="9" />
-                      <rect x="16.5" y="9" width="3.5" height="9" />
-                      <rect x="4" y="7" width="16" height="2.5" />
-                      <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
-                    </svg>
-                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-                      {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
-                    </span>
-                  </button>
-
-                  {/* Base Button - Base Official Style */}
-                  <button
-                    onClick={handleLoginWithBase}
-                    disabled={isConnecting}
-                    className="group relative flex-1 px-6 py-3 min-h-[60px] sm:min-h-[70px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.03] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {/* Light glow behind button */}
-                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
-                    {/* Shimmer effect */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                    <svg
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
-                    >
-                      <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
-                    </svg>
-                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-                      {isConnecting ? 'Connecting...' : 'Login with Base'}
-                    </span>
-                  </button>
-                </div>
+                <button
+                  onClick={handleLogin}
+                  disabled={isConnecting}
+                  className="group relative w-full px-6 py-3 min-h-[60px] sm:min-h-[70px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.03] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {/* Light glow behind button */}
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                  {isInMiniApp ? (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
+                      >
+                        <rect x="4" y="9" width="3.5" height="9" />
+                        <rect x="16.5" y="9" width="3.5" height="9" />
+                        <rect x="4" y="7" width="16" height="2.5" />
+                        <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
+                      </svg>
+                      <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+                        {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
+                      >
+                        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+                      </svg>
+                      <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
+                        {isConnecting ? 'Connecting...' : 'Connect Wallet'}
+                      </span>
+                    </>
+                  )}
+                </button>
 
                 <button
                   onClick={() => setShowLoginDialog(false)}
