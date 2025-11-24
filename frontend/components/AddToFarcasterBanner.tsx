@@ -24,9 +24,10 @@ export default function AddToFarcasterBanner() {
   // Show banner if in Farcaster, connected, and not dismissed
   useEffect(() => {
     if (isInMiniApp && isConnected && !dismissed) {
-      // Check if user has dismissed before
+      // Check if user has dismissed before or already added
       const hasDismissed = localStorage.getItem('add_to_farcaster_dismissed');
-      if (!hasDismissed) {
+      const alreadyAdded = localStorage.getItem('miniapp_already_added');
+      if (!hasDismissed && !alreadyAdded) {
         // Show after a short delay
         const timer = setTimeout(() => {
           setShowBanner(true);
@@ -50,14 +51,30 @@ export default function AddToFarcasterBanner() {
       setShowBanner(false);
       setDismissed(true);
       localStorage.setItem('add_to_farcaster_dismissed', 'true');
+      toast.success('Added to Farcaster home!');
     } catch (err: any) {
       console.error('Error adding to Farcaster:', err);
-      toast.error('Failed to add to Farcaster. Please try again.');
+      // Check if error indicates mini app is already added
+      const errorMessage = err?.message || err?.toString() || '';
+      if (
+        errorMessage.includes('already') ||
+        errorMessage.includes('added') ||
+        errorMessage.includes('exists')
+      ) {
+        toast.success('Mini app is already added to your Farcaster home!');
+        setShowBanner(false);
+        setDismissed(true);
+        localStorage.setItem('add_to_farcaster_dismissed', 'true');
+        localStorage.setItem('miniapp_already_added', 'true');
+      } else {
+        toast.error('Failed to add to Farcaster. Please try again.');
+      }
     }
   };
 
   const handleShare = async () => {
-    const url = window.location.origin;
+    // Use Farcaster mini app link
+    const url = 'https://farcaster.xyz/miniapps/uWGKfkq7RRal/riddlepay';
     const shareData = {
       title: 'RiddlePay - Secret Crypto Airdrops',
       text: 'Send secret crypto airdrops unlocked by riddles on Base Network',
@@ -116,6 +133,14 @@ export default function AddToFarcasterBanner() {
                 <p className="text-xs sm:text-sm text-white/80">
                   Quick access to your secret airdrops
                 </p>
+                <a 
+                  href="https://farcaster.xyz/miniapps/uWGKfkq7RRal/riddlepay" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-xs text-white/60 hover:text-white/80 underline mt-1 inline-block"
+                >
+                  View on Farcaster
+                </a>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">

@@ -67,15 +67,15 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
   const currentStepData = steps[currentStep];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div className="bg-baseLight/95 dark:bg-white/95 backdrop-blur-xl rounded-2xl border border-border p-6 sm:p-8 max-w-md w-full shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div className="relative bg-baseLight/95 backdrop-blur-xl rounded-2xl border border-border p-6 sm:p-8 max-w-md w-full shadow-2xl">
           {/* Close Button */}
           <button
             onClick={handleSkip}
-            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation"
+            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-baseLight/20 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center touch-manipulation z-10"
             aria-label="Close"
           >
-            <X className="w-5 h-5 text-gray-400 dark:text-gray-600" />
+            <X className="w-5 h-5 text-white" />
           </button>
 
           {/* Content */}
@@ -88,13 +88,13 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
             )}
 
             {/* Title */}
-            <h2 className="text-2xl sm:text-3xl font-bold text-center text-white dark:text-white text-[#111827] dark:text-white capitalize">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center text-white capitalize">
               {currentStepData.title}
             </h2>
 
             {/* Description or Steps */}
             {currentStepData.description && !currentStepData.showActions ? (
-              <p className="text-gray-400 dark:text-gray-600 text-center leading-relaxed">
+              <p className="text-gray-400 text-center leading-relaxed">
                 {currentStepData.description}
               </p>
             ) : currentStepData.showActions ? (
@@ -109,7 +109,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
                 </Link>
                 <Link href="/my-gifts" prefetch={true} onClick={handleSkip}>
                   <button
-                    className="w-full p-4 glass border border-border text-white dark:text-gray-900 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
+                    className="w-full p-4 glass border border-border text-white font-semibold rounded-xl transition-all hover:bg-baseLight/20 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
                   >
                     <Package className="w-5 h-5" />
                     <span>View My Airdrops</span>
@@ -117,7 +117,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
                 </Link>
                 <button
                   onClick={() => setCurrentStep(1)}
-                  className="w-full p-4 glass border border-border text-gray-400 dark:text-gray-600 font-semibold rounded-xl transition-all hover:bg-baseLight/20 dark:hover:bg-white/10 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
+                  className="w-full p-4 glass border border-border text-gray-400 font-semibold rounded-xl transition-all hover:bg-baseLight/20 touch-manipulation flex items-center justify-center gap-3 min-h-[52px]"
                 >
                   <Info className="w-5 h-5" />
                   <span>How it works</span>
@@ -135,10 +135,10 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
                         {item.number}
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-white dark:text-gray-900 mb-1">
+                        <h3 className="font-semibold text-white mb-1">
                           {item.title}
                         </h3>
-                        <p className="text-sm text-gray-400 dark:text-gray-600">
+                        <p className="text-sm text-gray-400">
                           {item.description}
                         </p>
                       </div>
@@ -156,7 +156,7 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
                   className={`h-2 rounded-full transition-all ${
                     index === currentStep
                       ? 'w-8 bg-blue-500'
-                      : 'w-2 bg-gray-600 dark:bg-gray-400'
+                      : 'w-2 bg-gray-600'
                   }`}
                 />
               ))}
@@ -164,18 +164,28 @@ export default function OnboardingModal({ onClose }: OnboardingModalProps) {
 
             {/* Buttons */}
             <div className="flex flex-col gap-3 pt-2">
-              <button
-                onClick={handleNext}
-                className="w-full px-6 py-3 min-h-[52px] bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-2"
-              >
-                <span>{currentStep < steps.length - 1 ? 'Next' : 'Get Started'}</span>
-                {currentStep < steps.length - 1 && (
+              {/* Next/Get Started Button - Always visible */}
+              {currentStep < steps.length - 1 && (
+                <button
+                  onClick={handleNext}
+                  className="w-full px-6 py-3 min-h-[52px] bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-2"
+                >
+                  <span>Next</span>
                   <ArrowRight className="w-5 h-5" />
-                )}
-              </button>
+                </button>
+              )}
+              {currentStep === steps.length - 1 && (
+                <button
+                  onClick={handleSkip}
+                  className="w-full px-6 py-3 min-h-[52px] bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/50 touch-manipulation flex items-center justify-center gap-2"
+                >
+                  <span>Get Started</span>
+                </button>
+              )}
+              {/* Skip Button - Always visible */}
               <button
                 onClick={handleSkip}
-                className="w-full px-4 py-2 min-h-[44px] glass rounded-xl text-gray-400 dark:text-gray-600 hover:bg-baseLight/20 dark:hover:bg-white/10 transition-all touch-manipulation flex items-center justify-center gap-2"
+                className="w-full px-4 py-2 min-h-[44px] glass rounded-xl text-gray-400 hover:bg-baseLight/20 transition-all touch-manipulation flex items-center justify-center gap-2"
               >
                 <span>Skip</span>
               </button>

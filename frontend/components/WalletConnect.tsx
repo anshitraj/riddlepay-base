@@ -104,25 +104,25 @@ export default function WalletConnect() {
   // -------------------------------
 
   return (
-    <div className="flex flex-row items-center gap-2 sm:gap-3">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
       {/* Farcaster Login Button */}
       <button
         onClick={connectFarcaster}
         disabled={isConnecting}
-        className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl shadow-lg border border-purple-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
+        className="group relative w-full sm:min-w-[140px] px-4 py-3 min-h-[48px] bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl shadow-lg border border-purple-400/20 disabled:opacity-50 hover:scale-105 transition-transform flex items-center justify-center"
       >
-        <FarcasterLogo className="w-5 h-5 inline-block mr-2" />
-        {isConnecting ? "Connecting..." : "Farcaster"}
+        <FarcasterLogo className="w-5 h-5 inline-block mr-2 flex-shrink-0" />
+        <span className="whitespace-nowrap">{isConnecting ? "Connecting..." : "Farcaster"}</span>
       </button>
 
       {/* MetaMask/Base Login Button */}
       <button
         onClick={connectMetaMask}
         disabled={isConnecting}
-        className="group relative min-w-[140px] px-4 py-3 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform"
+        className="group relative w-full sm:min-w-[140px] px-4 py-3 min-h-[48px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform flex items-center justify-center"
       >
-        <BaseLogo className="w-5 h-5 inline-block mr-2" />
-        {isConnecting ? "Connecting..." : "MetaMask"}
+        <BaseLogo className="w-5 h-5 inline-block mr-2 flex-shrink-0" />
+        <span className="whitespace-nowrap">{isConnecting ? "Connecting..." : "MetaMask"}</span>
       </button>
     </div>
   );
