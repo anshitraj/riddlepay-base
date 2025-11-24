@@ -45,7 +45,66 @@ async function loadFarcasterSDK() {
 }
 
 // Detect if we're in Farcaster/Base mini app environment
-function isInMiniApp(): boolean {
+// This function tries multiple methods to detect Farcaster environment
+async function isInMiniApp(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  
+  try {
+    // Method 1: Try to load and initialize Farcaster SDK
+    // If SDK.ready() succeeds, we're definitely in Farcaster
+    try {
+      const { sdk } = await import('@farcaster/miniapp-sdk');
+      await sdk.actions.ready();
+      console.log('✅ Detected Farcaster via SDK');
+      return true;
+    } catch (sdkError) {
+      // SDK failed, continue to other checks
+      console.log('SDK check failed, trying other methods...');
+    }
+
+    // Method 2: Check for Farcaster window objects
+    if ((window as any).farcaster || (window as any).parent?.farcaster) {
+      console.log('✅ Detected Farcaster via window object');
+      return true;
+    }
+
+    // Method 3: Check URL patterns
+    const href = window.location?.href || '';
+    if (
+      href.includes('farcaster.xyz') ||
+      href.includes('warpcast.com') ||
+      href.includes('base.org') ||
+      href.includes('base.xyz') ||
+      href.includes('farcaster') ||
+      href.includes('warpcast')
+    ) {
+      console.log('✅ Detected Farcaster via URL');
+      return true;
+    }
+
+    // Method 4: Check if we're in an iframe (common for mini apps)
+    if (window.self !== window.top) {
+      // We're in an iframe, might be Farcaster
+      // Try to access parent window (with try-catch for cross-origin)
+      try {
+        if ((window.parent as any).farcaster || (window.parent as any).location?.href?.includes('farcaster')) {
+          console.log('✅ Detected Farcaster via iframe check');
+          return true;
+        }
+      } catch (e) {
+        // Cross-origin, can't access parent
+      }
+    }
+
+    return false;
+  } catch (error) {
+    console.error('Error detecting Farcaster environment:', error);
+    return false;
+  }
+}
+
+// Synchronous fallback for immediate checks (less reliable)
+function isInMiniAppSync(): boolean {
   if (typeof window === 'undefined') return false;
   try {
     return !!(
@@ -54,7 +113,9 @@ function isInMiniApp(): boolean {
       window.location?.href?.includes('farcaster.xyz') ||
       window.location?.href?.includes('warpcast.com') ||
       window.location?.href?.includes('base.org') ||
-      window.location?.href?.includes('base.xyz')
+      window.location?.href?.includes('base.xyz') ||
+      window.location?.href?.includes('farcaster') ||
+      window.location?.href?.includes('warpcast')
     );
   } catch {
     return false;
@@ -96,7 +157,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
     try {
       const ethersLib = await loadEthers();
-      const inMiniApp = isInMiniApp();
+      // Use async detection for more reliable results
+      const inMiniApp = await isInMiniApp();
 
       if (inMiniApp) {
         // In Farcaster/Base mini app - use Farcaster SDK
@@ -183,9 +245,15 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   /////////////////////////////////////////////////////////////
   useEffect(() => {
     const init = async () => {
-      // Detect environment
-      const inMiniApp = isInMiniApp();
+      // First, set initial state based on sync check (for immediate UI updates)
+      const initialCheck = isInMiniAppSync();
+      setIsInMiniAppEnv(initialCheck);
+
+      // Then do async detection (more reliable)
+      const inMiniApp = await isInMiniApp();
       setIsInMiniAppEnv(inMiniApp);
+
+      console.log('🔍 Environment detection:', { inMiniApp, initialCheck });
 
       // Auto-connect if we haven't already connected
       if (!hasAutoConnectedRef.current && !address) {
@@ -195,17 +263,19 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         // (Farcaster provides wallet automatically, so we should connect)
         if (inMiniApp) {
           hasAutoConnectedRef.current = true;
+          console.log('🚀 Auto-connecting in Farcaster...');
           // Small delay to ensure SDK is ready
           setTimeout(() => {
             connect().catch((err) => {
-              console.log('Auto-connect in Farcaster:', err);
+              console.error('❌ Auto-connect in Farcaster failed:', err);
               // If auto-connect fails, user can still manually connect
             });
-          }, 1000); // Slightly longer delay for Farcaster SDK to initialize
+          }, 1500); // Longer delay to ensure Farcaster SDK is fully initialized
         } 
         // If we have a saved connection (from previous session), auto-connect
         else if (saved) {
           hasAutoConnectedRef.current = true;
+          console.log('🔄 Auto-connecting with saved wallet type:', saved);
           // Small delay to ensure SDK is ready
           setTimeout(() => {
             connect().catch(console.error);
