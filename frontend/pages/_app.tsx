@@ -8,61 +8,51 @@ import Head from "next/head";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Disable Pull-To-Refresh in Base App
-// This prevents the Base App from reloading the mini app when scrolling up
+// Disable pull-to-refresh gesture inside Base App WebView
 function disablePullToRefresh() {
   let lastY = 0;
 
-  const handleTouchStart = (e: TouchEvent) => {
+  const onTouchStart = (e: TouchEvent) => {
     lastY = e.touches[0].clientY;
   };
 
-  const handleTouchMove = (e: TouchEvent) => {
-    const y = e.touches[0].clientY;
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+  const onTouchMove = (e: TouchEvent) => {
+    const currentY = e.touches[0].clientY;
 
-    // If user scrolls UP hard from the top → prevent refresh
-    if (y > lastY && scrollTop === 0) {
+    // If user is at top & scrolling up → Block refresh
+    if (window.scrollY === 0 && currentY > lastY) {
       e.preventDefault();
     }
 
-    lastY = y;
+    lastY = currentY;
   };
 
-  document.addEventListener("touchstart", handleTouchStart, { passive: false });
-  document.addEventListener("touchmove", handleTouchMove, { passive: false });
+  document.addEventListener("touchstart", onTouchStart, { passive: false });
+  document.addEventListener("touchmove", onTouchMove, { passive: false });
 
   return () => {
-    document.removeEventListener("touchstart", handleTouchStart);
-    document.removeEventListener("touchmove", handleTouchMove);
+    document.removeEventListener("touchstart", onTouchStart);
+    document.removeEventListener("touchmove", onTouchMove);
   };
 }
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    async function initMiniApp() {
+    // Initialize Mini App SDK
+    async function init() {
       try {
-        // ✅ Load SDK dynamically (required for Warpcast/Base)
         const { sdk } = await import("@farcaster/miniapp-sdk");
-
-        // ✅ Always call ready() — do NOT conditionally check iframe
         await sdk.actions.ready();
-
-        console.log("✅ Mini App sdk.actions.ready() executed successfully");
       } catch (err) {
-        // This fires when you're running outside Warpcast/Base App
-        console.warn("⚠️ Mini App ready() skipped (not inside Warpcast/Base)", err);
+        console.warn("Not inside Base/Warpcast Mini App");
       }
     }
 
-    initMiniApp();
+    init();
 
-    // Disable pull-to-refresh to prevent Base App from reloading the mini app
+    // Disable pull-to-refresh
     const cleanup = disablePullToRefresh();
-
-    return () => {
-      cleanup();
-    };
+    return () => cleanup();
   }, []);
 
   return (
@@ -72,26 +62,32 @@ export default function App({ Component, pageProps }: AppProps) {
           <Head>
             <title>RiddlePay</title>
 
-            {/* Viewport settings for mobile keyboard handling */}
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+            {/* Prevent refresh on scroll */}
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+            />
 
-            {/* Prevent pull-to-refresh on mobile */}
             <meta name="mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-capable" content="yes" />
 
-            {/* REQUIRED for Warpcast Mini App */}
+            {/* REQUIRED for Farcaster Mini App */}
             <meta name="farcaster-mini-app" content="v1" />
 
-            {/* OG Metadata */}
-            <meta name="description" content="RiddlePay - Secret crypto gifts unlocked by riddles." />
+            {/* OG Meta */}
+            <meta name="description" content="RiddlePay - Send secret crypto gifts unlocked by riddles." />
             <meta property="og:title" content="RiddlePay" />
-            <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network." />
+            <meta property="og:description" content="RiddlePay - Send secret crypto gifts unlocked by riddles on Base." />
             <meta property="og:image" content="https://riddlepay.tech/og-image.png" />
             <meta property="og:url" content="https://riddlepay.tech" />
 
-            {/* Icon */}
-            <link rel="icon" type="image/png" href="https://riddlepay.tech/icon.png" />
+            <link rel="icon" href="https://riddlepay.tech/icon.png" />
           </Head>
+
+          {/* ⚠️ INTERNAL SCROLL AREA ONLY */}
+          <div id="miniapp-container">
+            <Component {...pageProps} />
+          </div>
 
           <Toaster
             position="top-center"
@@ -106,8 +102,6 @@ export default function App({ Component, pageProps }: AppProps) {
               },
             }}
           />
-
-          <Component {...pageProps} />
         </WalletProvider>
       </ThemeProvider>
     </ErrorBoundary>

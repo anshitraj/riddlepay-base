@@ -2,404 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Design System - Semantic Color Tokens */
-:root {
-  /* Primary Brand Color (Base Electric Blue) */
-  --color-primary: #0052FF;
-  --color-primary-hover: #00C2FF;
-  --color-primary-light: rgba(0, 82, 255, 0.1);
-  --color-primary-gradient: linear-gradient(135deg, #0052FF 0%, #00C2FF 100%);
-  
-  /* Secondary Color (Violet/Purple accent) */
-  --color-secondary: #7C3AED;
-  --color-secondary-hover: #8B5CF6;
-  --color-secondary-light: rgba(124, 58, 237, 0.1);
-  
-  /* Neutral Colors */
-  --color-neutral-50: #f9fafb;
-  --color-neutral-100: #f3f4f6;
-  --color-neutral-200: #e5e7eb;
-  --color-neutral-300: #d1d5db;
-  --color-neutral-400: #9ca3af;
-  --color-neutral-500: #6b7280;
-  --color-neutral-600: #4b5563;
-  --color-neutral-700: #374151;
-  --color-neutral-800: #1f2937;
-  --color-neutral-900: #111827;
-  
-  /* Spacing Base Unit (4px for mobile-first) */
-  --spacing-unit: 4px;
-  
-  /* Typography */
-  --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
-}
+/* ---------------------------------------------------
+   BASE MINI-APP CRITICAL OVERRIDES
+--------------------------------------------------- */
 
-/* Dark Theme Color Overrides */
-[data-theme='dark'] {
-  --color-background: #000000;
-  --color-surface: rgba(10, 10, 10, 0.8);
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #9ca3af;
-  --color-border: rgba(255, 255, 255, 0.1);
-}
-
-
-/* CRITICAL: Override Mini App (Farcaster/Base) injected styles - but respect theme */
 html, body {
-  forced-color-adjust: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;      /* ❗ Block scroll on document */
+  overscroll-behavior: none !important;
+  -webkit-overflow-scrolling: auto !important;
+  touch-action: pan-y !important;
+  background: #000 !important;
 }
 
-html[data-theme='dark'], html[data-theme='dark'] body {
-  background-color: #000000 !important;
-  color: #ffffff !important;
-  forced-color-adjust: none !important;
-  -webkit-appearance: none !important;
+/* Next.js root */
+#__next, body > div#__next {
+  height: 100% !important;
+  overflow: hidden !important;
 }
 
+/* INTERNAL SCROLL AREA */
+#miniapp-container {
+  height: 100vh !important;
+  overflow-y: auto !important;       /* App scrolls HERE */
+  -webkit-overflow-scrolling: touch !important;
+  overscroll-behavior: none !important;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ---------------------------------------------------
+   DARK THEME ROOT COLORS
+--------------------------------------------------- */
 
 :root {
+  --color-primary: #0052FF;
+  --font-family: 'Inter', sans-serif;
   color-scheme: dark;
 }
 
-
-/* Mobile optimizations */
-@layer base {
-  * {
-    -webkit-tap-highlight-color: transparent;
-  }
-  
-  html {
-    font-family: var(--font-family);
-    overscroll-behavior: none !important;
-    overscroll-behavior-y: none !important;
-    overscroll-behavior-x: none !important;
-    touch-action: manipulation;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  
-  body {
-    font-family: var(--font-family);
-    transition: background-color 0.3s ease, color 0.3s ease;
-    overscroll-behavior: none !important;
-    overscroll-behavior-y: none !important;
-    overscroll-behavior-x: none !important;
-    -webkit-overflow-scrolling: touch;
-    max-width: 100%;
-    overflow-x: hidden;
-  }
-  
-  /* Fix for Farcaster WebView - prevent text size adjustment */
-  * {
-    -webkit-text-size-adjust: 100% !important;
-  }
-  
-  button, a {
-    touch-action: manipulation;
-  }
-  
-  input, textarea, select {
-    font-size: 16px; /* Prevents zoom on iOS */
-    font-family: var(--font-family);
-  }
-  
-  @media (max-width: 640px) {
-    input, textarea, select {
-      font-size: 16px !important; /* Prevents zoom on iOS */
-    }
-    
-    /* Ensure all interactive elements are touch-friendly */
-    button, a, [role="button"] {
-      min-height: 44px;
-      min-width: 44px;
-    }
-    
-    /* Better text readability on mobile */
-    body {
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    
-    /* Prevent horizontal scroll */
-    html, body {
-      overflow-x: hidden;
-      width: 100%;
-    }
-    
-    /* Disable pull-to-refresh on mobile */
-    html, body {
-      overscroll-behavior-y: none !important;
-      overscroll-behavior: none !important;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    /* Prevent pull-to-refresh on main content areas */
-    main, [role="main"] {
-      overscroll-behavior-y: none !important;
-      overscroll-behavior: none !important;
-      touch-action: pan-y;
-    }
-    
-    /* Prevent pull-to-refresh on all scrollable containers */
-    * {
-      overscroll-behavior-y: none !important;
-    }
-    
-    /* Mobile keyboard handling - ensure content stays visible */
-    main, [role="main"] {
-      position: relative;
-      min-height: 100vh;
-      min-height: -webkit-fill-available; /* iOS Safari fix */
-    }
-    
-    /* Prevent content from being pushed out of view when keyboard appears */
-    form {
-      position: relative;
-      padding-bottom: env(safe-area-inset-bottom, 0px);
-    }
-    
-    /* Ensure inputs are scrollable into view */
-    input:focus, textarea:focus, select:focus {
-      position: relative;
-      z-index: 1;
-    }
-  }
-  
-  /* Support for Visual Viewport API */
-  @supports (height: 100dvh) {
-    @media (max-width: 640px) {
-      main, [role="main"] {
-        min-height: 100dvh; /* Dynamic viewport height */
-      }
-    }
-  }
-  
-  /* Safe area insets for mobile devices with notches */
-  @supports (padding: max(0px)) {
-    body {
-      padding-left: env(safe-area-inset-left);
-      padding-right: env(safe-area-inset-right);
-    }
-    
-    .safe-top {
-      padding-top: env(safe-area-inset-top);
-    }
-    
-    .safe-bottom {
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-  }
+html[data-theme='dark'], html[data-theme='dark'] body {
+  background-color: #000 !important;
+  color: white !important;
+  forced-color-adjust: none !important;
 }
 
-:root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-}
+/* ---------------------------------------------------
+   GENERAL MOBILE FIXES
+--------------------------------------------------- */
 
-[data-theme='dark'] {
-  --foreground-rgb: 255, 255, 255;
-}
-
-
-/* Dark Theme (Default) - Base Blue Theme */
-html[data-theme='dark'] body {
-  color: #ffffff !important;
-  background: #000000 !important;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.1) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.08) 0px, transparent 50%) !important;
-  min-height: 100vh;
-  position: relative;
-}
-
-html[data-theme='dark'] body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 50%, rgba(0, 82, 255, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(0, 102, 255, 0.03) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-
-/* Fast theme transitions */
 * {
-  transition: background-color 0.075s ease, color 0.075s ease, border-color 0.075s ease;
+  -webkit-text-size-adjust: 100% !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  font-family: var(--font-family);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
-  transition: background-color 0.075s ease, color 0.075s ease;
   font-family: var(--font-family);
+  max-width: 100%;
+  overflow-x: hidden;
+  transition: background-color .2s, color .2s;
 }
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  
-  .glass {
-    background: rgba(255, 255, 255, 0.05);
-    transition: background-color 0.075s ease, border-color 0.075s ease;
-  }
-  
-  
-  .glass-strong {
-    background: rgba(255, 255, 255, 0.08);
-    transition: background-color 0.075s ease, border-color 0.075s ease;
-  }
-  
-  
-  .border-border {
-    border-color: rgba(255, 255, 255, 0.1);
-    transition: border-color 0.3s ease;
-  }
-  
-  
-  
-  /* Ensure dark theme background is properly set */
-  html[data-theme='dark'] .bg-baseDark,
-  html[data-theme='dark'] div.bg-baseDark,
-  html[data-theme='dark'] .min-h-screen.bg-baseDark {
-    background: #000000 !important;
-    background-image: 
-      radial-gradient(at 0% 0%, rgba(0, 82, 255, 0.15) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(0, 102, 255, 0.1) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, rgba(0, 82, 255, 0.1) 0px, transparent 50%),
-      radial-gradient(at 0% 100%, rgba(0, 102, 255, 0.08) 0px, transparent 50%) !important;
-  }
-  
-  
-  /* Dark theme - ensure baseLight backgrounds are dark (black with slight transparency) */
-  [data-theme='dark'] .bg-baseLight\/50 {
-    background: rgba(10, 10, 10, 0.5) !important;
-  }
-  
-  [data-theme='dark'] .bg-baseLight\/30 {
-    background: rgba(10, 10, 10, 0.3) !important;
-  }
-  
-  [data-theme='dark'] .bg-baseLight\/40 {
-    background: rgba(10, 10, 10, 0.4) !important;
-  }
-  
-  [data-theme='dark'] .bg-baseLight\/80 {
-    background: rgba(10, 10, 10, 0.8) !important;
-  }
-  
-  [data-theme='dark'] .bg-baseLight\/95 {
-    background: rgba(10, 10, 10, 0.95) !important;
-  }
-  
-  
-  /* Ensure dark theme text stays white */
-  html[data-theme='dark'] .text-white {
-    color: #ffffff !important;
-  }
-  
-  html[data-theme='dark'] .text-gray-300 {
-    color: #d1d5db !important;
-  }
-  
-  html[data-theme='dark'] .text-gray-400 {
-    color: #9ca3af !important;
-  }
-  
-  
-  .gradient-border {
-    position: relative;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 12px;
-  }
-  
-  .gradient-border::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(0, 82, 255, 0.5), rgba(0, 102, 255, 0.5));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-  
-  .glow {
-    box-shadow: 0 0 20px rgba(0, 82, 255, 0.3);
-  }
-  
-  .glow-hover:hover {
-    box-shadow: 0 0 30px rgba(0, 82, 255, 0.5);
-    transition: box-shadow 0.3s ease;
-  }
-  
-  /* Logo styling - BLACKLOGO.png is already dark, works in both themes */
-  img[src*="BLACKLOGO"] {
-    filter: none;
-  }
+button, a {
+  touch-action: manipulation;
 }
 
-/* Custom scrollbar */
+input, textarea {
+  font-size: 16px !important; /* Prevent zoom */
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  width: 100%;
+}
+
+/* ---------------------------------------------------
+   SCROLLBAR
+--------------------------------------------------- */
+
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
-
-[data-theme='dark'] ::-webkit-scrollbar-track {
-  background: #1a1a1a;
-}
-
-
 ::-webkit-scrollbar-thumb {
   background: #0052FF;
-  border-radius: 4px;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #0066FF;
-}
+/* ---------------------------------------------------
+   THEME BACKGROUND
+--------------------------------------------------- */
 
-/* Animations */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-@keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Shimmer animation for buttons */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+html[data-theme='dark'] body {
+  background: #000 !important;
+  background-image:
+    radial-gradient(at 0% 0%, rgba(0,82,255,0.15) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(0,82,255,0.1) 0px, transparent 50%);
 }
 
