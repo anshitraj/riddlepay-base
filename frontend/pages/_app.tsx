@@ -1,4 +1,4 @@
-// pages/_app.tsx
+app.tsx // pages/_app.tsx
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -8,51 +8,61 @@ import Head from "next/head";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
-// Disable pull-to-refresh gesture inside Base App WebView
+// Disable Pull-To-Refresh in Base App
+// This prevents the Base App from reloading the mini app when scrolling up
 function disablePullToRefresh() {
   let lastY = 0;
 
-  const onTouchStart = (e: TouchEvent) => {
+  const handleTouchStart = (e: TouchEvent) => {
     lastY = e.touches[0].clientY;
   };
 
-  const onTouchMove = (e: TouchEvent) => {
-    const currentY = e.touches[0].clientY;
+  const handleTouchMove = (e: TouchEvent) => {
+    const y = e.touches[0].clientY;
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
 
-    // If user is at top & scrolling up → Block refresh
-    if (window.scrollY === 0 && currentY > lastY) {
+    // If user scrolls UP hard from the top → prevent refresh
+    if (y > lastY && scrollTop === 0) {
       e.preventDefault();
     }
 
-    lastY = currentY;
+    lastY = y;
   };
 
-  document.addEventListener("touchstart", onTouchStart, { passive: false });
-  document.addEventListener("touchmove", onTouchMove, { passive: false });
+  document.addEventListener("touchstart", handleTouchStart, { passive: false });
+  document.addEventListener("touchmove", handleTouchMove, { passive: false });
 
   return () => {
-    document.removeEventListener("touchstart", onTouchStart);
-    document.removeEventListener("touchmove", onTouchMove);
+    document.removeEventListener("touchstart", handleTouchStart);
+    document.removeEventListener("touchmove", handleTouchMove);
   };
 }
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    // Initialize Mini App SDK
-    async function init() {
+    async function initMiniApp() {
       try {
+        // ✅ Load SDK dynamically (required for Warpcast/Base)
         const { sdk } = await import("@farcaster/miniapp-sdk");
+
+        // ✅ Always call ready() — do NOT conditionally check iframe
         await sdk.actions.ready();
+
+        console.log("✅ Mini App sdk.actions.ready() executed successfully");
       } catch (err) {
-        console.warn("Not inside Base/Warpcast Mini App");
+        // This fires when you're running outside Warpcast/Base App
+        console.warn("⚠️ Mini App ready() skipped (not inside Warpcast/Base)", err);
       }
     }
 
-    init();
+    initMiniApp();
 
-    // Disable pull-to-refresh
+    // Disable pull-to-refresh to prevent Base App from reloading the mini app
     const cleanup = disablePullToRefresh();
-    return () => cleanup();
+
+    return () => {
+      cleanup();
+    };
   }, []);
 
   return (
@@ -62,32 +72,26 @@ export default function App({ Component, pageProps }: AppProps) {
           <Head>
             <title>RiddlePay</title>
 
-            {/* Prevent refresh on scroll */}
-            <meta
-              name="viewport"
-              content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-            />
+            {/* Viewport settings for mobile keyboard handling */}
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
+            {/* Prevent pull-to-refresh on mobile */}
             <meta name="mobile-web-app-capable" content="yes" />
             <meta name="apple-mobile-web-app-capable" content="yes" />
 
-            {/* REQUIRED for Farcaster Mini App */}
+            {/* REQUIRED for Warpcast Mini App */}
             <meta name="farcaster-mini-app" content="v1" />
 
-            {/* OG Meta */}
-            <meta name="description" content="RiddlePay - Send secret crypto gifts unlocked by riddles." />
+            {/* OG Metadata */}
+            <meta name="description" content="RiddlePay - Secret crypto gifts unlocked by riddles." />
             <meta property="og:title" content="RiddlePay" />
-            <meta property="og:description" content="RiddlePay - Send secret crypto gifts unlocked by riddles on Base." />
+            <meta property="og:description" content="Send secret crypto gifts unlocked by riddles on Base Network." />
             <meta property="og:image" content="https://riddlepay.tech/og-image.png" />
             <meta property="og:url" content="https://riddlepay.tech" />
 
-            <link rel="icon" href="https://riddlepay.tech/icon.png" />
+            {/* Icon */}
+            <link rel="icon" type="image/png" href="https://riddlepay.tech/icon.png" />
           </Head>
-
-          {/* ⚠️ INTERNAL SCROLL AREA ONLY */}
-          <div id="miniapp-container">
-            <Component {...pageProps} />
-          </div>
 
           <Toaster
             position="top-center"
@@ -102,6 +106,8 @@ export default function App({ Component, pageProps }: AppProps) {
               },
             }}
           />
+
+          <Component {...pageProps} />
         </WalletProvider>
       </ThemeProvider>
     </ErrorBoundary>
