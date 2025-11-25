@@ -35,8 +35,26 @@ export interface Gift {
   claimed: boolean;
 }
 
+// Helper function to detect Farcaster environment
+function isFarcasterEnvironment(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    const href = window.location?.href || '';
+    return (
+      href.includes('farcaster.xyz') ||
+      href.includes('warpcast.com') ||
+      href.includes('base.org') ||
+      href.includes('base.xyz') ||
+      !!(window as any).farcaster ||
+      !!(window as any).parent?.farcaster
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function useContract() {
-  const { address, provider } = useWallet();
+  const { address, provider, isInMiniApp } = useWallet();
   const [approving, setApproving] = useState(false);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
   const [readContract, setReadContract] = useState<ethers.Contract | null>(null);
@@ -214,6 +232,46 @@ export function useContract() {
         ? ethers.parseEther(amount)
         : ethers.parseUnits(amount, 6); // USDC has 6 decimals
       
+      // Check balance before proceeding (especially important for Farcaster)
+      if (provider && address) {
+        try {
+          if (isETH) {
+            const balance = await provider.getBalance(address);
+            // Reserve some ETH for gas (0.001 ETH)
+            const gasReserve = ethers.parseEther('0.001');
+            if (balance < amountWei + gasReserve) {
+              const balanceFormatted = ethers.formatEther(balance);
+              const requiredFormatted = ethers.formatEther(amountWei + gasReserve);
+              throw new Error(`Insufficient balance. You have ${balanceFormatted} ETH but need ${requiredFormatted} ETH (including gas fees).`);
+            }
+          } else {
+            // Check USDC balance
+            const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+            if (usdcAddress) {
+              const usdcContract = new ethers.Contract(
+                usdcAddress,
+                ['function balanceOf(address owner) external view returns (uint256)'],
+                provider
+              );
+              const balance = await usdcContract.balanceOf(address);
+              if (balance < amountWei) {
+                const balanceFormatted = ethers.formatUnits(balance, 6);
+                const requiredFormatted = ethers.formatUnits(amountWei, 6);
+                throw new Error(`Insufficient USDC balance. You have ${balanceFormatted} USDC but need ${requiredFormatted} USDC.`);
+              }
+            }
+          }
+        } catch (balanceError: any) {
+          // If it's already our custom balance error, throw it
+          if (balanceError.message?.includes('Insufficient balance') || balanceError.message?.includes('Insufficient USDC')) {
+            setError(balanceError.message);
+            throw balanceError;
+          }
+          // Otherwise, log but continue (balance check failed, but don't block transaction)
+          console.warn('⚠️ Balance check failed:', balanceError);
+        }
+      }
+      
       // Check if we can use batch transactions (EIP-5792)
       const canBatch = provider ? await checkBatchSupport(provider) : false;
       
@@ -360,17 +418,149 @@ export function useContract() {
       
       let errorMsg = err.reason || err.message || 'Transaction failed';
       
+      // Check if we're in Farcaster environment
+      const isFarcaster = isFarcasterEnvironment() || isInMiniApp;
+      
       // Better error messages for common issues
-      if (err.message?.includes('require(false)') || err.message?.includes('execution reverted')) {
-        errorMsg = `Contract call failed: ${err.reason || err.message}. Contract: ${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}`;
+      if (err.message?.includes('Insufficient balance') || err.message?.includes('Insufficient USDC')) {
+        // Already handled above, use the message as-is
+        errorMsg = err.message;
+      } else if (err.message?.includes('require(false)') || err.message?.includes('execution reverted')) {
+        // Try to extract more meaningful error from revert data
+        if (isFarcaster && (err.code === 'CALL_EXCEPTION' || err.code === -32000)) {
+          // In Farcaster, "missing revert data" often means insufficient balance
+          // Check balance again to provide better error message
+          if (provider && address) {
+            try {
+              if (isETH) {
+                const balance = await provider.getBalance(address);
+                const amountWei = ethers.parseEther(amount);
+                if (balance < amountWei) {
+                  const balanceFormatted = ethers.formatEther(balance);
+                  const requiredFormatted = ethers.formatEther(amountWei);
+                  errorMsg = `Insufficient balance. You have ${balanceFormatted} ETH but need ${requiredFormatted} ETH.`;
+                } else {
+                  errorMsg = 'Transaction failed. Please check your balance and try again.';
+                }
+              } else {
+                const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+                if (usdcAddress) {
+                  const usdcContract = new ethers.Contract(
+                    usdcAddress,
+                    ['function balanceOf(address owner) external view returns (uint256)'],
+                    provider
+                  );
+                  const balance = await usdcContract.balanceOf(address);
+                  const amountWei = ethers.parseUnits(amount, 6);
+                  if (balance < amountWei) {
+                    const balanceFormatted = ethers.formatUnits(balance, 6);
+                    const requiredFormatted = ethers.formatUnits(amountWei, 6);
+                    errorMsg = `Insufficient USDC balance. You have ${balanceFormatted} USDC but need ${requiredFormatted} USDC.`;
+                  } else {
+                    errorMsg = 'Transaction failed. Please check your balance and try again.';
+                  }
+                }
+              }
+            } catch (balanceCheckError) {
+              // If balance check fails, use generic error
+              errorMsg = 'Transaction failed. Please check your balance and try again.';
+            }
+          } else {
+            errorMsg = 'Transaction failed. Please check your balance and try again.';
+          }
+        } else {
+          errorMsg = `Contract call failed: ${err.reason || err.message}. Contract: ${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}`;
+        }
       } else if (err.message?.includes('Rate limit') || err.message?.includes('rate limited') || err.code === -32603) {
         errorMsg = 'Rate limit exceeded. The retry logic will handle this automatically. Please wait...';
       } else if (err.message?.includes('Internal JSON-RPC error')) {
         errorMsg = 'RPC error. Please check your network connection and try again.';
       } else if (err.code === 'UNPREDICTABLE_GAS_LIMIT') {
-        errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+        // In Farcaster, this often means insufficient balance
+        if (isFarcaster) {
+          if (provider && address) {
+            try {
+              if (isETH) {
+                const balance = await provider.getBalance(address);
+                const amountWei = ethers.parseEther(amount);
+                if (balance < amountWei) {
+                  const balanceFormatted = ethers.formatEther(balance);
+                  const requiredFormatted = ethers.formatEther(amountWei);
+                  errorMsg = `Insufficient balance. You have ${balanceFormatted} ETH but need ${requiredFormatted} ETH.`;
+                } else {
+                  errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+                }
+              } else {
+                const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+                if (usdcAddress) {
+                  const usdcContract = new ethers.Contract(
+                    usdcAddress,
+                    ['function balanceOf(address owner) external view returns (uint256)'],
+                    provider
+                  );
+                  const balance = await usdcContract.balanceOf(address);
+                  const amountWei = ethers.parseUnits(amount, 6);
+                  if (balance < amountWei) {
+                    const balanceFormatted = ethers.formatUnits(balance, 6);
+                    const requiredFormatted = ethers.formatUnits(amountWei, 6);
+                    errorMsg = `Insufficient USDC balance. You have ${balanceFormatted} USDC but need ${requiredFormatted} USDC.`;
+                  } else {
+                    errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+                  }
+                }
+              }
+            } catch (balanceCheckError) {
+              errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+            }
+          } else {
+            errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+          }
+        } else {
+          errorMsg = `Transaction would fail: ${err.reason || err.message}. Please check all fields are valid.`;
+        }
       } else if (err.code === 'CALL_EXCEPTION' || err.code === -32000) {
-        errorMsg = `Contract call exception: ${err.reason || err.message}. Make sure the contract is deployed at ${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}`;
+        // In Farcaster, "missing revert data" often means insufficient balance
+        if (isFarcaster && (err.message?.includes('missing revert data') || !err.reason)) {
+          if (provider && address) {
+            try {
+              if (isETH) {
+                const balance = await provider.getBalance(address);
+                const amountWei = ethers.parseEther(amount);
+                if (balance < amountWei) {
+                  const balanceFormatted = ethers.formatEther(balance);
+                  const requiredFormatted = ethers.formatEther(amountWei);
+                  errorMsg = `Insufficient balance. You have ${balanceFormatted} ETH but need ${requiredFormatted} ETH.`;
+                } else {
+                  errorMsg = 'Transaction failed. Please check your balance and try again.';
+                }
+              } else {
+                const usdcAddress = process.env.NEXT_PUBLIC_USDC_ADDRESS;
+                if (usdcAddress) {
+                  const usdcContract = new ethers.Contract(
+                    usdcAddress,
+                    ['function balanceOf(address owner) external view returns (uint256)'],
+                    provider
+                  );
+                  const balance = await usdcContract.balanceOf(address);
+                  const amountWei = ethers.parseUnits(amount, 6);
+                  if (balance < amountWei) {
+                    const balanceFormatted = ethers.formatUnits(balance, 6);
+                    const requiredFormatted = ethers.formatUnits(amountWei, 6);
+                    errorMsg = `Insufficient USDC balance. You have ${balanceFormatted} USDC but need ${requiredFormatted} USDC.`;
+                  } else {
+                    errorMsg = 'Transaction failed. Please check your balance and try again.';
+                  }
+                }
+              }
+            } catch (balanceCheckError) {
+              errorMsg = 'Transaction failed. Please check your balance and try again.';
+            }
+          } else {
+            errorMsg = 'Transaction failed. Please check your balance and try again.';
+          }
+        } else {
+          errorMsg = `Contract call exception: ${err.reason || err.message || 'missing revert data'}. Make sure the contract is deployed at ${process.env.NEXT_PUBLIC_CONTRACT_ADDRESS}`;
+        }
       }
       
       setError(errorMsg);
@@ -378,7 +568,7 @@ export function useContract() {
     } finally {
       setLoading(false);
     }
-  }, [contract, approveUSDC, checkUSDCAllowance]);
+  }, [contract, approveUSDC, checkUSDCAllowance, provider, address, isInMiniApp]);
 
   const createBulkGifts = useCallback(async (
     receivers: string[],

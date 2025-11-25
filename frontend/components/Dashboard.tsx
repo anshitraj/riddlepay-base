@@ -8,6 +8,69 @@ import { Gift, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight, Send
 import Link from 'next/link';
 import { formatAmount } from '@/utils/formatAmount';
 
+// Popular Base network tokens
+const BASE_TOKENS = [
+  {
+    symbol: 'ETH',
+    name: 'Ethereum',
+    address: '0x0000000000000000000000000000000000000000', // Native token
+    decimals: 18,
+    logo: '🔷',
+    coingeckoId: 'ethereum',
+  },
+  {
+    symbol: 'USDC',
+    name: 'USD Coin',
+    address: process.env.NEXT_PUBLIC_USDC_ADDRESS || '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', // Base mainnet USDC
+    decimals: 6,
+    logo: '💵',
+    coingeckoId: 'usd-coin',
+  },
+  {
+    symbol: 'WETH',
+    name: 'Wrapped Ethereum',
+    address: '0x4200000000000000000000000000000000000006', // Base mainnet WETH
+    decimals: 18,
+    logo: '🔷',
+    coingeckoId: 'weth',
+  },
+  {
+    symbol: 'DAI',
+    name: 'Dai Stablecoin',
+    address: '0x50c5725949A6F0c72E6C4a641F24049A917DB0C', // Base mainnet DAI
+    decimals: 18,
+    logo: '💎',
+    coingeckoId: 'dai',
+  },
+  {
+    symbol: 'USDT',
+    name: 'Tether USD',
+    address: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', // Base mainnet USDT (if exists)
+    decimals: 6,
+    logo: '💱',
+    coingeckoId: 'tether',
+  },
+  {
+    symbol: 'cbETH',
+    name: 'Coinbase Wrapped Staked ETH',
+    address: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', // Base mainnet cbETH
+    decimals: 18,
+    logo: '🪙',
+    coingeckoId: 'coinbase-wrapped-staked-eth',
+  },
+];
+
+interface TokenBalance {
+  symbol: string;
+  name: string;
+  balance: string;
+  balanceFormatted: string;
+  usdValue: number;
+  address: string;
+  decimals: number;
+  logo: string;
+}
+
 export default function Dashboard() {
   const { address, provider } = useWallet();
   const { getGiftCount, getTotalValueLocked, getGiftsForUser, getGift } = useContract();
@@ -20,6 +83,8 @@ export default function Dashboard() {
     userGiftsSent: 0,
     userGiftsReceived: 0,
   });
+  const [tokenBalances, setTokenBalances] = useState<TokenBalance[]>([]);
+  const [tokenPrices, setTokenPrices] = useState<Record<string, number>>({});
   const statsRef = useRef(stats);
   const [loading, setLoading] = useState(true);
   const [recentGifts, setRecentGifts] = useState<any[]>([]);
@@ -118,26 +183,91 @@ export default function Dashboard() {
       
       if (address && provider) {
         try {
-          // Get ETH balance
-          const ethBalance = await provider.getBalance(address);
-          userETHBalance = parseFloat(ethers.formatEther(ethBalance)).toFixed(4);
+          // Fetch token prices from CoinGecko (free tier)
+          let prices: Record<string, number> = {
+            ETH: 3200,
+            USDC: 1,
+            WETH: 3200,
+            DAI: 1,
+            USDT: 1,
+            cbETH: 3200,
+          };
           
-          // Get USDC balance
-          const USDC_ADDRESS = process.env.NEXT_PUBLIC_USDC_ADDRESS;
-          if (USDC_ADDRESS) {
-            try {
-              const usdcContract = new ethers.Contract(
-                USDC_ADDRESS,
-                ['function balanceOf(address owner) external view returns (uint256)'],
-                provider
-              );
-              const usdcBalance = await usdcContract.balanceOf(address);
-              userUSDCBalance = parseFloat(ethers.formatUnits(usdcBalance, 6)).toFixed(2);
-            } catch (usdcErr) {
-              console.warn('Error fetching USDC balance:', usdcErr);
-              userUSDCBalance = statsRef.current.userUSDCBalance || '0';
+          try {
+            const tokenIds = BASE_TOKENS.map(t => t.coingeckoId).join(',');
+            const priceResponse = await fetch(
+              `https://api.coingecko.com/api/v3/simple/price?ids=${tokenIds}&vs_currencies=usd`
+            );
+            if (priceResponse.ok) {
+              const priceData = await priceResponse.json();
+              BASE_TOKENS.forEach(token => {
+                if (priceData[token.coingeckoId]?.usd) {
+                  prices[token.symbol] = priceData[token.coingeckoId].usd;
+                }
+              });
             }
+          } catch (priceErr) {
+            console.warn('Error fetching token prices, using fallback:', priceErr);
           }
+          
+          setTokenPrices(prices);
+
+          // Fetch all token balances in parallel
+          const balancePromises = BASE_TOKENS.map(async (token) => {
+            try {
+              let balance: bigint;
+              let balanceFormatted: string;
+              
+              if (token.address === '0x0000000000000000000000000000000000000000') {
+                // Native ETH
+                balance = await provider.getBalance(address);
+                balanceFormatted = parseFloat(ethers.formatEther(balance)).toFixed(6);
+                userETHBalance = parseFloat(ethers.formatEther(balance)).toFixed(4);
+              } else {
+                // ERC20 token
+                const tokenContract = new ethers.Contract(
+                  token.address,
+                  ['function balanceOf(address owner) external view returns (uint256)'],
+                  provider
+                );
+                balance = await tokenContract.balanceOf(address);
+                balanceFormatted = parseFloat(ethers.formatUnits(balance, token.decimals)).toFixed(token.decimals === 6 ? 2 : 6);
+                
+                if (token.symbol === 'USDC') {
+                  userUSDCBalance = parseFloat(ethers.formatUnits(balance, 6)).toFixed(2);
+                }
+              }
+
+              const balanceNum = parseFloat(balanceFormatted);
+              const price = prices[token.symbol] || (token.symbol === 'USDC' || token.symbol === 'USDT' || token.symbol === 'DAI' ? 1 : 0);
+              const usdValue = balanceNum * price;
+
+              // Only include tokens with balance > 0
+              if (balanceNum > 0) {
+                return {
+                  symbol: token.symbol,
+                  name: token.name,
+                  balance: balance.toString(),
+                  balanceFormatted,
+                  usdValue,
+                  address: token.address,
+                  decimals: token.decimals,
+                  logo: token.logo,
+                };
+              }
+              return null;
+            } catch (err) {
+              console.warn(`Error fetching ${token.symbol} balance:`, err);
+              return null;
+            }
+          });
+
+          const balanceResults = await Promise.all(balancePromises);
+          const validBalances = balanceResults.filter((b): b is TokenBalance => b !== null);
+          
+          // Sort by USD value (highest first)
+          validBalances.sort((a, b) => b.usdValue - a.usdValue);
+          setTokenBalances(validBalances);
         } catch (balanceErr) {
           console.warn('Error fetching wallet balances:', balanceErr);
           userETHBalance = statsRef.current.userETHBalance || '0';
@@ -258,11 +388,10 @@ export default function Dashboard() {
     );
   }
 
-  // Calculate portfolio value in USD
-  // Using approximate ETH price (can be updated or fetched from API)
-  const ETH_PRICE_USD = 3200; // Approximate ETH price in USD
+  // Calculate portfolio value in USD from all tokens
+  const ETH_PRICE_USD = tokenPrices['ETH'] || tokenPrices['WETH'] || 3200;
   const portfolioValueUSD = address 
-    ? (parseFloat(stats.userETHBalance) * ETH_PRICE_USD + parseFloat(stats.userUSDCBalance)).toFixed(2)
+    ? tokenBalances.reduce((total, token) => total + token.usdValue, 0).toFixed(2)
     : '0.00';
 
   return (
@@ -285,21 +414,43 @@ export default function Dashboard() {
           <h2 className="text-4xl font-bold text-[#0f172a] dark:text-white leading-tight">
             ${portfolioValueUSD}
           </h2>
-          {address && (
-            <div className="flex gap-4 text-sm">
-              <div>
-                <p className="text-xs text-[#6b7280] dark:text-gray-400 mb-1">ETH Value</p>
-                <p className="text-sm font-semibold text-[#1e293b] dark:text-white">
-                  ${(parseFloat(stats.userETHBalance) * ETH_PRICE_USD).toFixed(2)}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-[#6b7280] dark:text-gray-400 mb-1">USDC Value</p>
-                <p className="text-sm font-semibold text-[#1e293b] dark:text-white">
-                  ${parseFloat(stats.userUSDCBalance).toFixed(2)}
-                </p>
+          {address && tokenBalances.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-[#6b7280] dark:text-gray-400 font-semibold mb-2">Portfolio Breakdown</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {tokenBalances.map((token, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-2 bg-white dark:bg-[#0E152B]/20 rounded-lg border border-gray-200 dark:border-[#0066FF]/10">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-lg flex-shrink-0">{token.logo}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-[#1e293b] dark:text-white truncate">
+                          {token.symbol}
+                        </p>
+                        <p className="text-xs text-[#6b7280] dark:text-gray-400 truncate">
+                          {token.name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-2">
+                      <p className="text-sm font-semibold text-[#1e293b] dark:text-white">
+                        {parseFloat(token.balanceFormatted) < 0.000001 
+                          ? token.balanceFormatted 
+                          : parseFloat(token.balanceFormatted).toLocaleString(undefined, {
+                              maximumFractionDigits: token.decimals === 6 ? 2 : 6,
+                              minimumFractionDigits: 0,
+                            })}
+                      </p>
+                      <p className="text-xs text-[#6b7280] dark:text-gray-400">
+                        ${token.usdValue.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          )}
+          {address && tokenBalances.length === 0 && (
+            <p className="text-sm text-[#6b7280] dark:text-gray-400">No tokens found in wallet</p>
           )}
           {!address && (
             <p className="text-sm text-[#6b7280] dark:text-gray-400">Connect your wallet to view your portfolio</p>

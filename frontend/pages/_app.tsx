@@ -26,6 +26,37 @@ export default function App({ Component, pageProps }: AppProps) {
     }
 
     initMiniApp();
+
+    // Prevent pull-to-refresh on mobile browsers
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    const preventPullToRefresh = (e: TouchEvent) => {
+      // Only prevent if scrolling from top
+      if (window.scrollY === 0 && e.touches[0].clientY > touchStartY) {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      // Prevent pull-to-refresh when at top of page
+      if (window.scrollY === 0 && e.touches[0].clientY > touchStartY) {
+        e.preventDefault();
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
+    };
   }, []);
 
   return (
@@ -34,6 +65,13 @@ export default function App({ Component, pageProps }: AppProps) {
         <WalletProvider>
           <Head>
             <title>RiddlePay</title>
+
+            {/* Viewport settings for mobile keyboard handling */}
+            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+            {/* Prevent pull-to-refresh on mobile */}
+            <meta name="mobile-web-app-capable" content="yes" />
+            <meta name="apple-mobile-web-app-capable" content="yes" />
 
             {/* REQUIRED for Warpcast Mini App */}
             <meta name="farcaster-mini-app" content="v1" />

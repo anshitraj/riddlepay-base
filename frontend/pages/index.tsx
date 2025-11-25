@@ -150,10 +150,8 @@ function HomeContent() {
           <Header />
 
           {/* Content */}
-          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-50 to-gray-100 dark:from-[#0A0F1F] dark:to-[#0E152B] overscroll-contain touch-action-pan-y">
+          <main className="flex-1 p-3 sm:p-4 md:p-5 lg:p-6 overflow-y-auto w-full bg-gradient-to-b from-[#0A0F1F] to-[#0E152B] dark:from-[#0A0F1F] dark:to-[#0E152B] from-gray-50 to-gray-100 dark:from-[#0A0F1F] dark:to-[#0E152B] overscroll-contain touch-action-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
             <div className="max-w-7xl mx-auto space-y-4 sm:space-y-5 md:space-y-6 w-full">
-              {/* Add to Farcaster Banner */}
-              <AddToFarcasterBanner />
 
               {/* Stats Preview Row */}
               <div className="bg-[#0E152B]/30 backdrop-blur-xl rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-[#0066FF]/10">
@@ -246,6 +244,9 @@ function HomeContent() {
                   </div>
                 </button>
               </div>
+              
+              {/* Add to Farcaster Banner - At the bottom of the page */}
+              <AddToFarcasterBanner />
             </div>
           </main>
         </div>

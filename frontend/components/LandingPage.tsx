@@ -471,57 +471,99 @@ export default function LandingPage({ onLaunchDApp }: LandingPageProps) {
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-gray-900 dark:bg-gray-900 bg-white dark:bg-gray-900 border border-gray-800 dark:border-gray-800 border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl"
+                className="relative bg-gray-900/95 dark:bg-gray-900/95 backdrop-blur-xl border border-gray-800/50 dark:border-gray-800/50 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl overflow-hidden"
               >
-                <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-white text-gray-900 dark:text-white mb-2 text-center">
+                {/* Background glow */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/10 to-pink-500/10 -z-10"></div>
+                
+                <h2 className="text-2xl sm:text-3xl font-bold text-white dark:text-white mb-3 text-center bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Choose Your Wallet
                 </h2>
-                <p className="text-gray-400 dark:text-gray-400 text-gray-600 dark:text-gray-400 text-sm sm:text-base mb-6 text-center">
-                  Select how you want to connect to Riddle Pay
+                <p className="text-gray-400 dark:text-gray-400 text-sm sm:text-base mb-8 text-center">
+                  Select your preferred wallet to get started
                 </p>
 
-                <button
-                  onClick={handleLogin}
-                  disabled={isConnecting}
-                  className="group relative w-full px-6 py-3 min-h-[60px] sm:min-h-[70px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.03] hover:shadow-[0_4px_20px_rgba(0,82,255,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-lg shadow-blue-500/30 border border-blue-400/20 hover:border-blue-300/40 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {/* Light glow behind button */}
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/30 to-cyan-500/30 blur-xl -z-10"></div>
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
-                  {isInMiniApp ? (
-                    <>
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
-                      >
-                        <rect x="4" y="9" width="3.5" height="9" />
-                        <rect x="16.5" y="9" width="3.5" height="9" />
-                        <rect x="4" y="7" width="16" height="2.5" />
-                        <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
-                      </svg>
-                      <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-                        {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5 sm:w-7 sm:h-7 relative z-10 text-white flex-shrink-0"
-                      >
-                        <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
-                      </svg>
-                      <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white">
-                        {isConnecting ? 'Connecting...' : 'Connect Wallet'}
-                      </span>
-                    </>
-                  )}
-                </button>
+                {/* Wallet Buttons Container */}
+                <div className="space-y-3 w-full">
+                  {/* Farcaster Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        await connectFarcaster();
+                        setTimeout(() => {
+                          setShowLoginDialog(false);
+                          onLaunchDApp();
+                        }, 500);
+                      } catch (error) {
+                        console.error('Failed to connect Farcaster:', error);
+                      }
+                    }}
+                    disabled={isConnecting}
+                    className="group relative w-full px-6 py-4 min-h-[64px] sm:min-h-[72px] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(168,85,247,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-xl shadow-purple-500/30 border border-purple-400/30 hover:border-purple-300/50 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  >
+                    {/* Animated gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-90"></div>
+                    
+                    {/* Light glow behind button */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/40 to-pink-500/40 blur-xl -z-10 group-hover:opacity-75 transition-opacity"></div>
+                    
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6 sm:w-8 sm:h-8 relative z-10 text-white flex-shrink-0 drop-shadow-lg"
+                    >
+                      <rect x="4" y="9" width="3.5" height="9" />
+                      <rect x="16.5" y="9" width="3.5" height="9" />
+                      <rect x="4" y="7" width="16" height="2.5" />
+                      <path d="M7.5 7 Q12 12 16.5 7" stroke="currentColor" strokeWidth="2.5" fill="none" />
+                    </svg>
+                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white drop-shadow-sm">
+                      {isConnecting ? 'Connecting...' : 'Login with Farcaster'}
+                    </span>
+                  </button>
+
+                  {/* MetaMask/Base Button */}
+                  <button
+                    onClick={async () => {
+                      try {
+                        await connectMetaMask();
+                        setTimeout(() => {
+                          setShowLoginDialog(false);
+                          onLaunchDApp();
+                        }, 500);
+                      } catch (error) {
+                        console.error('Failed to connect MetaMask:', error);
+                      }
+                    }}
+                    disabled={isConnecting}
+                    className="group relative w-full px-6 py-4 min-h-[64px] sm:min-h-[72px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-2xl transition-all duration-300 active:scale-[0.97] hover:scale-[1.02] hover:shadow-[0_8px_30px_rgba(59,130,246,0.4)] touch-manipulation text-sm sm:text-base flex flex-row items-center justify-center gap-3 shadow-xl shadow-blue-500/30 border border-blue-400/30 hover:border-blue-300/50 backdrop-blur-md disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden"
+                  >
+                    {/* Animated gradient background */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-90"></div>
+                    
+                    {/* Light glow behind button */}
+                    <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/40 to-cyan-500/40 blur-xl -z-10 group-hover:opacity-75 transition-opacity"></div>
+                    
+                    {/* Shimmer effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                    
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-6 h-6 sm:w-8 sm:h-8 relative z-10 text-white flex-shrink-0 drop-shadow-lg"
+                    >
+                      <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" />
+                    </svg>
+                    <span className="text-center leading-tight relative z-10 font-semibold tracking-wide whitespace-nowrap text-white drop-shadow-sm">
+                      {isConnecting ? 'Connecting...' : 'Connect with MetaMask'}
+                    </span>
+                  </button>
+                </div>
 
                 <button
                   onClick={() => setShowLoginDialog(false)}

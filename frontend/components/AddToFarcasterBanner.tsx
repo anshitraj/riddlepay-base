@@ -17,7 +17,9 @@ export default function AddToFarcasterBanner() {
     if (isInMiniApp && isConnected) {
       import('@farcaster/miniapp-sdk').then((module) => {
         setSdk(module.sdk);
-      }).catch(console.error);
+      }).catch((err) => {
+        console.error('Error loading Farcaster SDK:', err);
+      });
     }
   }, [isInMiniApp, isConnected]);
 
@@ -31,44 +33,58 @@ export default function AddToFarcasterBanner() {
         // Show after a short delay
         const timer = setTimeout(() => {
           setShowBanner(true);
-        }, 2000);
+        }, 1000);
         return () => clearTimeout(timer);
+      } else {
+        // If already dismissed or added, don't show
+        setShowBanner(false);
       }
+    } else {
+      setShowBanner(false);
     }
   }, [isInMiniApp, isConnected, dismissed]);
 
   const handleAddToFarcaster = async () => {
     try {
-      if (!sdk) {
-        const { sdk: farcasterSDK } = await import('@farcaster/miniapp-sdk');
-        await farcasterSDK.actions.ready();
+      // Always try to load SDK fresh to ensure it's initialized
+      const { sdk: farcasterSDK } = await import('@farcaster/miniapp-sdk');
+      await farcasterSDK.actions.ready();
+      
+      // Try to add to home screen
+      try {
         await farcasterSDK.actions.addToHomeScreen();
-      } else {
-        await sdk.actions.ready();
-        await sdk.actions.addToHomeScreen();
-      }
-      // Hide banner after successful add
-      setShowBanner(false);
-      setDismissed(true);
-      localStorage.setItem('add_to_farcaster_dismissed', 'true');
-      toast.success('Added to Farcaster home!');
-    } catch (err: any) {
-      console.error('Error adding to Farcaster:', err);
-      // Check if error indicates mini app is already added
-      const errorMessage = err?.message || err?.toString() || '';
-      if (
-        errorMessage.includes('already') ||
-        errorMessage.includes('added') ||
-        errorMessage.includes('exists')
-      ) {
-        toast.success('Mini app is already added to your Farcaster home!');
+        // Success - hide banner
         setShowBanner(false);
         setDismissed(true);
         localStorage.setItem('add_to_farcaster_dismissed', 'true');
         localStorage.setItem('miniapp_already_added', 'true');
-      } else {
-        toast.error('Failed to add to Farcaster. Please try again.');
+        toast.success('Added to Farcaster home! 🎉');
+      } catch (addError: any) {
+        // Check if it's already added or other error
+        const errorMessage = addError?.message || addError?.toString() || '';
+        console.log('Add to home screen error:', errorMessage);
+        
+        if (
+          errorMessage.includes('already') ||
+          errorMessage.includes('added') ||
+          errorMessage.includes('exists') ||
+          errorMessage.includes('duplicate')
+        ) {
+          toast.success('Mini app is already added to your Farcaster home!');
+          setShowBanner(false);
+          setDismissed(true);
+          localStorage.setItem('add_to_farcaster_dismissed', 'true');
+          localStorage.setItem('miniapp_already_added', 'true');
+        } else {
+          // If the action doesn't exist or fails, provide helpful message
+          toast.error('Unable to add to home screen. You can add it manually from the menu.');
+          console.error('Add to home screen failed:', addError);
+        }
       }
+    } catch (err: any) {
+      console.error('Error with Farcaster SDK:', err);
+      // If SDK fails entirely, show helpful message
+      toast.error('Unable to add to home screen. Please try from the Farcaster menu.');
     }
   };
 

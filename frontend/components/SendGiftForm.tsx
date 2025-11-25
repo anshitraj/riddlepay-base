@@ -39,6 +39,7 @@ export default function SendGiftForm() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const successRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const validateForm = () => {
     if (!address) {
@@ -211,6 +212,76 @@ export default function SendGiftForm() {
     return isETH ? '0x0000000000000000000000000000000000000000' : (process.env.NEXT_PUBLIC_USDC_ADDRESS || '');
   };
 
+  // Handle mobile keyboard - keep focused inputs visible
+  useEffect(() => {
+    const handleInputFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        // Small delay to let keyboard appear
+        setTimeout(() => {
+          // Use Visual Viewport API if available (modern browsers)
+          if (window.visualViewport) {
+            const viewport = window.visualViewport;
+            const rect = target.getBoundingClientRect();
+            const inputBottom = rect.bottom;
+            const viewportHeight = viewport.height;
+            
+            // If input is below visible viewport, scroll it into view
+            if (inputBottom > viewportHeight) {
+              target.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+            }
+          } else {
+            // Fallback for older browsers
+            target.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            });
+          }
+        }, 300); // Delay to account for keyboard animation
+      }
+    };
+
+    // Handle Visual Viewport resize (keyboard show/hide)
+    const handleViewportResize = () => {
+      if (window.visualViewport && document.activeElement) {
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
+          const rect = activeElement.getBoundingClientRect();
+          const viewport = window.visualViewport;
+          const inputBottom = rect.bottom;
+          const viewportHeight = viewport.height;
+          
+          // Keep focused input visible
+          if (inputBottom > viewportHeight) {
+            activeElement.scrollIntoView({ 
+              behavior: 'smooth', 
+              block: 'center',
+              inline: 'nearest'
+            });
+          }
+        }
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('focusin', handleInputFocus);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+    }
+
+    return () => {
+      document.removeEventListener('focusin', handleInputFocus);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+      }
+    };
+  }, []);
+
   // Auto-scroll to success message when it appears
   useEffect(() => {
     if (success && successRef.current) {
@@ -302,7 +373,7 @@ export default function SendGiftForm() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-2 sm:space-y-3 md:space-y-4 lg:space-y-6">
         <div className="p-2.5 sm:p-3 md:p-4 lg:p-5 bg-gray-50 dark:glass bg-gray-50 dark:glass rounded-lg sm:rounded-xl border border-gray-600 dark:border-gray-700 border-gray-200 dark:border-gray-700 shadow-sm hover:border-gray-500 dark:hover:border-gray-600 hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
           <label className="block text-xs sm:text-sm font-semibold text-gray-800 dark:text-white text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center gap-2">
             <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 dark:text-blue-500 flex-shrink-0" />

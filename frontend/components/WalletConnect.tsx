@@ -104,25 +104,47 @@ export default function WalletConnect() {
   // -------------------------------
 
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
       {/* Farcaster Login Button */}
       <button
         onClick={connectFarcaster}
         disabled={isConnecting}
-        className="group relative w-full sm:min-w-[140px] px-4 py-3 min-h-[48px] bg-gradient-to-br from-purple-600 via-purple-500 to-purple-600 text-white font-bold rounded-xl shadow-lg border border-purple-400/20 disabled:opacity-50 hover:scale-105 transition-transform flex items-center justify-center"
+        className="group relative w-full sm:min-w-[160px] px-5 py-3.5 min-h-[56px] bg-gradient-to-br from-purple-600 via-purple-500 to-pink-600 text-white font-bold rounded-2xl shadow-xl shadow-purple-500/30 border border-purple-400/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/40 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 overflow-hidden"
       >
-        <FarcasterLogo className="w-5 h-5 inline-block mr-2 flex-shrink-0" />
-        <span className="whitespace-nowrap">{isConnecting ? "Connecting..." : "Farcaster"}</span>
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600 bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-90"></div>
+        
+        {/* Shimmer effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Glow effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/40 to-pink-500/40 blur-xl -z-10 group-hover:opacity-75 transition-opacity"></div>
+        
+        <FarcasterLogo className="w-6 h-6 relative z-10 flex-shrink-0 drop-shadow-lg" />
+        <span className="whitespace-nowrap relative z-10 text-sm sm:text-base font-semibold tracking-wide drop-shadow-sm">
+          {isConnecting ? "Connecting..." : "Farcaster"}
+        </span>
       </button>
 
       {/* MetaMask/Base Login Button */}
       <button
         onClick={connectMetaMask}
         disabled={isConnecting}
-        className="group relative w-full sm:min-w-[140px] px-4 py-3 min-h-[48px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg border border-blue-400/20 disabled:opacity-50 hover:scale-105 transition-transform flex items-center justify-center"
+        className="group relative w-full sm:min-w-[160px] px-5 py-3.5 min-h-[56px] bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/30 border border-blue-400/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] hover:shadow-2xl hover:shadow-blue-500/40 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2.5 overflow-hidden"
       >
-        <BaseLogo className="w-5 h-5 inline-block mr-2 flex-shrink-0" />
-        <span className="whitespace-nowrap">{isConnecting ? "Connecting..." : "MetaMask"}</span>
+        {/* Animated gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 bg-[length:200%_100%] animate-[shimmer_3s_ease-in-out_infinite] opacity-90"></div>
+        
+        {/* Shimmer effect on hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+        
+        {/* Glow effect */}
+        <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/40 to-cyan-500/40 blur-xl -z-10 group-hover:opacity-75 transition-opacity"></div>
+        
+        <BaseLogo className="w-6 h-6 relative z-10 flex-shrink-0 drop-shadow-lg" />
+        <span className="whitespace-nowrap relative z-10 text-sm sm:text-base font-semibold tracking-wide drop-shadow-sm">
+          {isConnecting ? "Connecting..." : "MetaMask"}
+        </span>
       </button>
     </div>
   );

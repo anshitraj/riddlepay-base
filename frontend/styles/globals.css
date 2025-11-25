@@ -70,7 +70,8 @@ html[data-theme='dark'], html[data-theme='dark'] body {
   
   html {
     font-family: var(--font-family);
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: none;
+    overscroll-behavior: none;
     touch-action: manipulation;
     max-width: 100%;
     overflow-x: hidden;
@@ -79,7 +80,8 @@ html[data-theme='dark'], html[data-theme='dark'] body {
   body {
     font-family: var(--font-family);
     transition: background-color 0.3s ease, color 0.3s ease;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: none;
+    overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
     overflow-x: hidden;
@@ -123,15 +125,50 @@ html[data-theme='dark'], html[data-theme='dark'] body {
     }
     
     /* Disable pull-to-refresh on mobile */
-    body {
-      overscroll-behavior-y: contain;
+    html, body {
+      overscroll-behavior-y: none !important;
+      overscroll-behavior: none !important;
       -webkit-overflow-scrolling: touch;
     }
     
     /* Prevent pull-to-refresh on main content areas */
     main, [role="main"] {
-      overscroll-behavior-y: contain;
+      overscroll-behavior-y: none !important;
+      overscroll-behavior: none !important;
       touch-action: pan-y;
+    }
+    
+    /* Prevent pull-to-refresh on all scrollable containers */
+    * {
+      overscroll-behavior-y: none !important;
+    }
+    
+    /* Mobile keyboard handling - ensure content stays visible */
+    main, [role="main"] {
+      position: relative;
+      min-height: 100vh;
+      min-height: -webkit-fill-available; /* iOS Safari fix */
+    }
+    
+    /* Prevent content from being pushed out of view when keyboard appears */
+    form {
+      position: relative;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    
+    /* Ensure inputs are scrollable into view */
+    input:focus, textarea:focus, select:focus {
+      position: relative;
+      z-index: 1;
+    }
+  }
+  
+  /* Support for Visual Viewport API */
+  @supports (height: 100dvh) {
+    @media (max-width: 640px) {
+      main, [role="main"] {
+        min-height: 100dvh; /* Dynamic viewport height */
+      }
     }
   }
   
@@ -352,5 +389,15 @@ body {
 
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Shimmer animation for buttons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
