@@ -70,8 +70,9 @@ html[data-theme='dark'], html[data-theme='dark'] body {
   
   html {
     font-family: var(--font-family);
-    overscroll-behavior-y: none;
-    overscroll-behavior: none;
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    overscroll-behavior-x: none !important;
     touch-action: manipulation;
     max-width: 100%;
     overflow-x: hidden;
@@ -80,8 +81,9 @@ html[data-theme='dark'], html[data-theme='dark'] body {
   body {
     font-family: var(--font-family);
     transition: background-color 0.3s ease, color 0.3s ease;
-    overscroll-behavior-y: none;
-    overscroll-behavior: none;
+    overscroll-behavior: none !important;
+    overscroll-behavior-y: none !important;
+    overscroll-behavior-x: none !important;
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
     overflow-x: hidden;

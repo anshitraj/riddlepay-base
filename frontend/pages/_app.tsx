@@ -8,6 +8,36 @@ import Head from "next/head";
 import { useEffect } from "react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
+// Disable Pull-To-Refresh in Base App
+// This prevents the Base App from reloading the mini app when scrolling up
+function disablePullToRefresh() {
+  let lastY = 0;
+
+  const handleTouchStart = (e: TouchEvent) => {
+    lastY = e.touches[0].clientY;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    const y = e.touches[0].clientY;
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+
+    // If user scrolls UP hard from the top → prevent refresh
+    if (y > lastY && scrollTop === 0) {
+      e.preventDefault();
+    }
+
+    lastY = y;
+  };
+
+  document.addEventListener("touchstart", handleTouchStart, { passive: false });
+  document.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+  return () => {
+    document.removeEventListener("touchstart", handleTouchStart);
+    document.removeEventListener("touchmove", handleTouchMove);
+  };
+}
+
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
     async function initMiniApp() {
@@ -27,35 +57,11 @@ export default function App({ Component, pageProps }: AppProps) {
 
     initMiniApp();
 
-    // Prevent pull-to-refresh on mobile browsers
-    let touchStartY = 0;
-    let touchEndY = 0;
-
-    const preventPullToRefresh = (e: TouchEvent) => {
-      // Only prevent if scrolling from top
-      if (window.scrollY === 0 && e.touches[0].clientY > touchStartY) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      // Prevent pull-to-refresh when at top of page
-      if (window.scrollY === 0 && e.touches[0].clientY > touchStartY) {
-        e.preventDefault();
-      }
-    };
-
-    // Add event listeners
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+    // Disable pull-to-refresh to prevent Base App from reloading the mini app
+    const cleanup = disablePullToRefresh();
 
     return () => {
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
+      cleanup();
     };
   }, []);
 
