@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract } from '@/hooks/useContract';
 import Layout from '@/components/Layout';
-import { Trophy, Gift, Sparkles, Star } from 'lucide-react';
+import { Trophy, Gift, Sparkles, Star, RefreshCw } from 'lucide-react';
 import { getXPLeaderboard, getUserXP, getUserRank } from '@/utils/xpSystem';
 
 function LeaderboardContent() {
@@ -18,14 +18,29 @@ function LeaderboardContent() {
   const [userXP, setUserXP] = useState(0);
   const [userRank, setUserRank] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const retryCountRef = useRef(0);
 
   useEffect(() => {
-    const loadLeaderboard = async () => {
+    let cancelled = false;
+    retryCountRef.current = 0; // Reset retry count when effect runs
+    const maxRetries = 3;
+    
+    const loadLeaderboard = async (isRetry = false) => {
+      if (cancelled) return;
+      
       try {
-        setLoading(true);
+        // Only show loading spinner on initial load, not on retries
+        if (!isRetry) {
+          setLoading(true);
+        }
+        
         console.log('🔄 Loading leaderboard...');
         const data = await getLeaderboard();
         console.log('✅ Leaderboard data received:', data);
+        
+        if (cancelled) return;
+        
         setTopSenders(data.topSenders);
         setTopSolvers(data.topSolvers);
         
@@ -41,17 +56,64 @@ function LeaderboardContent() {
         if (data.topSenders.length === 0 && data.topSolvers.length === 0) {
           console.warn('⚠️ No leaderboard data found. Make sure gifts have been created and claimed.');
         }
+        
+        retryCountRef.current = 0; // Reset retry count on success
       } catch (err: any) {
         console.error('❌ Error loading leaderboard:', err);
         console.error('Error details:', err.message, err.stack);
+        
+        if (!cancelled) {
+          // Retry if we haven't exceeded max retries
+          if (retryCountRef.current < maxRetries) {
+            retryCountRef.current++;
+            console.log(`Retrying leaderboard load (attempt ${retryCountRef.current}/${maxRetries})...`);
+            setTimeout(() => {
+              if (!cancelled) {
+                loadLeaderboard(true);
+              }
+            }, 1000 * retryCountRef.current); // Reduced backoff: 1s, 2s, 3s
+            return; // Don't set loading to false yet
+          } else {
+            setLoading(false);
+          }
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled && retryCountRef.current === 0) {
+          setLoading(false);
+        }
       }
     };
 
     // Load immediately without delay for faster rendering
     loadLeaderboard();
-  }, [getLeaderboard, address]);
+    
+    // Reload data when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log('Page became visible, reloading leaderboard...');
+        loadLeaderboard(true);
+      }
+    };
+    
+    // Reload data when window gains focus
+    const handleFocus = () => {
+      console.log('Window gained focus, reloading leaderboard...');
+      loadLeaderboard(true);
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [getLeaderboard, address, refreshKey]);
+
+  const refreshLeaderboard = () => {
+    setRefreshKey(prev => prev + 1);
+  };
 
   const getRankEmoji = (index: number) => {
     if (index === 0) return '🥇';
@@ -63,11 +125,22 @@ function LeaderboardContent() {
   return (
     <Layout>
       <div className="space-y-4 sm:space-y-6">
-        <div className="mt-2 mb-1">
-          <h1 className="text-[22px] font-semibold text-white dark:text-white text-[#111827] dark:text-white">
-            Leaderboard
-          </h1>
-          <p className="text-[13px] text-gray-400 dark:text-gray-400 text-[#6b7280] dark:text-gray-400 mt-0">Top airdroppers and solvers</p>
+        <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4 mt-2 mb-1">
+          <div>
+            <h1 className="text-[22px] font-semibold text-white dark:text-white text-[#111827] dark:text-white">
+              Leaderboard
+            </h1>
+            <p className="text-[13px] text-gray-400 dark:text-gray-400 text-[#6b7280] dark:text-gray-400 mt-0">Top airdroppers and solvers</p>
+          </div>
+          <button
+            onClick={refreshLeaderboard}
+            disabled={loading}
+            className="px-4 sm:px-5 py-2.5 min-h-[44px] glass rounded-xl transition-all duration-200 disabled:opacity-50 flex items-center gap-2 active:scale-95 border border-border touch-manipulation"
+            title="Refresh leaderboard"
+          >
+            <RefreshCw className={`w-4 h-4 dark:text-white text-gray-900 ${loading ? 'animate-spin' : ''}`} />
+            <span className="text-sm font-medium dark:text-white text-gray-900 hidden sm:inline">Refresh</span>
+          </button>
         </div>
 
         {loading ? (

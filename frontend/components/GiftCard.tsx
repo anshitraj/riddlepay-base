@@ -4,7 +4,7 @@ import { Gift } from '@/hooks/useContract';
 import { useWallet } from '@/contexts/WalletContext';
 import { useContract } from '@/hooks/useContract';
 import { Clock, Gift as GiftIcon, User, CheckCircle, Share2, AlertCircle, RotateCcw } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import ShareGift from './ShareGift';
 import { formatAmount } from '@/utils/formatAmount';
 import toast from 'react-hot-toast';
@@ -15,7 +15,7 @@ interface GiftCardProps {
   onClaim?: () => void;
 }
 
-export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
+function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
   const { address } = useWallet();
   const { refundGift, isExpired, loading } = useContract();
   const [showShare, setShowShare] = useState(false);
@@ -38,10 +38,10 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
     }
   }, [giftId, gift.claimed, isExpired]);
 
-  const formatDate = (timestamp: string) => {
+  const formatDate = useCallback((timestamp: string) => {
     const date = new Date(Number(timestamp) * 1000);
     return date.toLocaleDateString();
-  };
+  }, []);
 
   const handleRefund = async () => {
     if (!address) {
@@ -230,4 +230,18 @@ export default function GiftCard({ giftId, gift, onClaim }: GiftCardProps) {
     </div>
   );
 }
+
+// Memoize component to prevent unnecessary re-renders
+export default memo(GiftCard, (prevProps, nextProps) => {
+  // Only re-render if these props change
+  return (
+    prevProps.giftId === nextProps.giftId &&
+    prevProps.gift.claimed === nextProps.gift.claimed &&
+    prevProps.gift.amount === nextProps.gift.amount &&
+    prevProps.gift.receiver === nextProps.gift.receiver &&
+    prevProps.gift.sender === nextProps.gift.sender &&
+    prevProps.gift.riddle === nextProps.gift.riddle &&
+    prevProps.gift.unlockTime === nextProps.gift.unlockTime
+  );
+});
 

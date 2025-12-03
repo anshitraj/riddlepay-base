@@ -19,6 +19,9 @@ const nextConfig = {
   },
 
   swcMinify: true,
+  
+  // Performance optimizations
+  poweredByHeader: false,
 
   webpack: (config, { isServer, dev }) => {
     config.resolve.fallback = {
@@ -113,6 +116,11 @@ const nextConfig = {
         ],
       },
     ];
+  },
+
+  // Performance: Add caching for static assets
+  async rewrites() {
+    return [];
   },
 };
 

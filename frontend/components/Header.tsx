@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, memo, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { User, LogOut, Copy, ExternalLink, Settings, Search, Send, RefreshCw } from 'lucide-react';
@@ -11,8 +11,8 @@ import { useFarcasterUser } from '@/hooks/useFarcasterUser';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function Header() {
-  const { address, disconnect } = useWallet();
+function Header() {
+  const { address, disconnect, isInMiniApp } = useWallet();
   const { username, avatar, displayName } = useFarcasterUser(address);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -73,8 +73,16 @@ export default function Header() {
   };
 
   // Generate avatar from address if no avatar
-  const getAvatarUrl = () => {
+  // In Base/Farcaster apps, use the mini app icon as the profile avatar
+  const getAvatarUrl = useCallback(() => {
+    // If in mini app environment (Base/Farcaster), use the mini app icon
+    if (isInMiniApp) {
+      return '/icon.png';
+    }
+    
+    // Otherwise, use Farcaster avatar if available
     if (avatar) return avatar;
+    
     // Generate a simple gradient avatar based on address
     const colors = ['#0052FF', '#00C2FF', '#7B61FF', '#FF6B6B', '#4ECDC4'];
     const colorIndex = parseInt(address?.slice(2, 3) || '0', 16) % colors.length;
@@ -86,7 +94,7 @@ export default function Header() {
         </text>
       </svg>
     `)}`;
-  };
+  }, [isInMiniApp, avatar, address, username, displayName]);
 
   const displayNameText = displayName || username ? `@${username || displayName}` : null;
   const shortAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
@@ -289,3 +297,5 @@ export default function Header() {
     </header>
   );
 }
+
+export default memo(Header);

@@ -3,8 +3,8 @@
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  maxRetries: number = 5,
-  initialDelay: number = 2000
+  maxRetries: number = 3, // Reduced from 5 to 3 for faster failure
+  initialDelay: number = 1000 // Reduced from 2000ms to 1000ms
 ): Promise<T> {
   let lastError: Error | null = null;
   
@@ -35,7 +35,7 @@ export async function retryWithBackoff<T>(
         throw error;
       }
       
-      // Exponential backoff: 2s, 4s, 8s, 16s, 32s
+      // Exponential backoff: 1s, 2s, 4s (faster retries)
       const delay = initialDelay * Math.pow(2, attempt);
       console.warn(`⚠️ Rate limited. Retrying in ${delay / 1000}s... (attempt ${attempt + 1}/${maxRetries})`);
       await new Promise(resolve => setTimeout(resolve, delay));

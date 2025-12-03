@@ -186,7 +186,7 @@ export function useStatsPreview() {
         claimsToday: 0,
         riddleSolves: 0,
       });
-    }, 10000); // 10 second timeout
+    }, 5000); // Reduced to 5 second timeout for faster feedback
 
     fetchStats();
     

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWallet } from '@/contexts/WalletContext';
 import SearchProviderWrapper from '@/components/SearchProviderWrapper';
 import { useContract, Gift } from '@/hooks/useContract';
@@ -37,22 +37,28 @@ function MyGiftsContent() {
   const [selectedGiftId, setSelectedGiftId] = useState<number | null>(null);
   const [selectedGift, setSelectedGift] = useState<Gift | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const retryCountRef = useRef(0);
 
   useEffect(() => {
     let cancelled = false;
+    retryCountRef.current = 0; // Reset retry count when effect runs
+    const maxRetries = 3;
     
-    const loadGifts = async () => {
+    const loadGifts = async (isRetry = false) => {
       if (!address) {
         setLoading(false);
         return;
       }
 
-      setLoading(true);
+      // Only show loading spinner on initial load, not on retries
+      if (!isRetry) {
+        setLoading(true);
+      }
       
       try {
-        // Add timeout to prevent hanging (reduced timeout for faster failure)
+        // Reduced timeout for faster feedback (8 seconds)
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Request timeout')), 15000) // Reduced from 30s to 15s
+          setTimeout(() => reject(new Error('Request timeout')), 8000)
         );
         
         const giftIdsPromise = getGiftsForUser(address);
@@ -69,53 +75,94 @@ function MyGiftsContent() {
         // Limit to first 50 gifts to prevent hanging on large lists
         const limitedIds = giftIds.slice(0, 50);
         
-        // Batch fetch gifts in parallel for better performance
-        const batchSize = 10;
-        const giftsData: Array<{ id: number; gift: Gift }> = [];
+        // Increased batch size for faster parallel fetching (20 at a time)
+        const batchSize = 20;
+        let allGiftsData: Array<{ id: number; gift: Gift }> = [];
+        
+        // Fetch all batches in parallel for maximum speed
+        const allBatchPromises = [];
         
         for (let i = 0; i < limitedIds.length; i += batchSize) {
           if (cancelled) return;
           
           const batch = limitedIds.slice(i, i + batchSize);
-          const giftPromises = batch.map(async (id) => {
-            try {
-              const gift = await Promise.race([
-                getGift(id),
-                new Promise((_, reject) => 
-                  setTimeout(() => reject(new Error('Gift fetch timeout')), 5000) // Reduced from 10s to 5s
-                )
-              ]) as Gift;
-              
-              if (cancelled) return null;
-              return { id, gift };
-            } catch (err) {
-              console.warn(`Failed to load gift ${id}:`, err);
-              return null;
-            }
-          });
+          const batchPromise = Promise.all(
+            batch.map(async (id) => {
+              try {
+                const gift = await Promise.race([
+                  getGift(id),
+                  new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Gift fetch timeout')), 3000) // Reduced to 3s
+                  )
+                ]) as Gift;
+                
+                if (cancelled) return null;
+                return { id, gift };
+              } catch (err) {
+                console.warn(`Failed to load gift ${id}:`, err);
+                return null;
+              }
+            })
+          );
           
-          const batchResults = (await Promise.all(giftPromises)).filter(
+          allBatchPromises.push(batchPromise);
+        }
+        
+        // Process batches and update UI progressively
+        for (let i = 0; i < allBatchPromises.length; i++) {
+          if (cancelled) return;
+          
+          const batchResults = await allBatchPromises[i];
+          const validResults = batchResults.filter(
             (item): item is { id: number; gift: Gift } => item !== null
           );
           
-          giftsData.push(...batchResults);
+          if (validResults.length > 0) {
+            allGiftsData = [...allGiftsData, ...validResults];
+            
+            // Sort and update UI progressively (show results as they load)
+            const sorted = [...allGiftsData].sort((a, b) => 
+              Number(b.gift.createdAt) - Number(a.gift.createdAt)
+            );
+            
+            setGifts(sorted);
+            
+            // Stop showing loading spinner once we have some results (progressive loading)
+            if (sorted.length > 0) {
+              setLoading(false);
+            }
+          }
         }
         
         if (cancelled) return;
         
-        // Sort by creation time (newest first)
-        giftsData.sort((a, b) => 
+        // Final sort by creation time (newest first)
+        allGiftsData.sort((a, b) => 
           Number(b.gift.createdAt) - Number(a.gift.createdAt)
         );
         
-        setGifts(giftsData);
+        setGifts(allGiftsData);
+        retryCountRef.current = 0; // Reset retry count on success
       } catch (err: any) {
         console.error('Error loading gifts:', err);
         if (!cancelled) {
-          setGifts([]);
+          // Retry if we haven't exceeded max retries
+          if (retryCountRef.current < maxRetries) {
+            retryCountRef.current++;
+            console.log(`Retrying gift load (attempt ${retryCountRef.current}/${maxRetries})...`);
+            setTimeout(() => {
+              if (!cancelled) {
+                loadGifts(true);
+              }
+            }, 1000 * retryCountRef.current); // Reduced backoff: 1s, 2s, 3s instead of 2s, 4s, 6s
+            return; // Don't set loading to false yet
+          } else {
+            setGifts([]);
+            setLoading(false);
+          }
         }
       } finally {
-        if (!cancelled) {
+        if (!cancelled && retryCountRef.current === 0) {
           setLoading(false);
         }
       }
@@ -123,8 +170,29 @@ function MyGiftsContent() {
 
     loadGifts();
     
+    // Reload data when page becomes visible (user switches back to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && address) {
+        console.log('Page became visible, reloading gifts...');
+        loadGifts(true);
+      }
+    };
+    
+    // Reload data when window gains focus
+    const handleFocus = () => {
+      if (address) {
+        console.log('Window gained focus, reloading gifts...');
+        loadGifts(true);
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+    
     return () => {
       cancelled = true;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [address, refreshKey]); // getGiftsForUser and getGift are stable callbacks, don't need to be in deps

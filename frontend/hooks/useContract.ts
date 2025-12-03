@@ -695,9 +695,9 @@ export function useContract() {
     // If readContract is not ready, wait a bit (it initializes on mount)
     if (!contractToUse) {
       console.warn('⚠️ Contract not ready, waiting for initialization...');
-      // Wait up to 1 second for readContract to initialize (reduced from 2s)
+      // Wait up to 500ms for readContract to initialize (reduced from 1s)
       for (let i = 0; i < 2; i++) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 250));
         contractToUse = readContract || contract;
         if (contractToUse) {
           console.log('✅ Contract ready after wait');
